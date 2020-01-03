@@ -52,6 +52,10 @@
             android:background="@android:color/transparent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:imeOptions="actionDone"
+            android:lines="1"
+            android:singleLine="true"
+            android:maxLines="1"
             android:hint="@string/search_hint"
             android:textColorHint="@android:color/transparent" />
     </com.google.android.material.textfield.TextInputLayout>

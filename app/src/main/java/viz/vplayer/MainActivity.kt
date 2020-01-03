@@ -2,8 +2,12 @@ package viz.vplayer
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.method.KeyListener
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
@@ -83,6 +87,13 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         val spinnerItems = arrayOf("http://www.lexianglive.com/index.php?s=vod-search-name")
         val spinnerAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, spinnerItems)
         spinner_website.adapter = spinnerAdapter
+        textInputEditText_search.setOnEditorActionListener { v, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                materialButton_search.performClick()
+                true
+            }
+            false
+        }
     }
 
     override fun onClick(v: View?) {
@@ -91,6 +102,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             R.id.materialButton_search -> {
                 val kw = textInputEditText_search.text.toString()
                 if (!kw.isNullOrEmpty()) {
+                    textInputLayout_search.clearFocus()
                     mainVM.searchVideos(kw, spinner_website.selectedItem.toString())
                 } else {
                     Toast.show(this, "请输入电影/电视剧名称")
