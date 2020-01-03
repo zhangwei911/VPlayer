@@ -14,12 +14,14 @@ import com.viz.tools.l
 import org.jsoup.Jsoup
 import viz.vplayer.DEFAULT_UA
 import viz.vplayer.UTF8
+import viz.vplayer.bean.SearchBean
 import viz.vplayer.bean.VideoInfoBean
 
 class MainVM : ViewModel() {
-    val search = MutableLiveData<MutableList<VideoInfoBean>>()
+    val search = MutableLiveData<MutableList<SearchBean>>()
     val episodes = MutableLiveData<MutableList<String>>()
     val play = MutableLiveData<VideoInfoBean>()
+    val errorInfo = MutableLiveData<String>()
 
     fun searchVideos(kw: String, videoSearchUrl: String) {
         Task.callInBackground {
@@ -35,19 +37,22 @@ class MainVM : ViewModel() {
                 params,
                 object : RequestCallBack<String>() {
                     override fun onSuccess(responseInfo: ResponseInfo<String>?) {
-                        val searchList = mutableListOf<VideoInfoBean>()
+                        val searchList = mutableListOf<SearchBean>()
                         val doc = Jsoup.parse(responseInfo!!.result)
                         val uls = doc.getElementsByClass("stui-vodlist__media")
                         val ul = uls[0]
                         val lis = ul.getElementsByTag("li")
                         lis.forEachIndexed { index, element ->
                             val aArr = element.getElementsByTag("a")
+                            val name = aArr[0].attr("title")
+                            val img = aArr[0].attr("data-original")
                             val uri = Uri.parse(videoSearchUrl)
                             searchList.add(
-                                VideoInfoBean(
-                                    uri.scheme + "://" + uri.host + aArr[0].attr(
-                                        "href"
-                                    ), aArr[1].html(), 0
+                                SearchBean(
+                                    name,
+                                    element.getElementsByClass("detail")[0].html(),
+                                    img,
+                                    uri.scheme + "://" + uri.host + aArr[0].attr("href")
                                 )
                             )
                         }
@@ -57,6 +62,7 @@ class MainVM : ViewModel() {
                     override fun onFailure(error: HttpException?, msg: String?) {
                         error?.printStackTrace()
                         l.e(msg)
+                        errorInfo.postValue("获取搜索数据异常($msg)")
                     }
 
                 })
@@ -105,6 +111,7 @@ class MainVM : ViewModel() {
                     override fun onFailure(error: HttpException?, msg: String?) {
                         error?.printStackTrace()
                         l.e(msg)
+                        errorInfo.postValue("获取剧集数据异常($msg)")
                     }
 
                 })
@@ -161,6 +168,7 @@ class MainVM : ViewModel() {
                     override fun onFailure(error: HttpException?, msg: String?) {
                         error?.printStackTrace()
                         l.e(msg)
+                        errorInfo.postValue("获取视频数据异常($msg)")
                     }
 
                 })

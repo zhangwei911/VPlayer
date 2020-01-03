@@ -3,6 +3,7 @@ package viz.vplayer
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -36,11 +37,18 @@ class VideoPalyerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
         setContentView(R.layout.activity_video)
         supportActionBar?.hide()
         videoVM.play.observe(this, Observer { videoInfoBean ->
             gsyVideoPLayer.setUp(videoInfoBean.url, true, videoInfoBean.title)
             gsyVideoPLayer.startPlayLogic()
+        })
+        mainVM.errorInfo.observe(this, Observer { errorMsg ->
+            Toast.showLong(this, errorMsg)
         })
         initVideo()
         val url = intent.getStringExtra("url")
@@ -85,6 +93,10 @@ class VideoPalyerActivity : AppCompatActivity() {
                     })
             )
         }
+        gsyVideoPLayer.backButton.setOnClickListener {
+            finish()
+        }
+        gsyVideoPLayer.fullscreenButton.visibility = View.GONE
     }
 
     override fun onPause() {
