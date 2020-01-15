@@ -11,11 +11,13 @@ import com.lidroid.xutils.http.ResponseInfo
 import com.lidroid.xutils.http.callback.RequestCallBack
 import com.lidroid.xutils.http.client.HttpRequest
 import com.viz.tools.l
+import org.json.JSONObject
 import org.jsoup.Jsoup
 import viz.vplayer.DEFAULT_UA
 import viz.vplayer.UTF8
-import viz.vplayer.bean.SearchBean
-import viz.vplayer.bean.VideoInfoBean
+import viz.vplayer.bean.*
+import java.net.URLDecoder
+
 
 class MainVM : ViewModel() {
     val search = MutableLiveData<MutableList<SearchBean>>()
@@ -23,14 +25,21 @@ class MainVM : ViewModel() {
     val play = MutableLiveData<VideoInfoBean>()
     val errorInfo = MutableLiveData<String>()
 
-    fun searchVideos(kw: String, videoSearchUrl: String) {
+    fun searchVideos(
+        from: Int,
+        paramsMap: MutableMap<String, String>,
+        videoSearchUrl: String,
+        searchHtmlResultBean: SearchHtmlResultBean
+    ) {
         Task.callInBackground {
             val http = HttpUtils()
             http.configUserAgent(DEFAULT_UA)
             http.configResponseTextCharset(UTF8)
             http.configCurrentHttpCacheExpiry(1000 * 60.toLong()) //设置超时时间   60s
             val params = RequestParams("utf-8")
-            params.addBodyParameter("wd", kw)
+            paramsMap.forEach {
+                params.addBodyParameter(it.key, it.value)
+            }
             http.send(
                 HttpRequest.HttpMethod.POST,
                 videoSearchUrl,
@@ -39,20 +48,50 @@ class MainVM : ViewModel() {
                     override fun onSuccess(responseInfo: ResponseInfo<String>?) {
                         val searchList = mutableListOf<SearchBean>()
                         val doc = Jsoup.parse(responseInfo!!.result)
-                        val uls = doc.getElementsByClass("stui-vodlist__media")
-                        val ul = uls[0]
-                        val lis = ul.getElementsByTag("li")
+                        val uls = doc.select(searchHtmlResultBean.mainCss)
+                        val ul = uls[searchHtmlResultBean.mainListIndex]
+                        val lis = ul.select(searchHtmlResultBean.searchListCss)
                         lis.forEachIndexed { index, element ->
-                            val aArr = element.getElementsByTag("a")
-                            val name = aArr[0].attr("title")
-                            val img = aArr[0].attr("data-original")
+                            val nameElements = element.select(searchHtmlResultBean.nameCss)
+                            val nameElement = nameElements[searchHtmlResultBean.nameIndex]
+                            val name = if (searchHtmlResultBean.isNameAttr) {
+                                nameElement.attr(searchHtmlResultBean.nameAttr)
+                            } else {
+                                nameElement.html()
+                            }
+                            val imgElements = element.select(searchHtmlResultBean.imgCss)
+                            val imgElement = imgElements[searchHtmlResultBean.imgIndex]
+                            val img = if (searchHtmlResultBean.isImgAttr) {
+                                imgElement.attr(searchHtmlResultBean.imgAttr)
+                            } else {
+                                imgElement.html()
+                            }
+                            val descElements = element.select(searchHtmlResultBean.descCss)
+                            val descElement = descElements[searchHtmlResultBean.descIndex]
+                            val desc = if (searchHtmlResultBean.isDescAttr) {
+                                descElement.attr(searchHtmlResultBean.descAttr)
+                            } else {
+                                descElement.html()
+                            }
+                            val urlElements = element.select(searchHtmlResultBean.urlCss)
+                            val urlElement = urlElements[searchHtmlResultBean.urlIndex]
+                            val url = if (searchHtmlResultBean.isUrlAttr) {
+                                urlElement.attr(searchHtmlResultBean.urlAttr)
+                            } else {
+                                urlElement.html()
+                            }
                             val uri = Uri.parse(videoSearchUrl)
                             searchList.add(
                                 SearchBean(
                                     name,
-                                    element.getElementsByClass("detail")[0].html(),
+                                    desc,
                                     img,
-                                    uri.scheme + "://" + uri.host + aArr[0].attr("href")
+                                    if (searchHtmlResultBean.hasUrlPrefix) {
+                                        ""
+                                    } else {
+                                        uri.scheme + "://" + uri.host
+                                    } + url,
+                                    from
                                 )
                             )
                         }
@@ -84,7 +123,7 @@ class MainVM : ViewModel() {
         }
     }
 
-    fun getVideoEpisodesInfo(singleVideoPageUrl: String) {
+    fun getVideoEpisodesInfo(singleVideoPageUrl: String, episodesBean: EpisodesBean) {
         Task.callInBackground {
             val http = HttpUtils()
             http.configUserAgent(DEFAULT_UA)
@@ -97,13 +136,51 @@ class MainVM : ViewModel() {
                     override fun onSuccess(responseInfo: ResponseInfo<String>?) {
                         val doc = Jsoup.parse(responseInfo!!.result)
                         val episodeList = mutableListOf<String>()
-                        val div = doc.getElementsByClass("num-tab-main")
-                        val lis = div[0].getElementsByTag("li")
-                        val uri = Uri.parse(singleVideoPageUrl)
-                        lis.forEachIndexed { index, element ->
-                            val a = element.getElementsByTag("a")
-                            val href = uri.scheme + "://" + uri.host + a.attr("href")
-                            episodeList.add(href)
+                        val divs = doc.select(episodesBean.mainCss)
+                        val div = divs[episodesBean.mainIndex]
+                        if (episodesBean.isReg) {
+                            val script = div.html()
+                            val reg = Regex(episodesBean.regStr)
+                            val result = reg.find(script)
+                            if (result != null) {
+                                val urlList =
+                                    result.groupValues[episodesBean.regIndex].split(episodesBean.regSplit)
+                                val regList = Regex(episodesBean.regItemStr)
+                                for (urlStr in urlList) {
+                                    val resultList = regList.find(urlStr)
+                                    if (resultList != null) {
+                                        episodeList.add(
+                                            if (episodesBean.isRegNeedDecoder) {
+                                                URLDecoder.decode(resultList.groupValues[episodesBean.regItemIndex])
+                                            } else {
+                                                resultList.groupValues[episodesBean.regItemIndex]
+                                            }
+                                        )
+                                    } else {
+                                        errorInfo.postValue("获取剧集url数据异常(正则表达式可能错了)")
+                                        break
+                                    }
+                                }
+                            } else {
+                                errorInfo.postValue("获取剧集数据异常(正则表达式可能错了)")
+                            }
+                        } else {
+                            val lis = div.select(episodesBean.listCss)
+                            val uri = Uri.parse(singleVideoPageUrl)
+                            lis.forEachIndexed { index, element ->
+                                val aArr = element.select(episodesBean.listItemCss)
+                                val a = aArr[episodesBean.listItemIndex]
+                                val href = if (episodesBean.hasUrlPrefix) {
+                                    ""
+                                } else {
+                                    uri.scheme + "://" + uri.host
+                                } + if (episodesBean.isListItemAttr) {
+                                    a.attr(episodesBean.listItemAttr)
+                                } else {
+                                    a.html()
+                                }
+                                episodeList.add(href)
+                            }
                         }
                         episodes.postValue(episodeList)
                     }
@@ -133,7 +210,7 @@ class MainVM : ViewModel() {
         }
     }
 
-    fun getVideoInfo(singleVideoPageUrl: String) {
+    fun getVideoInfo(singleVideoPageUrl: String, videoHtmlResultBean: VideoHtmlResultBean) {
         Task.callInBackground {
             val http = HttpUtils()
             http.configUserAgent(DEFAULT_UA)
@@ -144,25 +221,135 @@ class MainVM : ViewModel() {
                 singleVideoPageUrl,
                 object : RequestCallBack<String>() {
                     override fun onSuccess(responseInfo: ResponseInfo<String>?) {
+                        try {
+                            val doc = Jsoup.parse(responseInfo!!.result)
+                            val title = doc.title()
+                            if (videoHtmlResultBean.isFrame && !videoHtmlResultBean.isFrameProcess) {
+                                val iframes = doc.select("iframe")
+                                val iframe = iframes[videoHtmlResultBean.iframeIndex]
+                                val src = iframe.attr(videoHtmlResultBean.iframeAttr)
+                                videoHtmlResultBean.isFrameProcess = true
+                                videoHtmlResultBean.title = title
+                                getVideoInfo(src!!, videoHtmlResultBean)
+                                return
+                            }
+                            val divs = doc.select(videoHtmlResultBean.mainCss)
+                            val div = divs[videoHtmlResultBean.mainIndex]
+                            val scripts = div.select(videoHtmlResultBean.itemCss)
+                            val script = scripts[videoHtmlResultBean.itemIndex]
+                            val videoList = mutableListOf<Pair<String, String>>()
+                            if (videoHtmlResultBean.hasEpisodes) {
+                                val listParent =
+                                    doc.select(videoHtmlResultBean.episodesMainCss)
+                                val list =
+                                    listParent[videoHtmlResultBean.episodesMainIndex].getElementsByTag(
+                                        videoHtmlResultBean.episodesListCss
+                                    )
+                                val uri = Uri.parse(singleVideoPageUrl)
+                                list.forEachIndexed { index, element ->
+                                    val urlArr = element.select(videoHtmlResultBean.urlCss)
+                                    val url = urlArr[videoHtmlResultBean.urlIndex]
+                                    val href = if (videoHtmlResultBean.isUrlAttr) {
+                                        url.attr(videoHtmlResultBean.urlAttr)
+                                    } else {
+                                        url.html()
+                                    }
+                                    val nameArr = element.select(videoHtmlResultBean.nameCss)
+                                    val nameElement = nameArr[videoHtmlResultBean.nameIndex]
+                                    val name = if (videoHtmlResultBean.isNameAttr) {
+                                        nameElement.attr(videoHtmlResultBean.nameAttr)
+                                    } else {
+                                        nameElement.html()
+                                    }
+                                    videoList.add(
+                                        Pair(
+                                            if (videoHtmlResultBean.hasUrlPrefix) {
+                                                ""
+                                            } else {
+                                                uri.scheme + "://" + uri.host
+                                            } + href, name
+                                        )
+                                    )
+                                }
+                            }
+                            if (videoHtmlResultBean.isReg) {
+                                val scriptHtml = script.html()
+                                val reg = Regex(videoHtmlResultBean.regStr)
+                                val regResult = reg.find(scriptHtml)
+                                if (regResult != null) {
+                                    val regResultItem =
+                                        regResult.groupValues[videoHtmlResultBean.regIndex]
+                                    val jsonObject = JSONObject("{'urlVideo':'$regResultItem'}")
+                                    val urlVideo = jsonObject.get("urlVideo")
+                                    videoHtmlResultBean.isFrameProcess = false
+                                    play.postValue(
+                                        VideoInfoBean(
+                                            urlVideo.toString(),
+                                            if (title.isNullOrEmpty()) {
+                                                videoHtmlResultBean.title
+                                            } else {
+                                                title
+                                            },
+                                            0,
+                                            videoList
+                                        )
+                                    )
+                                } else {
+                                    errorInfo.postValue("获取视频数据异常(正则表达式可能错了)")
+                                }
+                            } else {
+//                            val url = ""
+//                            play.postValue(VideoInfoBean(url, title, 0, videoList))
+                            }
+//                        if (videoHtmlResultBean.isFrame && videoHtmlResultBean.isFrameProcess) {
+//                            val url = script.attr(videoHtmlResultBean.itemAttr)
+//                            play.postValue(VideoInfoBean(url, title, 0, videoList))
+//                        }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            errorInfo.postValue("获取视频数据异常(${e.message})")
+                        }
+                    }
+
+                    override fun onFailure(error: HttpException?, msg: String?) {
+                        error?.printStackTrace()
+                        l.e(msg)
+                        errorInfo.postValue("获取视频数据异常($msg)")
+                    }
+
+                })
+        }.continueWith { task ->
+            when {
+                task.isCancelled -> {
+                    l.i("抓取网页任务取消")
+                }
+                task.isFaulted -> {
+                    val error = task.error
+                    l.e("抓取网页文件任务失败 $error")
+                    error.printStackTrace()
+                }
+                else -> {
+                    l.i("抓取网页文件任务成功")
+                }
+            }
+            return@continueWith null
+        }
+    }
+
+    fun freeVip(videoUrl: String) {
+//        http://vip.jlsprh.com/index.php?url=https://v.qq.com/x/cover/rjae621myqca41h/e003358h201.html
+        Task.callInBackground {
+            val http = HttpUtils()
+            http.configUserAgent(DEFAULT_UA)
+            http.configResponseTextCharset(UTF8)
+            http.configCurrentHttpCacheExpiry(1000 * 60.toLong()) //设置超时时间   60s
+            http.send(
+                HttpRequest.HttpMethod.GET,
+                "http://vip.jlsprh.com/index.php?url=$videoUrl",
+                object : RequestCallBack<String>() {
+                    override fun onSuccess(responseInfo: ResponseInfo<String>?) {
                         val doc = Jsoup.parse(responseInfo!!.result)
                         val title = doc.title()
-                        val cms_player = doc.getElementById("cms_player")
-                        val scripts = cms_player.getElementsByTag("script")
-                        val script = scripts[0]
-                        val scriptHtml = script.html()
-                        val url = scriptHtml.substring(
-                            "var cms_player = {\"url\":\"".length,
-                            scriptHtml.indexOf("\",")
-                        ).replace("\\/", "/")
-                        val videoList = mutableListOf<Pair<String, String>>()
-                        val listParent = doc.getElementsByClass("num-tab-main")
-                        val list = listParent[0].getElementsByTag("li")
-                        list.forEachIndexed { index, element ->
-                            val href = element.attr("abs:href")
-                            val name = element.html()
-                            videoList.add(Pair(href, name))
-                        }
-                        play.postValue(VideoInfoBean(url, title, 0, videoList))
                     }
 
                     override fun onFailure(error: HttpException?, msg: String?) {

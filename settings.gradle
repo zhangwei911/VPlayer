@@ -1,3 +1,3 @@
 include ':app'
-include ':xutil_http'
+include ':xutil_http',':LoadingDrawable'
 rootProject.name = "VPlayer"

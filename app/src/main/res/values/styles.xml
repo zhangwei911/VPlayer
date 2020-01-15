@@ -7,4 +7,34 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="Widget.V.Button" parent="Widget.MaterialComponents.Button">
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:padding">0dp</item>
+    </style>
+
+    <style name="Common.Style.AlertDialog" parent="@style/Theme.AppCompat.Light.Dialog.Alert">
+        <!--是否去除标题 -->
+        <item name="windowNoTitle">true</item>
+        <!--是否去除边框-->
+        <item name="android:windowFrame">@null</item>
+        <!--是否浮现在activity之上-->
+        <item name="android:windowIsFloating">true</item>
+        <!--是否模糊-->
+        <item name="android:backgroundDimEnabled">true</item>
+        <!-- 背景透明 -->
+        <!--<item name="android:background">#00000000</item>-->
+        <!--<item name="android:windowBackground">@android:color/transparent</item>-->
+        <!-- 没有windowActionBar-->
+        <item name="windowActionBar">false</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <!-- <item name="android:backgroundDimEnabled">false</item> -->
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.V.Button</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.V.Button</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.V.Button</item>
+    </style>
 </resources>

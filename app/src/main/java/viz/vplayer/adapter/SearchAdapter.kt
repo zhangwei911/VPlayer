@@ -33,7 +33,7 @@ class SearchAdapter(private val context: Context) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val itemView = holder.itemView
         val searchBean = data[position]
-        itemView.textView_name.text = searchBean.name
+        itemView.textView_name.text = searchBean.name + "(${searchBean.from})"
         itemView.textView_desc.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Html.fromHtml(searchBean.desc, Html.FROM_HTML_MODE_LEGACY)
         } else {

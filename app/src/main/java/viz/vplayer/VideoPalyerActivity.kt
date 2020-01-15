@@ -7,19 +7,14 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import bolts.Task
-import com.lidroid.xutils.HttpUtils
-import com.lidroid.xutils.exception.HttpException
-import com.lidroid.xutils.http.ResponseInfo
-import com.lidroid.xutils.http.callback.RequestCallBack
-import com.lidroid.xutils.http.client.HttpRequest
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.utils.GSYVideoType
 import com.viz.tools.Toast
-import com.viz.tools.l
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.android.synthetic.main.video_custom.*
-import org.jsoup.Jsoup
+import viz.vplayer.bean.HtmlBean
+import viz.vplayer.bean.VideoHtmlResultBean
 import viz.vplayer.bean.VideoInfoBean
 import viz.vplayer.vm.MainVM
 import viz.vplayer.vm.VideoVM
@@ -34,6 +29,8 @@ class VideoPalyerActivity : AppCompatActivity() {
             .create(MainVM::class.java)
     }
     private var episodes: MutableList<String>? = null
+    private var html: HtmlBean? = null
+    private var title = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,17 +41,20 @@ class VideoPalyerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_video)
         supportActionBar?.hide()
         videoVM.play.observe(this, Observer { videoInfoBean ->
+            loadingView_player.visibility = View.GONE
             gsyVideoPLayer.setUp(videoInfoBean.url, true, videoInfoBean.title)
             gsyVideoPLayer.startPlayLogic()
         })
         mainVM.errorInfo.observe(this, Observer { errorMsg ->
+            loadingView.visibility = View.GONE
             Toast.showLong(this, errorMsg)
         })
         initVideo()
         val url = intent.getStringExtra("url")
-        val title = intent.getStringExtra("title")
+        title = intent.getStringExtra("title") ?: ""
         val duration = intent.getLongExtra("duration", 0)
         episodes = intent.getSerializableExtra("episodes") as MutableList<String>
+        html = intent.getParcelableExtra("html")
         gsyVideoPLayer.selectEpisodes = {
             episodes!!
         }
@@ -62,7 +62,15 @@ class VideoPalyerActivity : AppCompatActivity() {
             Toast.show(this, "参数错误")
             return
         }
-        videoVM.play.postValue(VideoInfoBean(url, title, duration))
+        videoVM.play.postValue(
+            VideoInfoBean(
+                url, title + if (episodes!![0].endsWith("m3u8")) {
+                    "第1集"
+                } else {
+                    ""
+                }, duration
+            )
+        )
         mainVM.play.observe(this, Observer { videoInfoBean ->
             videoVM.play.postValue(videoInfoBean)
         })
@@ -80,7 +88,21 @@ class VideoPalyerActivity : AppCompatActivity() {
                     it,
                     object : RecyclerItemClickListener.OnItemClickListener {
                         override fun onItemClick(view: View, position: Int, e: MotionEvent) {
-                            mainVM.getVideoInfo(episodes!![position])
+                            if (episodes!![position].endsWith("m3u8")) {
+                                videoVM.play.postValue(
+                                    VideoInfoBean(
+                                        episodes!![position],
+                                        title + "第${position + 1}集",
+                                        0
+                                    )
+                                )
+                            } else {
+                                loadingView_player.visibility = View.VISIBLE
+                                mainVM.getVideoInfo(
+                                    episodes!![position],
+                                    html!!.videoHtmlResultBean
+                                )
+                            }
                             recyclerView_select_episodes.visibility = View.GONE
                         }
 
