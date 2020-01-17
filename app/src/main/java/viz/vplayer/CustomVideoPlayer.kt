@@ -3,10 +3,7 @@ package viz.vplayer
 import android.content.Context
 import android.graphics.Point
 import android.util.AttributeSet
-import android.view.Surface
-import android.view.View
-import android.view.ViewGroup
-import android.view.Window
+import android.view.*
 import android.widget.SeekBar
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -172,8 +169,16 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         super.onClickUiToggle()
     }
 
+    override fun hideAllWidget() {
+        super.hideAllWidget()
+        setViewShowState(textView_select_episodes, View.GONE)
+        setViewShowState(recyclerView_select_episodes, View.GONE)
+    }
+
     override fun changeUiToNormal() {
         super.changeUiToNormal()
+        setViewShowState(textView_select_episodes, View.VISIBLE)
+        setViewShowState(recyclerView_select_episodes, View.GONE)
         byStartedClick = false
     }
 

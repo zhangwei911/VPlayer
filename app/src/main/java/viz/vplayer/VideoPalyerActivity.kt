@@ -81,6 +81,8 @@ class VideoPalyerActivity : AppCompatActivity() {
         GSYVideoType.setShowType(GSYVideoType.SCREEN_MATCH_FULL)
         gsyVideoPLayer.titleTextView.visibility = View.VISIBLE
         gsyVideoPLayer.setIsTouchWiget(true)
+        gsyVideoPLayer.isIfCurrentIsFullscreen = true
+        gsyVideoPLayer.isNeedLockFull = true
         gsyVideoPLayer.episodesClick = {
             it.addOnItemTouchListener(
                 RecyclerItemClickListener(
