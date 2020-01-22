@@ -63,14 +63,13 @@ dependencies {
 
 //    implementation ('net.sourceforge.htmlunit:htmlunit:2.36.0')
     implementation 'com.parse.bolts:bolts-tasks:1.4.0'
-    implementation 'org.greenrobot:eventbus:3.1.1'
     implementation 'org.jsoup:jsoup:1.12.1'
     //完整版引入
     implementation 'com.shuyu:GSYVideoPlayer:7.1.2'
 
     implementation project(':xutil_http')
     implementation project(':LoadingDrawable')
-    api 'com.google.android.material:material:1.2.0-alpha03'
+    api 'com.google.android.material:material:1.2.0-alpha04'
     api "com.github.bumptech.glide:glide:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
     api "com.github.bumptech.glide:okhttp3-integration:$glide_version"
@@ -102,4 +101,5 @@ dependencies {
     implementation 'com.afollestad.material-dialogs:core:3.1.1'
     implementation 'com.afollestad.material-dialogs:input:3.1.1'
     implementation 'com.afollestad.material-dialogs:lifecycle:3.1.1'
+    implementation 'org.greenrobot:eventbus:3.1.1'
 }

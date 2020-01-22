@@ -23,12 +23,16 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = application as App
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_FULLSCREEN,
-            WindowManager.LayoutParams.FLAG_FULLSCREEN
-        )
+        if (isFullScreen()) {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN
+            )
+        }
         setContentView(getContentViewId())
-        supportActionBar?.hide()
+        if (isNoTitle()) {
+            supportActionBar?.hide()
+        }
         updateBG()
         val permissions = getPermissions()
         if (permissions.isNotEmpty()) {
@@ -75,6 +79,9 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
             }
         }
     }
+
+    open protected fun isFullScreen(): Boolean = false
+    open protected fun isNoTitle(): Boolean = true
 
     open protected fun getCommonTtile(): String = ""
     /**

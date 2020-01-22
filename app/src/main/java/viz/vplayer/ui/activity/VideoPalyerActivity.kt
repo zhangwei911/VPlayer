@@ -13,10 +13,14 @@ import com.shuyu.gsyvideoplayer.utils.GSYVideoType
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_video.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import viz.vplayer.R
 import viz.vplayer.adapter.SelectEpisodesAdapter
 import viz.vplayer.bean.HtmlBean
 import viz.vplayer.bean.VideoInfoBean
+import viz.vplayer.eventbus.VideoEvent
 import viz.vplayer.room.Episode
 import viz.vplayer.room.VideoId
 import viz.vplayer.room.VideoInfo
@@ -47,9 +51,11 @@ class VideoPalyerActivity : BaseActivity() {
     var index = 0
 
     override fun getContentViewId(): Int = R.layout.activity_video
+    override fun isFullScreen(): Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        EventBus.getDefault().register(this)
         videoVM.play.observe(this, Observer { videoInfoBean ->
             var url = videoInfoBean.url
             l.d("视频地址:$url")
@@ -192,12 +198,15 @@ class VideoPalyerActivity : BaseActivity() {
             val intent = Intent(this, VideoPalyerActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
             intent.putExtra("currentPos", floatPlayerView.videoPlayer!!.currentPositionWhenPlaying)
+            EventBus.getDefault()
+                .postSticky(VideoEvent(floatPlayerView.videoPlayer!!.currentPositionWhenPlaying))
             startActivity(intent)
             floatPlayerView.videoPlayer?.onVideoPause()
             FloatWindow.destroy()
         }
         floatPlayerView.videoPlayer?.setUp(url, true, title)
-        floatPlayerView.videoPlayer?.seekOnStart = gsyVideoPLayer.currentPositionWhenPlaying.toLong()
+        floatPlayerView.videoPlayer?.seekOnStart =
+            gsyVideoPLayer.currentPositionWhenPlaying.toLong()
         floatPlayerView.videoPlayer?.startPlayLogic()
         FloatWindow
             .with(applicationContext)
@@ -304,5 +313,11 @@ class VideoPalyerActivity : BaseActivity() {
          * 这里在返回主页的时候销毁了，因为不想和DEMO中其他页面冲突
          */
         FloatWindow.destroy()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun videoEvent(videoEvent: VideoEvent) {
+        gsyVideoPLayer.seekOnStart = videoEvent.currentPosition.toLong()
     }
 }

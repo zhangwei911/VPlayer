@@ -17,6 +17,7 @@ import com.google.gson.reflect.TypeToken
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_main.*
+import viz.vplayer.BuildConfig
 import viz.vplayer.R
 import viz.vplayer.adapter.SearchAdapter
 import viz.vplayer.bean.HtmlBean
@@ -120,9 +121,14 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 searchAdapter.fromNameList = spinnerNameItems
                 spinnerNameItems.add("所有")
                 val spinnerAdapter =
-                    ArrayAdapter(this,
-                        R.layout.simple_spinner_item, spinnerNameItems)
+                    ArrayAdapter(
+                        this,
+                        R.layout.simple_spinner_item, spinnerNameItems
+                    )
                 spinner_website.adapter = spinnerAdapter
+                if (BuildConfig.DEBUG) {
+                    spinner_website.setSelection(2)
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 mainVM.errorInfo.postValue("解析rule规则数据异常")
@@ -133,7 +139,9 @@ class MainActivity : BaseActivity(), View.OnClickListener {
             loadingView.visibility = View.GONE
             Toast.showLong(this, errorMsg)
         })
-        textInputEditText_search.setText("锦衣之下")
+        if (BuildConfig.DEBUG) {
+            textInputEditText_search.setText("锦衣之下")
+        }
         initViews()
         initListener()
 //        mainVM.freeVip("https://v.qq.com/x/cover/rjae621myqca41h/e003358h201.html")
@@ -237,7 +245,8 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                             val url = text.toString()
                             if (url.trim().isEmpty()) {
                                 runOnUiThread {
-                                    Toast.show(this@MainActivity,
+                                    Toast.show(
+                                        this@MainActivity,
                                         R.string.add_rule_hint
                                     )
                                 }
@@ -246,7 +255,8 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                             val rule = app.db.ruleDao().getByUrl(url)
                             if (rule != null) {
                                 runOnUiThread {
-                                    Toast.show(this@MainActivity,
+                                    Toast.show(
+                                        this@MainActivity,
                                         R.string.rule_url_exsit
                                     )
                                 }
@@ -255,7 +265,8 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                                 ruleNew.ruleUrl = url
                                 app.db.ruleDao().insertAll(ruleNew)
                                 runOnUiThread {
-                                    Toast.show(this@MainActivity,
+                                    Toast.show(
+                                        this@MainActivity,
                                         R.string.rule_url_add_success
                                     )
                                 }

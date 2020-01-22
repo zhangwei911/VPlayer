@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/black">
@@ -7,32 +8,37 @@
     <FrameLayout
         android:id="@+id/surface_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center">
+        android:layout_height="0dp"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@id/layout_bottom_float"
+        app:layout_constraintTop_toTopOf="parent">
 
     </FrameLayout>
 
-    <moe.codeest.enviews.ENPlayView
-        android:id="@+id/start"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_gravity="center_vertical" />
-
-
     <LinearLayout
-        android:id="@+id/layout_bottom"
+        android:id="@+id/layout_bottom_float"
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_alignParentBottom="true"
         android:background="#99000000"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:visibility="invisible">
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <moe.codeest.enviews.ENPlayView
+            android:id="@+id/start_float"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/current"
+            android:id="@+id/current_float"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
@@ -40,7 +46,7 @@
             android:textColor="#ffffff" />
 
         <SeekBar
-            android:id="@+id/progress"
+            android:id="@+id/progress_float"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -55,18 +61,31 @@
             android:thumb="@drawable/video_seek_thumb" />
 
         <TextView
-            android:id="@+id/total"
+            android:id="@+id/total_float"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="16dp"
             android:text="00:00"
             android:textColor="#ffffff" />
+
+        <ImageButton
+            android:id="@+id/imageButton_back_to_full"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/button_full_style" />
     </LinearLayout>
 
-    <ImageButton
-        android:id="@+id/imageButton_back_to_full"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:layout_alignParentEnd="true"
-        android:background="@drawable/button_full_style" />
-</RelativeLayout>
+    <moe.codeest.enviews.ENDownloadView
+        android:id="@+id/loading_float"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone" />
+</androidx.constraintlayout.widget.ConstraintLayout>

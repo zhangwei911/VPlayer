@@ -8,10 +8,13 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.SeekBar
 import com.shuyu.gsyvideoplayer.utils.Debuger
 import com.shuyu.gsyvideoplayer.utils.NetworkUtils
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoView
+import com.viz.tools.TimeFormat
+import com.viz.tools.Toast
 import kotlinx.android.synthetic.main.layout_floating_video.view.*
 import viz.vplayer.R
 import java.util.*
@@ -23,6 +26,7 @@ import java.util.*
 class FloatingVideo : StandardGSYVideoPlayer {
     protected var mDismissControlViewTimer: Timer? = null
     var backToFull: (() -> Unit)? = null
+    private var isSeekBarMove = false
 
     /**
      * 1.5.0开始加入，如果需要不同布局区分功能，需要重载
@@ -48,15 +52,79 @@ class FloatingVideo : StandardGSYVideoPlayer {
         }
         initInflate(mContext)
         mTextureViewContainer = findViewById<View>(R.id.surface_container) as ViewGroup
-        mStartButton = findViewById(R.id.start)
         if (isInEditMode) return
         mScreenWidth = activityContext.resources.displayMetrics.widthPixels
         mScreenHeight = activityContext.resources.displayMetrics.heightPixels
         mAudioManager =
             activityContext.applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        mBottomContainer = findViewById(R.id.layout_bottom)
         imageButton_back_to_full.setOnClickListener {
             backToFull?.invoke()
+        }
+        progress_float.setOnSeekBarChangeListener(object :SeekBar.OnSeekBarChangeListener{
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                val newCur = progress / 100.0 * gsyVideoManager.duration
+                Toast.show(
+                    context, TimeFormat.getDateFormatTime(
+                        newCur.toLong(), if (newCur > 60 * 60 * 1000) {
+                            "HH:mm:ss"
+                        } else {
+                            "mm:ss"
+                        }
+                    )
+                )
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                isSeekBarMove = true
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                seekTo((progress_float.progress /100.0 * duration).toLong())
+                isSeekBarMove = false
+            }
+        })
+        start_float.play()
+        start_float.setOnClickListener {
+            if(currentState == GSYVideoView.CURRENT_STATE_PLAYING){
+                onVideoPause()
+                start_float.pause()
+            }else if(currentState == GSYVideoView.CURRENT_STATE_PAUSE){
+                onVideoResume()
+                start_float.play()
+            }
+        }
+        setGSYVideoProgressListener { progress, secProgress, currentPosition, duration ->
+            if(isSeekBarMove) {
+                progress_float.progress = progress
+            }
+            current_float.text = TimeFormat.getDateFormatTime(
+                currentPosition.toLong(), if (currentPosition > 60 * 60 * 1000) {
+                    "HH:mm:ss"
+                } else {
+                    "mm:ss"
+                }
+            )
+            total_float.text = TimeFormat.getDateFormatTime(
+                duration.toLong(), if (duration > 60 * 60 * 1000) {
+                    "HH:mm:ss"
+                } else {
+                    "mm:ss"
+                }
+            )
+        }
+    }
+
+    override fun setStateAndUi(state: Int) {
+        super.setStateAndUi(state)
+        when(state){
+            GSYVideoView.CURRENT_STATE_PLAYING_BUFFERING_START->{
+                loading_float.visibility = View.VISIBLE
+                loading_float.start()
+            }
+            GSYVideoView.CURRENT_STATE_PLAYING->{
+                loading_float.visibility = View.GONE
+                loading_float.reset()
+            }
         }
     }
 
