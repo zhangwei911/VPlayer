@@ -16,6 +16,7 @@ import viz.vplayer.glide.GlideRequests
 class SearchAdapter(private val context: Context) :
     RecyclerView.Adapter<SearchAdapter.ViewHolder>() {
     var data = mutableListOf<SearchBean>()
+    var fromNameList = mutableListOf<String>()
     private var glide: GlideRequests? = null
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -33,7 +34,7 @@ class SearchAdapter(private val context: Context) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val itemView = holder.itemView
         val searchBean = data[position]
-        itemView.textView_name.text = searchBean.name + "(${searchBean.from})"
+        itemView.textView_name.text = searchBean.name + "(${fromNameList[searchBean.from]})"
         itemView.textView_desc.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             Html.fromHtml(searchBean.desc, Html.FROM_HTML_MODE_LEGACY)
         } else {

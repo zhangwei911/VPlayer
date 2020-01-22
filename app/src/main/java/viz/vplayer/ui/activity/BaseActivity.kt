@@ -1,4 +1,4 @@
-package viz.vplayer
+package viz.vplayer.ui.activity
 
 import android.Manifest
 import android.content.Context
@@ -7,16 +7,28 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.WindowManager
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.viz.tools.l
 import pub.devrel.easypermissions.EasyPermissions
 import pub.devrel.easypermissions.PermissionRequest
+import viz.vplayer.util.App
+import viz.vplayer.R
 import java.io.File
 
 abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
+    lateinit var app: App
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        app = application as App
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
         setContentView(getContentViewId())
+        supportActionBar?.hide()
         updateBG()
         val permissions = getPermissions()
         if (permissions.isNotEmpty()) {
@@ -31,6 +43,10 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
                 )
             }
         }
+        findViewById<ImageButton>(R.id.imageButton_back)?.setOnClickListener {
+            finish()
+        }
+        findViewById<TextView>(R.id.textView_title)?.text = getCommonTtile()
     }
 
     open fun updateBG() {
@@ -60,6 +76,7 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
         }
     }
 
+    open protected fun getCommonTtile(): String = ""
     /**
      * 当前布局文件资源
      */

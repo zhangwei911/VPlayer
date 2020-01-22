@@ -1,4 +1,4 @@
-package viz.vplayer
+package viz.vplayer.video
 
 import android.content.Context
 import android.graphics.Point
@@ -12,7 +12,10 @@ import com.shuyu.gsyvideoplayer.utils.Debuger
 import com.shuyu.gsyvideoplayer.utils.GSYVideoType
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
 import com.shuyu.gsyvideoplayer.video.base.GSYBaseVideoPlayer
+import com.viz.tools.TimeFormat
+import com.viz.tools.Toast
 import kotlinx.android.synthetic.main.video_custom.view.*
+import viz.vplayer.R
 import viz.vplayer.adapter.SelectEpisodesAdapter
 
 class CustomVideoPlayer : StandardGSYVideoPlayer {
@@ -35,6 +38,10 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
 
     override fun getLayoutId(): Int {
         return R.layout.video_custom
+    }
+
+    fun getUrl(): String {
+        return mUrl!!
     }
 
     override fun init(context: Context?) {
@@ -157,28 +164,33 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
             setViewShowState(mLockScreen, View.VISIBLE)
             return
         }
-        if (selectEpisodes != null) {
-            textView_select_episodes.visibility =
-                if (mBottomContainer.visibility == View.VISIBLE) {
-                    View.GONE
-                } else {
-                    View.VISIBLE
-                }
+        val visibility = if (mBottomContainer.visibility == View.VISIBLE) {
+            View.GONE
+        } else {
+            View.VISIBLE
         }
+        if (selectEpisodes != null) {
+            textView_select_episodes.visibility = visibility
+        }
+        customVisibility?.invoke(visibility)
         byStartedClick = true
         super.onClickUiToggle()
     }
+
+    var customVisibility: ((visibility: Int) -> Unit)? = null
 
     override fun hideAllWidget() {
         super.hideAllWidget()
         setViewShowState(textView_select_episodes, View.GONE)
         setViewShowState(recyclerView_select_episodes, View.GONE)
+        customVisibility?.invoke(View.GONE)
     }
 
     override fun changeUiToNormal() {
         super.changeUiToNormal()
         setViewShowState(textView_select_episodes, View.VISIBLE)
         setViewShowState(recyclerView_select_episodes, View.GONE)
+        customVisibility?.invoke(View.VISIBLE)
         byStartedClick = false
     }
 
@@ -215,8 +227,30 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         setViewShowState(mBottomProgressBar, View.VISIBLE)
     }
 
+    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+        super.onProgressChanged(seekBar, progress, fromUser)
+        if (fromUser) {
+            val newCur = progress / 100.0 * gsyVideoManager.duration
+            Toast.show(
+                context, TimeFormat.getDateFormatTime(
+                    newCur.toLong(), if (newCur > 60 * 60 * 1000) {
+                        "HH:mm:ss"
+                    } else {
+                        "mm:ss"
+                    }
+                )
+            )
+        }
+    }
+
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
         byStartedClick = true
         super.onStartTrackingTouch(seekBar)
+    }
+
+    var onAutoCompletion: ((recyclerView: RecyclerView) -> Unit)? = null
+    override fun onAutoCompletion() {
+        super.onAutoCompletion()
+        onAutoCompletion?.invoke(recyclerView_select_episodes)
     }
 }

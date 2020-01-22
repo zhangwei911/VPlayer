@@ -4,23 +4,34 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
-    <viz.vplayer.CustomVideoPlayer
+    tools:context=".ui.activity.MainActivity">
+
+    <viz.vplayer.video.CustomVideoPlayer
         android:id="@+id/gsyVideoPLayer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
     <app.dinus.com.loadingdrawable.LoadingView
         android:id="@+id/loadingView_player"
         android:layout_width="0dp"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:background="#2A77736A"
-        app:loading_renderer="SwapLoadingRenderer"/>
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:loading_renderer="SwapLoadingRenderer" />
+
+    <ImageButton
+        android:id="@+id/imageButton_float"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="20dp"
+        android:background="@drawable/button_float_style"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

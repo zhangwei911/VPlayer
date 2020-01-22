@@ -13,6 +13,9 @@ class SelectEpisodesAdapter(private val context: Context) :
     var data = mutableListOf<String>()
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        fun autoClick(){
+            itemView.performClick()
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

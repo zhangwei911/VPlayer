@@ -1,0 +1,17 @@
+def versionPropsFile = file('version.properties')
+def Properties versionProps
+int appVersionCode = 1
+String appVersionName = '1.0'
+if (versionPropsFile.canRead()) {
+    versionProps = new Properties()
+
+    versionProps.load(new FileInputStream(versionPropsFile))
+
+    appVersionCode = versionProps['VERSION_CODE'].toInteger()
+    appVersionName = versionProps['VERSION_NAME']
+}
+// 2.maven-信息
+ext {// ext is a gradle closure allowing the declaration of global properties
+    VERSION_CODE = appVersionCode
+    VERSION_NAME = appVersionName
+}

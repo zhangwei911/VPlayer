@@ -1,4 +1,4 @@
-package viz.vplayer
+package viz.vplayer.util
 
 import android.content.Context
 import android.view.GestureDetector

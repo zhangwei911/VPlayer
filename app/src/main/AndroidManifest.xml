@@ -4,19 +4,15 @@
     package="viz.vplayer">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-
     <uses-permission android:name="android.permission.INTERNET" />
-
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <!-- 硬件加速对X5视频播放非常重要，建议开启 -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" /> <!-- 硬件加速对X5视频播放非常重要，建议开启 -->
     <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
-        android:name=".App"
+        android:name=".util.App"
         android:allowBackup="true"
         android:hardwareAccelerated="true"
         android:icon="@drawable/vplayer_logo"
@@ -24,11 +20,13 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".ui.activity.RuleListActivity"></activity>
+
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
 
-        <activity android:name=".MainActivity">
+        <activity android:name=".ui.activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -36,10 +34,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".VideoPalyerActivity"
+            android:name=".ui.activity.VideoPalyerActivity"
             android:screenOrientation="sensorLandscape"
             tools:ignore="LockedOrientationActivity" />
-        <activity android:name=".WebActivity" />
+        <activity android:name=".ui.activity.WebActivity" />
+        <activity android:name=".ui.activity.HistoryActivity" />
+        <activity android:name=".video.FloatActivity" />
     </application>
 
 </manifest>

@@ -13,6 +13,7 @@ import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.WebSettings
 import com.tencent.smtt.sdk.WebView
 import com.tencent.smtt.sdk.WebViewClient
+import java.net.URLEncoder
 
 class X5WebView : WebView {
     var title: TextView? = null
@@ -25,8 +26,20 @@ class X5WebView : WebView {
                 view: WebView,
                 url: String
             ): Boolean {
-                view.loadUrl(url)
+                com.viz.tools.l.d(url)
+                view.loadUrl(
+                    if (url.startsWith("https://v.qq.com/x/cover")||url.startsWith("https://m.v.qq.com/x")) {
+                        "http://vip.jlsprh.com/index.php?url=" + URLEncoder.encode(url, "UTF-8")
+                    } else {
+                        url
+                    }
+                )
                 return true
+            }
+
+            override fun onPageFinished(p0: WebView?, p1: String?) {
+                super.onPageFinished(p0, p1)
+                addImageClickListner()
             }
         }
 
@@ -42,9 +55,28 @@ class X5WebView : WebView {
         this.view.isClickable = true
     }
 
+    // 注入js函数监听
+    private fun addImageClickListner() {
+        // 这段js函数的功能就是，遍历所有的img几点，并添加onclick函数，函数的功能是在图片点击的时候调用本地java接口并传递url过去
+        this.loadUrl("javascript:(function(){" +
+                "var objs = document.getElementsByTagName(\"a\"); " +
+                "for(var i=0;i<objs.length;i++)  " +
+                "{"
+                + "    objs[i].οnclick=function()  " +
+                "    {  "
+                + "        window.longClick.onJsFunctionCalled(this.innerHTML);  " +
+                "    }  " +
+                "}" +
+                "})()")
+    }
     private fun initWebViewSettings() {
         val webSetting = this.settings
         webSetting.javaScriptEnabled = true
+        this.addJavascriptInterface(object: WebViewJavaScriptFunction{
+            override fun onJsFunctionCalled(tag: String?) {
+                com.viz.tools.l.d(tag)
+            }
+        },"longClick")
         webSetting.javaScriptCanOpenWindowsAutomatically = true
         webSetting.allowFileAccess = true
         webSetting.layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS
