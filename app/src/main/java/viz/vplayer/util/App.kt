@@ -66,7 +66,11 @@ class App : Application() {
             applicationContext,
             AppDatabase::class.java, "database-vplayer"
         )
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                MIGRATION_3_4
+            )
             .build()
         //搜集本地tbs内核信息并上报服务器，服务器返回结果决定使用哪个内核。
 

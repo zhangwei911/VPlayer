@@ -3,13 +3,15 @@ package viz.vplayer.room
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
 
 @Entity(
     foreignKeys = [ForeignKey(
         entity = VideoInfo::class,
         parentColumns = arrayOf("id"),
-        childColumns = arrayOf("video_id")
+        childColumns = arrayOf("video_id"),
+        onDelete = CASCADE
     )]
 )
 data class Episode(

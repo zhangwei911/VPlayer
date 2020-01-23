@@ -88,7 +88,7 @@ class HistoryActivity : BaseActivity() {
                             negativeButton(R.string.delete, click = {
                                 Task.callInBackground {
                                     app.db.videoInfoDao()
-                                        .delete(adapter.list[position])
+                                        .delete(data)
                                 }.continueWithEnd("删除历史记录")
                                 adapter.list.removeAt(position)
                                 adapter.notifyItemRemoved(position)
