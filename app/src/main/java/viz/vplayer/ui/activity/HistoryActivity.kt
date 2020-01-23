@@ -35,8 +35,12 @@ class HistoryActivity : BaseActivity() {
             viList.forEach { vi ->
                 val episodeList = app.db.episodeDao().getByVid(vi.id)
                 if (episodeList.size > 0) {
-                    vi.index =
-                        episodeList.filter { episode -> episode.url == vi.videoUrl }[0].urlIndex
+                    val filterEpisodeList = episodeList.filter { episode -> episode.url == vi.videoUrl }
+                    if(filterEpisodeList.isNotEmpty()) {
+                        vi.index = filterEpisodeList[0].urlIndex
+                    }else{
+                        vi.index = 0
+                    }
                     vi.episodeList = episodeList
                 }
             }

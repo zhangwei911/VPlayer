@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Point
 import android.util.AttributeSet
 import android.view.*
+import android.view.GestureDetector.SimpleOnGestureListener
 import android.widget.SeekBar
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -12,7 +13,7 @@ import com.shuyu.gsyvideoplayer.utils.Debuger
 import com.shuyu.gsyvideoplayer.utils.GSYVideoType
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
 import com.shuyu.gsyvideoplayer.video.base.GSYBaseVideoPlayer
-import com.viz.tools.TimeFormat
+import com.shuyu.gsyvideoplayer.video.base.GSYVideoView
 import com.viz.tools.Toast
 import kotlinx.android.synthetic.main.video_custom.view.*
 import viz.vplayer.R
@@ -62,6 +63,13 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
                     episodesClick?.invoke(recyclerView_select_episodes)
                 }
             }
+        }
+    }
+
+    override fun onBufferingUpdate(percent: Int) {
+        super.onBufferingUpdate(percent)
+        if (textView_speed.visibility == View.VISIBLE) {
+            textView_speed.text = netSpeedText
         }
     }
 
@@ -172,6 +180,7 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         if (selectEpisodes != null) {
             textView_select_episodes.visibility = visibility
         }
+        setViewShowState(textView_speed, visibility)
         customVisibility?.invoke(visibility)
         byStartedClick = true
         super.onClickUiToggle()
@@ -183,6 +192,7 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         super.hideAllWidget()
         setViewShowState(textView_select_episodes, View.GONE)
         setViewShowState(recyclerView_select_episodes, View.GONE)
+        setViewShowState(textView_speed, View.GONE)
         customVisibility?.invoke(View.GONE)
     }
 
@@ -190,6 +200,7 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         super.changeUiToNormal()
         setViewShowState(textView_select_episodes, View.VISIBLE)
         setViewShowState(recyclerView_select_episodes, View.GONE)
+        setViewShowState(textView_speed, View.VISIBLE)
         customVisibility?.invoke(View.VISIBLE)
         byStartedClick = false
     }
@@ -199,11 +210,13 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         Debuger.printfLog("Sample changeUiToPreparingShow")
         setViewShowState(mBottomContainer, View.INVISIBLE)
         setViewShowState(mStartButton, View.INVISIBLE)
+        setViewShowState(textView_speed, View.VISIBLE)
     }
 
     override fun changeUiToPlayingBufferingShow() {
         super.changeUiToPlayingBufferingShow()
         Debuger.printfLog("Sample changeUiToPlayingBufferingShow")
+        setViewShowState(textView_speed, View.VISIBLE)
         if (!byStartedClick) {
             setViewShowState(mBottomContainer, View.INVISIBLE)
             setViewShowState(mStartButton, View.INVISIBLE)
@@ -221,10 +234,47 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
 
     override fun startAfterPrepared() {
         super.startAfterPrepared()
+        mThreshold = 10
+        mSeekRatio = 10f
+        gestureDetector = GestureDetector(
+            context.applicationContext,
+            object : SimpleOnGestureListener() {
+                override fun onDoubleTap(e: MotionEvent): Boolean {
+                    val x: Float = e.x
+                    val y: Float = e.y
+                    val screenWidth = CommonUtil.getScreenWidth(context)
+                    when {
+                        x >= screenWidth * 0.8 -> {
+                            if(currentState == GSYVideoView.CURRENT_STATE_PLAYING || currentState == GSYVideoView.CURRENT_STATE_PLAYING_BUFFERING_START) {
+                                seekTo((currentPositionWhenPlaying + 10 * 1000).toLong())
+                                Toast.show(context, "快进10s")
+                            }
+                        }
+                        x < screenWidth * 0.2 -> {
+                            if(currentState == GSYVideoView.CURRENT_STATE_PLAYING || currentState == GSYVideoView.CURRENT_STATE_PLAYING_BUFFERING_START) {
+                                seekTo((currentPositionWhenPlaying - 10 * 1000).toLong())
+                                Toast.show(context, "快退10s")
+                            }
+                        }
+                        else -> {
+                            touchDoubleUp()
+                        }
+                    }
+                    return super.onDoubleTap(e)
+                }
+
+                override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                    if (!mChangePosition && !mChangeVolume && !mBrightness) {
+                        onClickUiToggle()
+                    }
+                    return super.onSingleTapConfirmed(e)
+                }
+            })
         Debuger.printfLog("Sample startAfterPrepared")
         setViewShowState(mBottomContainer, View.INVISIBLE)
         setViewShowState(mStartButton, View.INVISIBLE)
         setViewShowState(mBottomProgressBar, View.VISIBLE)
+        setViewShowState(textView_speed, View.VISIBLE)
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -232,13 +282,7 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         if (fromUser) {
             val newCur = progress / 100.0 * gsyVideoManager.duration
             Toast.show(
-                context, TimeFormat.getDateFormatTime(
-                    newCur.toLong(), if (newCur > 60 * 60 * 1000) {
-                        "HH:mm:ss"
-                    } else {
-                        "mm:ss"
-                    }
-                )
+                context, CommonUtil.stringForTime(newCur.toInt())
             )
         }
     }

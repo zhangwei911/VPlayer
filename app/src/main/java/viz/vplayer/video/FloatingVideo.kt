@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.SeekBar
+import com.shuyu.gsyvideoplayer.utils.CommonUtil
 import com.shuyu.gsyvideoplayer.utils.Debuger
 import com.shuyu.gsyvideoplayer.utils.NetworkUtils
 import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
@@ -64,13 +65,7 @@ class FloatingVideo : StandardGSYVideoPlayer {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 val newCur = progress / 100.0 * gsyVideoManager.duration
                 Toast.show(
-                    context, TimeFormat.getDateFormatTime(
-                        newCur.toLong(), if (newCur > 60 * 60 * 1000) {
-                            "HH:mm:ss"
-                        } else {
-                            "mm:ss"
-                        }
-                    )
+                    context, CommonUtil.stringForTime(newCur.toInt())
                 )
             }
 
@@ -97,20 +92,8 @@ class FloatingVideo : StandardGSYVideoPlayer {
             if(isSeekBarMove) {
                 progress_float.progress = progress
             }
-            current_float.text = TimeFormat.getDateFormatTime(
-                currentPosition.toLong(), if (currentPosition > 60 * 60 * 1000) {
-                    "HH:mm:ss"
-                } else {
-                    "mm:ss"
-                }
-            )
-            total_float.text = TimeFormat.getDateFormatTime(
-                duration.toLong(), if (duration > 60 * 60 * 1000) {
-                    "HH:mm:ss"
-                } else {
-                    "mm:ss"
-                }
-            )
+            current_float.text = CommonUtil.stringForTime(currentPosition)
+            total_float.text = CommonUtil.stringForTime(duration)
         }
     }
 

@@ -169,7 +169,7 @@ class VideoPalyerActivity : BaseActivity() {
         }
         gsyVideoPLayer.fullscreenButton.visibility = View.GONE
         gsyVideoPLayer.setGSYVideoProgressListener { progress, secProgress, currentPosition, duration ->
-            l.df(progress, secProgress, currentPosition, duration)
+//            l.df(progress, secProgress, currentPosition, duration)
         }
         gsyVideoPLayer.onAutoCompletion = { recyclerView ->
             val childView = recyclerView.getChildAt(index + 1)

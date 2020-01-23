@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.NonNull
 import androidx.recyclerview.widget.RecyclerView
+import com.shuyu.gsyvideoplayer.utils.CommonUtil
 import com.viz.tools.TimeFormat
 import kotlinx.android.synthetic.main.history_item.view.*
 import viz.vplayer.R
@@ -44,13 +45,7 @@ class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
         val itemView = holder.itemView
         itemView.textView_history_name.text = data.videoTitle
         val leftTime = data.duration - data.currentPosition
-        itemView.textView_history_time_left.text = "剩余" + TimeFormat.getDateFormatTime(
-            leftTime.toLong(), if (leftTime > 60 * 60 * 1000) {
-                "HH:mm:ss"
-            } else {
-                "mm:ss"
-            }
-        ) + "未看" + "第${data.index + 1}集"
+        itemView.textView_history_time_left.text = "剩余" + CommonUtil.stringForTime(leftTime) + "未看" + "第${data.index + 1}集"
         if (data.videoImgUrl.trim().isNotEmpty()) {
             glide.load(data.videoImgUrl)
                 .override(60, 80)
