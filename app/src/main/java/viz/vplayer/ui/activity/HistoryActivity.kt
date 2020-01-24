@@ -1,5 +1,6 @@
 package viz.vplayer.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
@@ -13,8 +14,11 @@ import kotlinx.android.synthetic.main.activity_history.*
 import viz.vplayer.R
 import viz.vplayer.util.RecyclerItemClickListener
 import viz.vplayer.adapter.HistoryAdapter
+import viz.vplayer.bean.HtmlBean
+import viz.vplayer.bean.JsonBean
 import viz.vplayer.util.continueWithEnd
 import viz.vplayer.vm.MainVM
+import java.io.Serializable
 
 class HistoryActivity : BaseActivity() {
     private val mainVM: MainVM by lazy {
@@ -35,15 +39,17 @@ class HistoryActivity : BaseActivity() {
             viList.forEach { vi ->
                 val episodeList = app.db.episodeDao().getByVid(vi.id)
                 if (episodeList.size > 0) {
-                    val filterEpisodeList = episodeList.filter { episode -> episode.url == vi.videoUrl }
-                    if(filterEpisodeList.isNotEmpty()) {
+                    val filterEpisodeList =
+                        episodeList.filter { episode -> episode.url == vi.videoUrl }
+                    if (filterEpisodeList.isNotEmpty()) {
                         vi.index = filterEpisodeList[0].urlIndex
-                    }else{
+                    } else {
                         vi.index = 0
                     }
                     vi.episodeList = episodeList
                 }
             }
+            l.d(viList)
             adapter = HistoryAdapter(this, viList)
             runOnUiThread {
                 recyclerView_history.adapter = adapter
@@ -58,14 +64,25 @@ class HistoryActivity : BaseActivity() {
                     override fun onItemClick(view: View, position: Int, e: MotionEvent) {
                         val data = adapter.list[position]
 //                        if (data.videoUrl.endsWith("m3u8")) {
-//                            val intent = Intent(this@HistoryActivity, VideoPalyerActivity::class.java)
-//                            intent.putExtra("url", data.videoUrl)
-//                            intent.putExtra("title", data.videoTitle)
-//                            intent.putExtra("duration", data.duration)
-//                            intent.putExtra("img", data.videoImgUrl)
-//                            intent.putExtra("episodes", data.episodeList as Serializable)
-//                            intent.putExtra("html", htmlList[searchAdapter.data[currentPos].from])
-//                            startActivity(intent)
+                        val intent = Intent(this@HistoryActivity, VideoPalyerActivity::class.java)
+                        intent.putExtra("url", data.videoUrl)
+                        intent.putExtra("title", data.videoTitle)
+                        intent.putExtra("duration", data.duration)
+                        intent.putExtra("img", data.videoImgUrl)
+                        val episodes = mutableListOf<String>()
+                        data.episodeList.forEach {
+                            episodes.add(it.url)
+                        }
+                        intent.putExtra("episodes", episodes as Serializable)
+                        val jsonBeanList = htmlList.filter {
+                            val jsonBean = it as JsonBean
+                            jsonBean.searchUrl == data.searchUrl
+                        }
+                        if (jsonBeanList.isNotEmpty()) {
+                            val jsonBean = jsonBeanList[0] as JsonBean
+                            intent.putExtra("html", jsonBean.html)
+                        }
+                        startActivity(intent)
 //                        } else {
 //                            mainVM.getVideoInfo(
 //                                data.episodeList[0].url,

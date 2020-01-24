@@ -62,7 +62,7 @@ class VideoPalyerActivity : BaseActivity() {
             loadingView_player.visibility = View.GONE
             gsyVideoPLayer.setUp(url, true, videoInfoBean.title)
             Task.callInBackground {
-                val vi = app.db.videoInfoDao().getByUrl(videoInfoBean.url.subString(0, "?"))
+                val vi = app.db.videoInfoDao().getByUrl(videoInfoBean.url)
                 l.d(vi)
                 runOnUiThread {
                     if (vi != null) {
@@ -225,11 +225,11 @@ class VideoPalyerActivity : BaseActivity() {
     override fun onPause() {
         super.onPause()
         Task.callInBackground {
-            val vi = app.db.videoInfoDao().getByUrl(videoVM.play.value!!.url.subString(0, "?"))
+            val vi = app.db.videoInfoDao().getByUrl(videoVM.play.value!!.url)
             l.d(vi)
             if (vi == null) {
                 val videoInfo = VideoInfo()
-                videoInfo.videoUrl = videoVM.play.value!!.url.subString(0, "?")
+                videoInfo.videoUrl = videoVM.play.value!!.url
                 videoInfo.currentPosition = gsyVideoPLayer.currentPositionWhenPlaying
                 videoInfo.videoTitle = title
                 videoInfo.videoImgUrl = img
