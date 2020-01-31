@@ -84,7 +84,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 Toast.show(this, "数据为空")
                 return@Observer
             }
-            if (episodeList[0].endsWith("m3u8")) {
+            if (episodeList[0].endsWith(".m3u8")) {
                 mainVM.play.postValue(
                     VideoInfoBean(
                         episodeList[0],
@@ -127,7 +127,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                     )
                 spinner_website.adapter = spinnerAdapter
                 if (BuildConfig.DEBUG) {
-                    spinner_website.setSelection(2)
+                    spinner_website.setSelection(1)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -140,7 +140,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
             Toast.showLong(this, errorMsg)
         })
         if (BuildConfig.DEBUG) {
-            textInputEditText_search.setText("锦衣之下")
+            textInputEditText_search.setText("疾速杀机")
         }
         initViews()
         initListener()

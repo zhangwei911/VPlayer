@@ -195,29 +195,37 @@ class MainVM : ViewModel() {
                             val div = divs[episodesBean.mainIndex]
                             if (episodesBean.isReg) {
                                 val script = div.html()
-                                val reg = Regex(episodesBean.regStr)
-                                val result = reg.find(script)
-                                if (result != null) {
-                                    val urlList =
-                                        result.groupValues[episodesBean.regIndex].split(episodesBean.regSplit)
-                                    val regList = Regex(episodesBean.regItemStr)
-                                    for (urlStr in urlList) {
-                                        val resultList = regList.find(urlStr)
-                                        if (resultList != null) {
-                                            episodeList.add(
-                                                if (episodesBean.isRegNeedDecoder) {
-                                                    URLDecoder.decode(resultList.groupValues[episodesBean.regItemIndex])
-                                                } else {
-                                                    resultList.groupValues[episodesBean.regItemIndex]
-                                                }
+                                var successRegCount = 0
+                                episodesBean.regStrList.forEachIndexed { index, regStr ->
+                                    val reg = Regex(regStr)
+                                    val result = reg.find(script)
+                                    if (result != null) {
+                                        val urlList =
+                                            result.groupValues[episodesBean.regIndexList[index]].split(
+                                                episodesBean.regSplitList[index]
                                             )
-                                        } else {
-                                            errorInfo.postValue("获取剧集url数据异常(正则表达式可能错了)")
-                                            break
+                                        val regList = Regex(episodesBean.regItemStr)
+                                        for (urlStr in urlList) {
+                                            val resultList = regList.find(urlStr)
+                                            if (resultList != null) {
+                                                episodeList.add(
+                                                    if (episodesBean.isRegNeedDecoder) {
+                                                        URLDecoder.decode(resultList.groupValues[episodesBean.regItemIndex])
+                                                    } else {
+                                                        resultList.groupValues[episodesBean.regItemIndex]
+                                                    }
+                                                )
+                                                successRegCount++
+                                            } else {
+                                                if (successRegCount == 0 && index == episodesBean.regStrList.size - 1) {
+                                                    errorInfo.postValue("获取剧集url数据异常(正则表达式可能错了)")
+                                                }
+                                                break
+                                            }
                                         }
+                                    } else {
+                                        errorInfo.postValue("获取剧集数据异常(正则表达式可能错了)")
                                     }
-                                } else {
-                                    errorInfo.postValue("获取剧集数据异常(正则表达式可能错了)")
                                 }
                             } else {
                                 val lis = div.select(episodesBean.listCss)

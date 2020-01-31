@@ -7,7 +7,7 @@ import kotlinx.android.parcel.Parcelize
 data class EpisodesBean(
     var mainCss: String,
     var mainIndex: Int,
-    var regStr: String,
+    var regStrList: MutableList<String>,
     var listCss: String,
     var listItemCss: String,
     var listItemIndex: Int,
@@ -15,8 +15,8 @@ data class EpisodesBean(
     var listItemAttr: String,
     var hasUrlPrefix: Boolean,
     var isReg: Boolean,
-    var regIndex: Int,
-    var regSplit: String,
+    var regIndexList: MutableList<Int>,
+    var regSplitList: MutableList<String>,
     var regItemStr: String,
     var regItemIndex: Int,
     var isRegNeedDecoder: Boolean

@@ -108,7 +108,7 @@ class VideoPalyerActivity : BaseActivity() {
         }
         videoVM.play.postValue(
             VideoInfoBean(
-                url, title + if (episodes!![0].endsWith("m3u8")) {
+                url, title + if (episodes!![0].endsWith(".m3u8")) {
                     "第1集"
                 } else {
                     ""
@@ -314,6 +314,10 @@ class VideoPalyerActivity : BaseActivity() {
          */
         FloatWindow.destroy()
         EventBus.getDefault().unregister(this)
+    }
+
+    override fun onBackPressed() {
+//        super.onBackPressed()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
