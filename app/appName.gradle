@@ -1,10 +1,10 @@
 int total = 0
 int buildCount = 0
 
-ext.autoName = { vn, vc, name ->
+ext.autoName = { name ->
     android.applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            def outputName = "${name}_${vn}_build_${variant.productFlavors[0].name}_${vc}"
+            def outputName = "${name}_${variant.productFlavors[0].versionName}_build_${variant.productFlavors[0].name}_${variant.productFlavors[0].versionCode}"
             if (!variant.buildType.name.equalsIgnoreCase("debug")) {
                 total++
                 outputFileName = outputName + "_release.apk"

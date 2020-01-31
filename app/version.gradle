@@ -2,6 +2,10 @@ def versionPropsFile = file('version.properties')
 def Properties versionProps
 int appVersionCode = 1
 String appVersionName = '1.0'
+Map<String, Boolean> versionMap = new HashMap<String, Boolean>()
+Map<String, Boolean> apkMap = new HashMap<String, Boolean>()
+Map<String, Integer> versionCodeMap = new HashMap<String, Integer>()
+Map<String, String> versionNameMap = new HashMap<String, String>()
 if (versionPropsFile.canRead()) {
     versionProps = new Properties()
 
@@ -9,7 +13,55 @@ if (versionPropsFile.canRead()) {
 
     appVersionCode = versionProps['VERSION_CODE'].toInteger()
     appVersionName = versionProps['VERSION_NAME']
+    String projectstr = versionProps['project']
+    String[] projects = projectstr.split(',')
+    for (String s : projects) {
+        setVersionCN(versionMap, versionCodeMap, versionNameMap, apkMap, s, versionProps['single.' + s].toBoolean(), versionProps['apk.' + s].toBoolean(), versionProps['version.code.' + s].toInteger(), versionProps['version.name.' + s])
+    }
 }
+
+/**
+ * 设置是否使用自定义versionCode和versionName
+ * @param versionMap 是否自定义map
+ * @param versionCodeMap 自定义versionCode map
+ * @param versionNameMap 自定义versionName map
+ * @param name 项目名
+ * @param isSingle 是否使用自定义
+ * @param code 自定义versionCode
+ * @param vname 自定义versionName
+ * @return
+ */
+def setVersionCN(versionMap, versionCodeMap, versionNameMap, apkMap, String name, boolean isSingle, boolean isGenerateAPK, int code, String vname) {
+    versionMap.put(name, isSingle)
+    apkMap.put(name, isGenerateAPK)
+    versionCodeMap.put(name, code)
+    versionNameMap.put(name, vname)
+}
+
+ext.customVersion = {
+    android.productFlavors {
+        if (apkMap.get("VI")) {
+            VI {}
+        } else {
+            printMSG("VI")
+        }
+    }
+    android.productFlavors.all {
+        flavor ->
+            if (versionMap.get(name)) {
+                versionCode versionCodeMap.get(name)
+                versionName versionNameMap.get(name)
+            } else {
+                versionCode defaultConfig.versionCode
+                versionName defaultConfig.versionName
+            }
+    }
+}
+
+ext.printMSG = { msg ->
+    println "不生成" + msg + "项目APK"
+}
+
 // 2.maven-信息
 ext {// ext is a gradle closure allowing the declaration of global properties
     VERSION_CODE = appVersionCode

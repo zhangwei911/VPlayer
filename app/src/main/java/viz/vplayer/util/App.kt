@@ -62,6 +62,11 @@ class App : Application() {
                 database.execSQL("ALTER TABLE videoinfo ADD COLUMN video_img_url TEXT NOT NULL DEFAULT ''")
             }
         }
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE rule ADD COLUMN rule_status INTEGER NOT NULL DEFAULT 1")
+            }
+        }
         db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "database-vplayer"
@@ -69,7 +74,8 @@ class App : Application() {
             .addMigrations(
                 MIGRATION_1_2,
                 MIGRATION_2_3,
-                MIGRATION_3_4
+                MIGRATION_3_4,
+                MIGRATION_4_5
             )
             .build()
         //搜集本地tbs内核信息并上报服务器，服务器返回结果决定使用哪个内核。

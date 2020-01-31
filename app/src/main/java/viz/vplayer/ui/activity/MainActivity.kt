@@ -17,15 +17,17 @@ import com.google.gson.reflect.TypeToken
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_main.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import viz.vplayer.BuildConfig
 import viz.vplayer.R
 import viz.vplayer.adapter.SearchAdapter
-import viz.vplayer.bean.HtmlBean
-import viz.vplayer.bean.JsonBean
-import viz.vplayer.bean.ParamBean
-import viz.vplayer.bean.VideoInfoBean
+import viz.vplayer.bean.*
+import viz.vplayer.eventbus.RuleEvent
 import viz.vplayer.room.Rule
 import viz.vplayer.ui.fragment.MenuFragment
+import viz.vplayer.util.ErrorCode
 import viz.vplayer.util.RecyclerItemClickListener
 import viz.vplayer.util.continueWithEnd
 import viz.vplayer.vm.MainVM
@@ -55,6 +57,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        EventBus.getDefault().register(this)
         mainVM.play.observe(this, Observer { videoInfoBean ->
             val intent = Intent(this, VideoPalyerActivity::class.java)
             intent.putExtra("url", videoInfoBean.url)
@@ -107,6 +110,9 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 val jsonBeanList = gson.fromJson<MutableList<JsonBean>>(rulesJson, type)
                 l.d(jsonBeanList)
                 mainVM.jsonBeanList.postValue(jsonBeanList)
+                if (spinnerNameItems.size > 0) {
+                    spinnerNameItems.remove("所有")
+                }
                 jsonBeanList.forEach { jsonBean: JsonBean ->
                     val map = mutableMapOf<String, String>()
                     jsonBean.params.forEach { paramBean: ParamBean ->
@@ -131,13 +137,21 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                mainVM.errorInfo.postValue("解析rule规则数据异常")
+                mainVM.errorInfo.postValue(ErrorInfo("解析rule规则数据异常"))
             }
 
         })
-        mainVM.errorInfo.observe(this, Observer { errorMsg ->
+        mainVM.errorInfo.observe(this, Observer { errorInfo ->
             loadingView.visibility = View.GONE
-            Toast.showLong(this, errorMsg)
+            Toast.showLong(this, errorInfo.errMsg)
+            when (errorInfo.errCode) {
+                ErrorCode.ERR_JSON_INVALID -> {
+                    updateRule(errorInfo.url, 0, "规则无效")
+                }
+                ErrorCode.ERR_JSON_EMPTY -> {
+                    updateRule(errorInfo.url, -1, "规则数据为空")
+                }
+            }
         })
         if (BuildConfig.DEBUG) {
             textInputEditText_search.setText("疾速杀机")
@@ -145,16 +159,46 @@ class MainActivity : BaseActivity(), View.OnClickListener {
         initViews()
         initListener()
 //        mainVM.freeVip("https://v.qq.com/x/cover/rjae621myqca41h/e003358h201.html")
+        getRules()
+    }
+
+    private fun updateRule(url: String, ruleStatus: Int, taskName: String) {
+        Task.callInBackground {
+            val rule = app.db.ruleDao().getByUrl(url)
+            rule.ruleStatus = ruleStatus
+            app.db.ruleDao().updateALl(rule)
+        }.continueWithEnd(taskName)
+    }
+
+    private fun getRules() {
         Task.callInBackground {
             val url = "http://viphp-vi.stor.sinaapp.com/rules.txt"
+            val urlList = mutableListOf<String>()
             val rule = app.db.ruleDao().getByUrl(url)
             if (rule == null) {
                 val ruleNew = Rule()
                 ruleNew.ruleUrl = url
                 app.db.ruleDao().insertAll(ruleNew)
+                urlList.add(url)
+            } else {
+                val rules = app.db.ruleDao().getAll()
+                rules.filter { it.ruleEnable && it.ruleStatus == 1 }.forEach {
+                    urlList.add(it.ruleUrl)
+                }
             }
-            mainVM.getJson(url)
+            clearRules()
+            urlList.forEach {
+                mainVM.getJson(it)
+            }
         }.continueWithEnd("获取详细规则")
+    }
+
+    private fun clearRules() {
+        spinnerItems.clear()
+        spinnerNameItems.clear()
+        htmlParamsList.clear()
+        htmlParamsKWList.clear()
+        htmlList.clear()
     }
 
     private fun initListener() {
@@ -270,6 +314,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                                         R.string.rule_url_add_success
                                     )
                                 }
+                                mainVM.getJson(url)
                             }
                         }.continueWithEnd("新增规则")
                     }
@@ -286,6 +331,18 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 menuFragment.jsonBeanList = mainVM.jsonBeanList.value!!
                 menuFragment.show(supportFragmentManager, "menu")
             }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun ruleEvent(ruleEvent: RuleEvent) {
+        if (ruleEvent.isRefresh) {
+            getRules()
         }
     }
 }

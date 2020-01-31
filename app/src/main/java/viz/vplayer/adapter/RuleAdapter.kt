@@ -47,7 +47,7 @@ class RuleAdapter : RecyclerView.Adapter<RuleAdapter.ViewHolder> {
                 Color.LTGRAY
             }
         )
-        itemView.textView_rule_url.text = data.ruleUrl
+        itemView.textView_rule_url.text = "[${data.ruleStatusMsg}]${data.ruleUrl}"
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view)

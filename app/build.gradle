@@ -57,13 +57,12 @@ android {
     useLibrary  'org.apache.http.legacy'
 
     flavorDimensions "default"
-    productFlavors {
-        VI{}
-    }
     productFlavors.all {
-        flavor -> flavor.manifestPlaceholders = [MTA_CHANNEL: name]
+        flavor ->
+            flavor.manifestPlaceholders = [MTA_CHANNEL: name]
     }
-    autoName(defaultConfig.versionName,defaultConfig.versionCode,"VPlayer")
+    customVersion()
+    autoName("VPlayer")
 }
 
 dependencies {

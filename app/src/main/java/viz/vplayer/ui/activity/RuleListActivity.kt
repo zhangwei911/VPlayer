@@ -11,10 +11,12 @@ import com.afollestad.materialdialogs.lifecycle.lifecycleOwner
 import com.afollestad.materialdialogs.list.listItems
 import com.viz.tools.Toast
 import kotlinx.android.synthetic.main.activity_rule_list.*
+import org.greenrobot.eventbus.EventBus
 import viz.vplayer.util.DEFAULT_RULE_URL
 import viz.vplayer.R
 import viz.vplayer.util.RecyclerItemClickListener
 import viz.vplayer.adapter.RuleAdapter
+import viz.vplayer.eventbus.RuleEvent
 import viz.vplayer.room.Rule
 import viz.vplayer.room.RuleUrl
 import viz.vplayer.util.continueWithEnd
@@ -24,11 +26,14 @@ class RuleListActivity : BaseActivity() {
         R.layout.activity_rule_list
     override fun getCommonTtile(): String = getString(R.string.list)
     private lateinit var adapter: RuleAdapter
+    private var isRefresh = false
+    private var ruleListRec = mutableListOf<Rule>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         recyclerView_rule.layoutManager = LinearLayoutManager(this)
         Task.callInBackground {
             val ruleList = app.db.ruleDao().getAll()
+            ruleListRec = ruleList
             adapter = RuleAdapter(this, ruleList)
             runOnUiThread {
                 recyclerView_rule.adapter = adapter
@@ -126,6 +131,7 @@ class RuleListActivity : BaseActivity() {
                                     else -> {
                                     }
                                 }
+                                isRefresh = ruleListRec == adapter.list
                             }
                             lifecycleOwner(this@RuleListActivity)
                         }
@@ -153,5 +159,10 @@ class RuleListActivity : BaseActivity() {
                 "禁用规则"
             }
         )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        EventBus.getDefault().postSticky(RuleEvent(isRefresh))
     }
 }
