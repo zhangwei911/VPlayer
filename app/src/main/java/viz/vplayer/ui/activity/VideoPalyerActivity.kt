@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import bolts.Task
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.utils.GSYVideoType
+import com.shuyu.gsyvideoplayer.video.base.GSYVideoView
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_video.*
@@ -317,7 +318,9 @@ class VideoPalyerActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
-//        super.onBackPressed()
+        if(gsyVideoPLayer.currentState == GSYVideoView.CURRENT_STATE_PREPAREING || gsyVideoPLayer.currentState == GSYVideoView.CURRENT_STATE_ERROR) {
+            super.onBackPressed()
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

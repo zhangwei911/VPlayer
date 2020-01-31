@@ -194,6 +194,11 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         setViewShowState(recyclerView_select_episodes, View.GONE)
         setViewShowState(textView_speed, View.GONE)
         customVisibility?.invoke(View.GONE)
+        if(currentState == GSYVideoView.CURRENT_STATE_PREPAREING || currentState == GSYVideoView.CURRENT_STATE_ERROR) {
+            setViewShowState(mTopContainer, View.VISIBLE)
+            setViewShowState(textView_select_episodes, View.VISIBLE)
+            setViewShowState(textView_speed, View.VISIBLE)
+        }
     }
 
     override fun changeUiToNormal() {
@@ -230,6 +235,13 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
             setViewShowState(mBottomContainer, View.INVISIBLE)
             setViewShowState(mStartButton, View.INVISIBLE)
         }
+    }
+
+    override fun onPrepared() {
+        setViewShowState(mTopContainer, View.VISIBLE)
+        setViewShowState(textView_select_episodes, View.VISIBLE)
+        setViewShowState(textView_speed, View.VISIBLE)
+        super.onPrepared()
     }
 
     override fun startAfterPrepared() {
