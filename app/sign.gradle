@@ -1,0 +1,8 @@
+android.signingConfigs {
+    config {
+        keyAlias 'xxx'
+        keyPassword 'xxx'
+        storeFile file('xxx')
+        storePassword 'xxx'
+    }
+}

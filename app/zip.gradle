@@ -1,0 +1,29 @@
+def name = "VPlayer"
+task copyTask {
+    def today = new Date().format('yyyyMMddHH');
+    this.android.productFlavors.all {
+        flavor ->
+            def outputName = "${name}_${this.android.defaultConfig.versionName}_build_${name}_${this.android.defaultConfig.versionCode}" + "_release.apk"
+            copy {
+                from("build/outputs/apk/${name}/release")
+                into('build/outputs/' + "release/" + today)
+                include(outputName)
+            }
+    }
+}
+/**
+ * 执行zip打包操作
+ */
+task zip(type: Zip, dependsOn: copyTask) {
+    def today = new Date().format('yyyyMMddHH');
+    from 'build/outputs/' + "release/" + today
+    destinationDir file('build/outputs/' + "release/")
+    baseName name
+    appendix 'android'
+    version this.android.defaultConfig.versionName
+    extension 'zip'
+    classifier "release-${today}"
+}
+repositories {
+    mavenCentral()
+}

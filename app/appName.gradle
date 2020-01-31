@@ -1,0 +1,28 @@
+int total = 0
+int buildCount = 0
+
+ext.autoName = { vn, vc, name ->
+    android.applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def outputName = "${name}_${vn}_build_${variant.productFlavors[0].name}_${vc}"
+            if (!variant.buildType.name.equalsIgnoreCase("debug")) {
+                total++
+                outputFileName = outputName + "_release.apk"
+            } else {
+                outputFileName = outputName + "_debug.apk"
+            }
+            println variant.getPackageApplicationProvider().get().outputs.files[1].toString() + "\\" + outputFileName
+        }
+    }
+}
+
+project.afterEvaluate {
+    tasks.matching {
+        it.name.startsWith('assemble') && it.name.endsWith('Release') && it.name != "assembleRelease"
+    }.each { task ->
+        task.doLast {
+            buildCount++
+            println("building " + buildCount + "/" + total)
+        }
+    }
+}
