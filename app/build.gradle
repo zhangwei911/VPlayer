@@ -32,6 +32,9 @@ android {
                 //标注应用推广渠道用以区分新用户来源，可填写如应用宝，豌豆荚等
                 MTA_CHANNEL:"test"
         ]
+        ndk {
+            abiFilters "armeabi-v7a"
+        }
     }
 
     buildTypes {
