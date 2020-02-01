@@ -40,7 +40,17 @@ class MainVM : ViewModel() {
                     )
                     return@send
                 }
-                rules.postValue(Pair(rulesUrl,result))
+                if(result.isJson()) {
+                    rules.postValue(Pair(rulesUrl, result))
+                }else{
+                    errorInfo.postValue(
+                        ErrorInfo(
+                            "解析rule规则数据异常",
+                            ErrorCode.ERR_JSON_INVALID,
+                            rulesUrl
+                        )
+                    )
+                }
             }, {
                 errorInfo.postValue(
                     ErrorInfo(

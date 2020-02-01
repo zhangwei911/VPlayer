@@ -1,6 +1,10 @@
 package viz.vplayer.util
 
 import bolts.Task
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import com.lidroid.xutils.HttpUtils
 import com.lidroid.xutils.exception.HttpException
 import com.lidroid.xutils.http.RequestParams
@@ -8,6 +12,7 @@ import com.lidroid.xutils.http.ResponseInfo
 import com.lidroid.xutils.http.callback.RequestCallBack
 import com.lidroid.xutils.http.client.HttpRequest
 import com.viz.tools.l
+import java.lang.Exception
 
 fun kotlin.String.subString(
     startIndexStr: String,
@@ -140,4 +145,21 @@ fun <T> HttpUtils.send(
             }
 
         })
+}
+
+fun String.isJson(isJsonObject: Boolean = false): Boolean {
+    val jsonElement: JsonElement
+    try {
+        jsonElement = JsonParser.parseString(this)
+    } catch (e: Exception) {
+        return false
+    }
+    if (jsonElement == null) {
+        return false
+    }
+    return if (isJsonObject) {
+        jsonElement is JsonObject
+    } else {
+        jsonElement is JsonArray
+    }
 }
