@@ -23,7 +23,7 @@ class MainVM : ViewModel() {
     val episodes = MutableLiveData<MutableList<String>>()
     val play = MutableLiveData<VideoInfoBean>()
     val errorInfo = MutableLiveData<ErrorInfo>()
-    val rules = MutableLiveData<String>()
+    val rules = MutableLiveData<Pair<String,String>>()
     val jsonBeanList = MutableLiveData<MutableList<JsonBean>>()
 
     fun getJson(rulesUrl: String) {
@@ -40,7 +40,7 @@ class MainVM : ViewModel() {
                     )
                     return@send
                 }
-                rules.postValue(result)
+                rules.postValue(Pair(rulesUrl,result))
             }, {
                 errorInfo.postValue(
                     ErrorInfo(

@@ -33,7 +33,7 @@ android {
                 MTA_CHANNEL:"test"
         ]
         ndk {
-            abiFilters "armeabi-v7a"
+            abiFilters "armeabi-v7a"//,"x86"
         }
     }
 

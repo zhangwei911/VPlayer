@@ -104,10 +104,10 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 )
             }
         })
-        mainVM.rules.observe(this, Observer { rulesJson ->
+        mainVM.rules.observe(this, Observer { rulesJsonPair ->
             try {
                 val type = object : TypeToken<MutableList<JsonBean>>() {}.type
-                val jsonBeanList = gson.fromJson<MutableList<JsonBean>>(rulesJson, type)
+                val jsonBeanList = gson.fromJson<MutableList<JsonBean>>(rulesJsonPair.second, type)
                 l.d(jsonBeanList)
                 mainVM.jsonBeanList.postValue(jsonBeanList)
                 if (spinnerNameItems.size > 0) {
@@ -137,7 +137,13 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                mainVM.errorInfo.postValue(ErrorInfo("解析rule规则数据异常"))
+                mainVM.errorInfo.postValue(
+                    ErrorInfo(
+                        "解析rule规则数据异常",
+                        ErrorCode.ERR_JSON_INVALID,
+                        rulesJsonPair.first
+                    )
+                )
             }
 
         })

@@ -131,7 +131,11 @@ class RuleListActivity : BaseActivity() {
                                     else -> {
                                     }
                                 }
-                                isRefresh = ruleListRec == adapter.list
+                                isRefresh = if (ruleListRec.size == adapter.list.size) {
+                                    ruleListRec == adapter.list
+                                } else {
+                                    true
+                                }
                             }
                             lifecycleOwner(this@RuleListActivity)
                         }

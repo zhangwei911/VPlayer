@@ -88,9 +88,9 @@ class VideoPalyerActivity : BaseActivity() {
                 return@continueWith null
             }
         })
-        mainVM.errorInfo.observe(this, Observer { errorMsg ->
+        mainVM.errorInfo.observe(this, Observer { errorInfo ->
             loadingView_player.visibility = View.GONE
-            Toast.showLong(this, errorMsg)
+            Toast.showLong(this, errorInfo.errMsg)
         })
         initVideo()
         val url = intent.getStringExtra("url")
