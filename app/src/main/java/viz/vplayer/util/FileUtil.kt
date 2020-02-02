@@ -4,7 +4,11 @@ import android.content.Context
 import android.os.Build
 import android.os.Environment
 import android.util.Log
+import com.viz.tools.Toast
 import java.io.*
+import java.net.HttpURLConnection
+import java.net.MalformedURLException
+import java.net.URL
 
 object FileUtil {
     fun getPath(context: Context): String {
@@ -46,5 +50,41 @@ object FileUtil {
         myInput.close()
         myOutput.close()
         Log.i("face", "end copy file $strOutFileName")
+    }
+
+    /**
+     * 获取网络文件大小
+     *
+     * @param path 文件链接
+     * @return 文件大小
+     */
+    fun downloadFileSize(context: Context, path: String): Int {
+        var length: Int = 0
+        object : Thread() {
+            override fun run() {
+                try {
+                    val url = URL(path)     //创建url对象
+                    val conn = url
+                        .openConnection() as HttpURLConnection     //建立连接
+                    conn.requestMethod = "GET"    //设置请求方法
+                    conn.readTimeout = 5000       //设置响应超时时间
+                    conn.connectTimeout = 5000   //设置连接超时时间
+                    conn.connect()   //发送请求
+                    val responseCode = conn.responseCode    //获取响应码
+                    if (responseCode == 200) {   //响应码是200(固定值)就是连接成功，否者就连接失败
+                        length = conn.contentLength    //获取文件的大小
+                    } else {
+                        Toast.show(context, "连接失败")
+                    }
+
+                } catch (e: MalformedURLException) {
+                    e.printStackTrace()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+
+            }
+        }.start()
+        return length
     }
 }

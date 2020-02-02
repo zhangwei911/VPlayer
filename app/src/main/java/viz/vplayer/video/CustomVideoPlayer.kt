@@ -206,7 +206,12 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
             View.VISIBLE
         }
         if (selectEpisodes != null) {
-            textView_select_episodes.visibility = visibility
+            textView_select_episodes.visibility =
+                if (recyclerView_select_episodes.visibility == View.VISIBLE) {
+                    View.VISIBLE
+                } else {
+                    visibility
+                }
         }
         setViewShowState(textView_speed, visibility)
         customVisibility?.invoke(visibility)
@@ -216,12 +221,11 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
 
     var customVisibility: ((visibility: Int) -> Unit)? = null
 
-    var customClick: ((vid:Int) -> Unit)? = null
+    var customClick: ((vid: Int) -> Unit)? = null
 
     override fun hideAllWidget() {
         super.hideAllWidget()
         setViewShowState(textView_select_episodes, View.GONE)
-        setViewShowState(recyclerView_select_episodes, View.GONE)
         setViewShowState(textView_speed, View.GONE)
         customVisibility?.invoke(View.GONE)
         if (currentState == GSYVideoView.CURRENT_STATE_PREPAREING || currentState == GSYVideoView.CURRENT_STATE_ERROR) {
@@ -229,12 +233,14 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
             setViewShowState(textView_select_episodes, View.VISIBLE)
             setViewShowState(textView_speed, View.VISIBLE)
         }
+        if (recyclerView_select_episodes.visibility == View.VISIBLE) {
+            setViewShowState(textView_select_episodes, View.VISIBLE)
+        }
     }
 
     override fun changeUiToNormal() {
         super.changeUiToNormal()
         setViewShowState(textView_select_episodes, View.VISIBLE)
-        setViewShowState(recyclerView_select_episodes, View.GONE)
         setViewShowState(textView_speed, View.VISIBLE)
         customVisibility?.invoke(View.VISIBLE)
         byStartedClick = false

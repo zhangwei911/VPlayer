@@ -29,6 +29,7 @@ import viz.vplayer.room.Episode
 import viz.vplayer.room.VideoId
 import viz.vplayer.room.VideoInfo
 import viz.vplayer.util.RecyclerItemClickListener
+import viz.vplayer.util.continueWithEnd
 import viz.vplayer.video.FloatPlayerView
 import viz.vplayer.video.FloatWindow
 import viz.vplayer.video.MoveType
@@ -75,22 +76,7 @@ class VideoPalyerActivity : BaseActivity() {
                     }
                     gsyVideoPLayer.startPlayLogic()
                 }
-            }.continueWith { task ->
-                when {
-                    task.isCancelled -> {
-                        l.i("任务取消")
-                    }
-                    task.isFaulted -> {
-                        val error = task.error
-                        l.e("任务失败 $error")
-                        error.printStackTrace()
-                    }
-                    else -> {
-                        l.i("任务成功")
-                    }
-                }
-                return@continueWith null
-            }
+            }.continueWithEnd("播放")
         })
         mainVM.errorInfo.observe(this, Observer { errorInfo ->
             loadingView_player.visibility = View.GONE
@@ -128,67 +114,78 @@ class VideoPalyerActivity : BaseActivity() {
     private fun initVideo() {
         //全屏
         GSYVideoType.setShowType(GSYVideoType.SCREEN_MATCH_FULL)
-        gsyVideoPLayer.titleTextView.visibility = View.VISIBLE
-        gsyVideoPLayer.setIsTouchWiget(true)
-        gsyVideoPLayer.isIfCurrentIsFullscreen = true
-        gsyVideoPLayer.isNeedLockFull = true
-        gsyVideoPLayer.episodesClick = {
-            it.addOnItemTouchListener(
-                RecyclerItemClickListener(
-                    this,
-                    it,
-                    object :
-                        RecyclerItemClickListener.OnItemClickListener {
-                        override fun onItemClick(view: View, position: Int, e: MotionEvent) {
-                            index = position
-                            if (episodes!![position].endsWith("m3u8")) {
-                                videoVM.play.postValue(
-                                    VideoInfoBean(
-                                        episodes!![position],
-                                        title + "第${position + 1}集",
-                                        0
+        gsyVideoPLayer.run {
+            titleTextView.visibility = View.VISIBLE
+            setIsTouchWiget(true)
+            isIfCurrentIsFullscreen = true
+            isNeedLockFull = true
+            episodesClick = {
+                it.addOnItemTouchListener(
+                    RecyclerItemClickListener(
+                        this@VideoPalyerActivity,
+                        it,
+                        object :
+                            RecyclerItemClickListener.OnItemClickListener {
+                            override fun onItemClick(view: View, position: Int, e: MotionEvent) {
+                                index = position
+                                if (episodes!![position].endsWith("m3u8")) {
+                                    videoVM.play.postValue(
+                                        VideoInfoBean(
+                                            episodes!![position],
+                                            title + "第${position + 1}集",
+                                            0
+                                        )
                                     )
-                                )
-                            } else {
-                                loadingView_player.visibility = View.VISIBLE
-                                mainVM.getVideoInfo(
-                                    episodes!![position],
-                                    html!!.videoHtmlResultBean,
-                                    img
-                                )
+                                } else {
+                                    loadingView_player.visibility = View.VISIBLE
+                                    mainVM.getVideoInfo(
+                                        episodes!![position],
+                                        html!!.videoHtmlResultBean,
+                                        img
+                                    )
+                                }
+                                it.visibility = View.GONE
                             }
-                            it.visibility = View.GONE
-                        }
 
-                        override fun onItemLongClick(view: View, position: Int, e: MotionEvent) {
-                        }
+                            override fun onItemLongClick(
+                                view: View,
+                                position: Int,
+                                e: MotionEvent
+                            ) {
+                            }
 
-                        override fun onItemDoubleClick(view: View, position: Int, e: MotionEvent) {
-                        }
+                            override fun onItemDoubleClick(
+                                view: View,
+                                position: Int,
+                                e: MotionEvent
+                            ) {
+                            }
 
-                    })
-            )
-        }
-        gsyVideoPLayer.backButton.setOnClickListener {
-            finish()
-        }
-        gsyVideoPLayer.fullscreenButton.visibility = View.GONE
-        gsyVideoPLayer.setGSYVideoProgressListener { progress, secProgress, currentPosition, duration ->
-            //            l.df(progress, secProgress, currentPosition, duration)
-        }
-        gsyVideoPLayer.onAutoCompletion = { recyclerView ->
-            val childView = recyclerView.getChildAt(index + 1)
-            val vh = recyclerView.getChildViewHolder(childView) as SelectEpisodesAdapter.ViewHolder
-            vh.autoClick()
-        }
-        gsyVideoPLayer.customVisibility = { visibility ->
-            imageButton_float.visibility = visibility
-        }
-        gsyVideoPLayer.customClick = {
-            when (it) {
-                R.id.textView_download -> {
-                    val url = gsyVideoPLayer.getOriginalUrl()
-                    download(url)
+                        })
+                )
+            }
+            backButton.setOnClickListener {
+                finish()
+            }
+            fullscreenButton.visibility = View.GONE
+            setGSYVideoProgressListener { progress, secProgress, currentPosition, duration ->
+                //            l.df(progress, secProgress, currentPosition, duration)
+            }
+            onAutoCompletion = { recyclerView ->
+                val childView = recyclerView.getChildAt(index + 1)
+                val vh =
+                    recyclerView.getChildViewHolder(childView) as SelectEpisodesAdapter.ViewHolder
+                vh.autoClick()
+            }
+            customVisibility = { visibility ->
+                imageButton_float.visibility = visibility
+            }
+            customClick = {
+                when (it) {
+                    R.id.textView_download -> {
+                        val url = getOriginalUrl()
+                        download(url)
+                    }
                 }
             }
         }
@@ -238,6 +235,7 @@ class VideoPalyerActivity : BaseActivity() {
     override fun onPause() {
         super.onPause()
         Task.callInBackground {
+            l.start("VideoPlayerActivity-OnPause")
             val vi = app.db.videoInfoDao().getByUrl(videoVM.play.value!!.url)
             l.d(vi)
             if (vi == null) {
@@ -265,40 +263,11 @@ class VideoPalyerActivity : BaseActivity() {
                     vi.currentPosition = gsyVideoPLayer.currentPositionWhenPlaying
                     Task.callInBackground {
                         app.db.videoInfoDao().updateALl(vi)
-                    }.continueWith { task ->
-                        when {
-                            task.isCancelled -> {
-                                l.i("任务取消")
-                            }
-                            task.isFaulted -> {
-                                val error = task.error
-                                l.e("任务失败 $error")
-                                error.printStackTrace()
-                            }
-                            else -> {
-                                l.i("任务成功")
-                            }
-                        }
-                        return@continueWith null
-                    }
+                    }.continueWithEnd("更新视频信息")
                 }
             }
-        }.continueWith { task ->
-            when {
-                task.isCancelled -> {
-                    l.i("任务取消")
-                }
-                task.isFaulted -> {
-                    val error = task.error
-                    l.e("任务失败 $error")
-                    error.printStackTrace()
-                }
-                else -> {
-                    l.i("任务成功")
-                }
-            }
-            return@continueWith null
-        }
+            l.end("VideoPlayerActivity-OnPause")
+        }.continueWithEnd("保存视频信息")
         if (FloatWindow.get() == null) {
             gsyVideoPLayer.onVideoPause()
         }

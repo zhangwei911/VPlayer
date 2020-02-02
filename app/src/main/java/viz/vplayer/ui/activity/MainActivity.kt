@@ -21,6 +21,7 @@ import com.google.gson.reflect.TypeToken
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.delay
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -36,6 +37,7 @@ import viz.vplayer.util.RecyclerItemClickListener
 import viz.vplayer.util.continueWithEnd
 import viz.vplayer.vm.MainVM
 import java.io.Serializable
+import java.lang.Thread.sleep
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -97,6 +99,9 @@ class MainActivity : BaseActivity(), View.OnClickListener {
             }
             searchAdapter.notifyDataSetChanged()
             loadingView.visibility = View.GONE
+            if(BuildConfig.DEBUG) {
+                searchClick(0)
+            }
         })
         mainVM.episodes.observe(this, Observer { episodeList ->
             l.i(episodeList)
@@ -151,8 +156,9 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                     )
                 spinner_website.adapter = spinnerAdapter
                 if (BuildConfig.DEBUG) {
-//                    spinner_website.setSelection(2)
-//                    materialButton_search.performClick()
+                    textInputEditText_search.setText("锦衣之下")
+                    spinner_website.setSelection(2)
+                    materialButton_search.performClick()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -178,9 +184,6 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 }
             }
         })
-        if (BuildConfig.DEBUG) {
-            textInputEditText_search.setText("锦衣之下")
-        }
         initViews()
         initListener()
 //        mainVM.freeVip("https://v.qq.com/x/cover/rjae621myqca41h/e003358h201.html")
@@ -244,14 +247,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 object :
                     RecyclerItemClickListener.OnItemClickListener {
                     override fun onItemClick(view: View, position: Int, e: MotionEvent) {
-                        loadingView.visibility = View.VISIBLE
-                        currentPos = position
-                        val searchBean = searchAdapter.data[position]
-                        searchUrl = spinnerItems[searchBean.from]
-                        mainVM.getVideoEpisodesInfo(
-                            searchBean.url,
-                            htmlList[searchBean.from].episodesBean
-                        )
+                        searchClick(position)
                     }
 
                     override fun onItemLongClick(view: View, position: Int, e: MotionEvent) {
@@ -271,6 +267,17 @@ class MainActivity : BaseActivity(), View.OnClickListener {
             }
             false
         }
+    }
+
+    private fun searchClick(position: Int) {
+        loadingView.visibility = View.VISIBLE
+        currentPos = position
+        val searchBean = searchAdapter.data[position]
+        searchUrl = spinnerItems[searchBean.from]
+        mainVM.getVideoEpisodesInfo(
+            searchBean.url,
+            htmlList[searchBean.from].episodesBean
+        )
     }
 
     override fun onClick(v: View?) {

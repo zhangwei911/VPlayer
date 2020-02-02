@@ -1,10 +1,7 @@
 package viz.vplayer.util
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import bolts.Task
@@ -27,11 +24,6 @@ import viz.vplayer.R
 import viz.vplayer.room.Download
 import viz.vplayer.room.NotificationId
 import java.io.File
-import java.io.IOException
-import java.lang.Exception
-import java.net.HttpURLConnection
-import java.net.MalformedURLException
-import java.net.URL
 import java.net.URLDecoder
 import kotlin.random.Random
 
@@ -195,7 +187,8 @@ fun HttpUtils.download(
 ): HttpHandler<File> {
     var download: Download? = null
     Task.callInBackground {
-        download = App.instance.db.downloadDao().getByUrl(url)
+        l.start("bolts")
+        download = App.instance.db.downloadDao().getByUrl(url + "1")
         if (download == null) {
             download = Download()
             download!!.videoUrl = url
@@ -203,6 +196,7 @@ fun HttpUtils.download(
                 "${TimeFormat.getCurrentTime("MMddHHmm")}${Random.nextInt(99)}".toInt()
             App.instance.db.downloadDao().insertAll(download!!)
         }
+        l.end("bolts")
     }.continueWithEnd("下载数据记录")
     //int downloadLength = downloadFileSize(context, url);
     //判断手机内存是否够下载文件
@@ -223,22 +217,22 @@ fun HttpUtils.download(
     val target = FileUtil.getPath(context) + "/" + fileName
     l.i(target)
     var progressLast = 0.00f
-    createNotificationChannel(context)
+    NotificationUtil.createNotificationChannel(context)
     val GROUP_KEY_WORK_VIDEO = "viz.vplayer.WORK_VIDEO"
 
     val builder = NotificationCompat.Builder(context, CHANNEL_ID_DOWNLOAD).apply {
-        setContentTitle("视频下载${fileName}")
-        setContentText("0.00%")
+        setContentText("视频下载${fileName}")
+        setContentTitle("0.00%")
         setSmallIcon(android.R.drawable.stat_sys_download)
         priority = NotificationCompat.PRIORITY_LOW
         setOnlyAlertOnce(true)
         setGroup(GROUP_KEY_WORK_VIDEO)
     }
-    val summaryNotification = NotificationCompat.Builder(context, CHANNEL_ID_DOWNLOAD)
-        .setContentTitle("视频下载")
+    val summaryNotification = NotificationCompat.Builder(context, CHANNEL_ID_DOWNLOAD).apply {
+        setContentTitle("视频下载")
         //set content text to support devices running API level < 24
-        .setContentText("more download")
-        .setSmallIcon(R.drawable.vplayer_logo)
+        setContentText("more download")
+        setSmallIcon(R.drawable.vplayer_logo)
         //build summary info into InboxStyle template
 //        .setStyle(NotificationCompat.InboxStyle()
 //            .addLine("Alex Faarborg Check this out")
@@ -246,9 +240,11 @@ fun HttpUtils.download(
 //            .setBigContentTitle("2 new messages")
 //            .setSummaryText("janedoe@example.com"))
         //specify which group this notification belongs to
-        .setGroup(GROUP_KEY_WORK_VIDEO)
+        setGroup(GROUP_KEY_WORK_VIDEO)
         //set this notification as the summary for the group
-        .setGroupSummary(true)
+        setGroupSummary(true)
+        setOnlyAlertOnce(true)
+    }
         .build()
 
     val PROGRESS_MAX = 100
@@ -279,7 +275,7 @@ fun HttpUtils.download(
                     NotificationManagerCompat.from(context).apply {
                         // Issue the initial notification with zero progress
                         builder.setProgress(PROGRESS_MAX, progress.toFloat().toInt(), false)
-                        builder.setContentText("${progress.toFloat()}%")
+                        builder.setContentTitle("${progress.toFloat()}%")
                         notify(notificationId, builder.build())
                         notify(111111, summaryNotification)
 
@@ -292,7 +288,7 @@ fun HttpUtils.download(
 
                         if (progress.toFloat() == 100f) {
                             // When done, update the notification one more time to remove the progress bar
-                            builder.setContentText("下载完成")
+                            builder.setContentTitle("下载完成")
                                 .setProgress(0, 0, false)
                             notify(notificationId, builder.build())
                         }
@@ -324,58 +320,25 @@ fun HttpUtils.download(
         })
     return handlerDownload
 }
+//自定义CoroutineExceptionHandler示例
+//    val handler = CoroutineExceptionHandler { coroutineContext, throwable ->
+//        throwable.printStackTrace()
+//        l.e(throwable.localizedMessage)
+//    }
+//    GlobalScope.launch(handler){
+//          download = getDownload(url)
+//    }
 
-private var length: Int = 0
-/**
- * 获取网络文件大小
- *
- * @param path 文件链接
- * @return 文件大小
- */
-fun downloadFileSize(context: Context, path: String): Int {
-    object : Thread() {
-        override fun run() {
-            try {
-                val url = URL(path)     //创建url对象
-                val conn = url
-                    .openConnection() as HttpURLConnection     //建立连接
-                conn.requestMethod = "GET"    //设置请求方法
-                conn.readTimeout = 5000       //设置响应超时时间
-                conn.connectTimeout = 5000   //设置连接超时时间
-                conn.connect()   //发送请求
-                val responseCode = conn.responseCode    //获取响应码
-                if (responseCode == 200) {   //响应码是200(固定值)就是连接成功，否者就连接失败
-                    length = conn.contentLength    //获取文件的大小
-                } else {
-                    Toast.show(context, "连接失败")
-                }
-
-            } catch (e: MalformedURLException) {
-                e.printStackTrace()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-
-        }
-    }.start()
-    return length
-}
-
-private fun createNotificationChannel(appContext: Context) {
-    // Create the NotificationChannel, but only on API 26+ because
-    // the NotificationChannel class is new and not in the support library
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val name = "下载视频渠道名"
-        val descriptionText = "下载视频"
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(CHANNEL_ID_DOWNLOAD, name, importance).apply {
-            description = descriptionText
-        }
-        // Register the channel with the system
-        val notificationManager: NotificationManager =
-            appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
-    }
-}
+//suspend fun getDownload(url: String): Download {
+//    var download = App.instance.db.downloadDao().getByUrl(url)
+//    if (download == null) {
+//        download = Download()
+//        download!!.videoUrl = url
+//        download!!.notificationId =
+//            "${TimeFormat.getCurrentTime("MMddHHmm")}${Random.nextInt(99)}".toInt()
+//        App.instance.db.downloadDao().insertAll(download!!)
+//    }
+//    return download!!
+//}
 
 
