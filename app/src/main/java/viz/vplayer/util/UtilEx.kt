@@ -263,7 +263,7 @@ fun HttpUtils.download(
                 super.onLoading(total, current, isUploading)
                 l.d("$current/$total")
                 var progress = String.format("%.2f", current.toFloat() / total * 100)
-                if (progress.toFloat() - progressLast > 1) {
+                if (progress.toFloat() - progressLast > 1 || progress.toFloat() == 100f) {
                     onProgress.invoke(progress.toFloat())
                     l.i(progress.toString())
                     Toast.show(
