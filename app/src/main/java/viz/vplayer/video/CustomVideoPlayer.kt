@@ -36,6 +36,7 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
     var episodesClick: ((recyclerView: RecyclerView) -> Unit)? = null
     private var videoList = mutableListOf<String>()
     private var selectEpisodesAdapter: SelectEpisodesAdapter? = null
+    private var speedIndex = 2
 
     override fun getLayoutId(): Int {
         return R.layout.video_custom
@@ -43,6 +44,10 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
 
     fun getUrl(): String {
         return mUrl!!
+    }
+
+    fun getOriginalUrl(): String {
+        return mOriginUrl!!
     }
 
     override fun init(context: Context?) {
@@ -63,6 +68,29 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
                     episodesClick?.invoke(recyclerView_select_episodes)
                 }
             }
+        }
+        val speedArr = mutableListOf(0.1f, 0.5f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f)
+        textView_speed_play.text = "${speedArr[2]}x"
+        textView_speed_play.setOnClickListener {
+            speedIndex++
+            if (speedIndex >= speedArr.size) {
+                speedIndex = 0
+            }
+            val speed = speedArr[speedIndex]
+            textView_speed_play.text = "${speed}x"
+            setSpeedPlaying(speed, true)
+        }
+        textView_speed_play.setOnLongClickListener {
+            if (speedIndex != 2) {
+                speedIndex = 2
+                val speed = speedArr[speedIndex]
+                textView_speed_play.text = "${speed}x"
+                setSpeedPlaying(speed, true)
+            }
+            return@setOnLongClickListener true
+        }
+        textView_download.setOnClickListener {
+            customClick?.invoke(it.id)
         }
     }
 
@@ -188,13 +216,15 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
 
     var customVisibility: ((visibility: Int) -> Unit)? = null
 
+    var customClick: ((vid:Int) -> Unit)? = null
+
     override fun hideAllWidget() {
         super.hideAllWidget()
         setViewShowState(textView_select_episodes, View.GONE)
         setViewShowState(recyclerView_select_episodes, View.GONE)
         setViewShowState(textView_speed, View.GONE)
         customVisibility?.invoke(View.GONE)
-        if(currentState == GSYVideoView.CURRENT_STATE_PREPAREING || currentState == GSYVideoView.CURRENT_STATE_ERROR) {
+        if (currentState == GSYVideoView.CURRENT_STATE_PREPAREING || currentState == GSYVideoView.CURRENT_STATE_ERROR) {
             setViewShowState(mTopContainer, View.VISIBLE)
             setViewShowState(textView_select_episodes, View.VISIBLE)
             setViewShowState(textView_speed, View.VISIBLE)
@@ -257,13 +287,13 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
                     val screenWidth = CommonUtil.getScreenWidth(context)
                     when {
                         x >= screenWidth * 0.8 -> {
-                            if(currentState == GSYVideoView.CURRENT_STATE_PLAYING || currentState == GSYVideoView.CURRENT_STATE_PLAYING_BUFFERING_START) {
+                            if (currentState == GSYVideoView.CURRENT_STATE_PLAYING || currentState == GSYVideoView.CURRENT_STATE_PLAYING_BUFFERING_START) {
                                 seekTo((currentPositionWhenPlaying + 10 * 1000).toLong())
                                 Toast.show(context, "快进10s")
                             }
                         }
                         x < screenWidth * 0.2 -> {
-                            if(currentState == GSYVideoView.CURRENT_STATE_PLAYING || currentState == GSYVideoView.CURRENT_STATE_PLAYING_BUFFERING_START) {
+                            if (currentState == GSYVideoView.CURRENT_STATE_PLAYING || currentState == GSYVideoView.CURRENT_STATE_PLAYING_BUFFERING_START) {
                                 seekTo((currentPositionWhenPlaying - 10 * 1000).toLong())
                                 Toast.show(context, "快退10s")
                             }

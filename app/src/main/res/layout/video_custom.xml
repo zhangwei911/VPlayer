@@ -35,6 +35,7 @@
         android:background="#99000000"
         android:gravity="center_vertical"
         android:orientation="horizontal"
+        tools:visibility="visible"
         android:visibility="invisible">
 
         <TextView
@@ -66,6 +67,27 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="16dp"
             android:text="00:00"
+            android:textColor="#ffffff" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/textView_speed_play"
+            android:text="1x"
+            android:gravity="center"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="#ffffff"
+            />
+
+        <TextView
+            android:id="@+id/textView_download"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:text="缓存"
             android:textColor="#ffffff" />
 
         <ImageView
@@ -120,8 +142,8 @@
 
     <moe.codeest.enviews.ENDownloadView
         android:id="@+id/loading"
-        android:layout_width="28dp"
-        android:layout_height="28dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:visibility="invisible" />

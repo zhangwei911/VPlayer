@@ -1,9 +1,11 @@
 package viz.vplayer.ui.activity
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -11,12 +13,14 @@ import android.view.WindowManager
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.viz.tools.Toast
 import com.viz.tools.l
 import pub.devrel.easypermissions.EasyPermissions
 import pub.devrel.easypermissions.PermissionRequest
-import viz.vplayer.util.App
 import viz.vplayer.R
+import viz.vplayer.util.App
 import java.io.File
+
 
 abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     lateinit var app: App
@@ -142,16 +146,44 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
         l.ifo(requestCode, permissions.toString())
     }
 
+    var OVERLAY_PERMISSION_REQ_CODE = 1234
     override fun onPermissionsDenied(requestCode: Int, perms: MutableList<String>) {
         l.ifo(requestCode, perms.toString())
         val pn = perms.joinToString { it }
         l.i("需要以下权限:$pn")
-        startActivity(Intent(Settings.ACTION_APPLICATION_SETTINGS))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && perms.contains(Manifest.permission.SYSTEM_ALERT_WINDOW)) {
+            if(!Settings.canDrawOverlays(this)) {
+                val intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+                startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE)
+            }
+        } else {
+            startActivity(Intent(Settings.ACTION_APPLICATION_SETTINGS))
+        }
     }
 
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
         l.ifo(requestCode, perms.toString())
         for (perm in perms) if (perm == Manifest.permission.READ_PHONE_STATE) {
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            OVERLAY_PERMISSION_REQ_CODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if(!Settings.canDrawOverlays(this)){
+                            Toast.show(this,"悬浮窗权限没有打开")
+                        }else{
+                            Toast.show(this,"悬浮窗权限已打开")
+                        }
+                    }
+                }
+            }
         }
     }
 }

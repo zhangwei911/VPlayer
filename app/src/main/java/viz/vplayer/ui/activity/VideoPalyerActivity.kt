@@ -1,16 +1,19 @@
 package viz.vplayer.ui.activity
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.BounceInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.work.*
 import bolts.Task
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.utils.GSYVideoType
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoView
+import com.viz.tools.MD5Util
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_video.*
@@ -26,13 +29,14 @@ import viz.vplayer.room.Episode
 import viz.vplayer.room.VideoId
 import viz.vplayer.room.VideoInfo
 import viz.vplayer.util.RecyclerItemClickListener
-import viz.vplayer.util.subString
 import viz.vplayer.video.FloatPlayerView
 import viz.vplayer.video.FloatWindow
 import viz.vplayer.video.MoveType
 import viz.vplayer.video.Screen
 import viz.vplayer.vm.MainVM
 import viz.vplayer.vm.VideoVM
+import viz.vplayer.worker.DownloadWorker
+import java.util.concurrent.TimeUnit
 
 
 class VideoPalyerActivity : BaseActivity() {
@@ -170,7 +174,7 @@ class VideoPalyerActivity : BaseActivity() {
         }
         gsyVideoPLayer.fullscreenButton.visibility = View.GONE
         gsyVideoPLayer.setGSYVideoProgressListener { progress, secProgress, currentPosition, duration ->
-//            l.df(progress, secProgress, currentPosition, duration)
+            //            l.df(progress, secProgress, currentPosition, duration)
         }
         gsyVideoPLayer.onAutoCompletion = { recyclerView ->
             val childView = recyclerView.getChildAt(index + 1)
@@ -179,6 +183,14 @@ class VideoPalyerActivity : BaseActivity() {
         }
         gsyVideoPLayer.customVisibility = { visibility ->
             imageButton_float.visibility = visibility
+        }
+        gsyVideoPLayer.customClick = {
+            when (it) {
+                R.id.textView_download -> {
+                    val url = gsyVideoPLayer.getOriginalUrl()
+                    download(url)
+                }
+            }
         }
         imageButton_float.setOnClickListener {
             float(videoVM.play.value!!.url, videoVM.play.value!!.title)
@@ -292,6 +304,58 @@ class VideoPalyerActivity : BaseActivity() {
         }
     }
 
+    private fun download(videoUrl: String) {
+        val constraintsBuilder = Constraints.Builder()
+//            .setRequiredNetworkType(
+//                NetworkType.UNMETERED
+//            )// 网络状态
+//            .setRequiresBatteryNotLow(true)                 // 不在电量不足时执行
+//            .setRequiresCharging(true)                      // 在充电时执行
+//            .setRequiresStorageNotLow(true)                 // 不在存储容量不足时执行
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            constraintsBuilder.setRequiresDeviceIdle(true)  // 在待机状态下执行
+        }
+        val uniqueName = MD5Util.MD5(videoUrl)
+        val wis = WorkManager.getInstance(applicationContext)
+            .getWorkInfosForUniqueWork(uniqueName).get()
+        if (wis.isNullOrEmpty()) {
+            val constraints = constraintsBuilder
+                .build()
+            val downloadWorkerRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
+                .setInputData(workDataOf("videoUrl" to videoUrl))
+                .setConstraints(constraints)
+                .keepResultsForAtLeast(1, TimeUnit.HOURS)//设置任务的保存时间
+                .build()
+            WorkManager.getInstance(applicationContext)
+                .enqueueUniqueWork(uniqueName, ExistingWorkPolicy.KEEP, downloadWorkerRequest)
+        }
+
+        WorkManager.getInstance(applicationContext)
+            .getWorkInfosForUniqueWorkLiveData(uniqueName)
+            .observe(this, Observer { workInfoList ->
+                workInfoList.forEachIndexed { index, workInfo ->
+                    if (workInfo != null) {
+                        when (workInfo.state) {
+                            WorkInfo.State.SUCCEEDED -> {
+                                l.i("下载成功")
+                            }
+                            WorkInfo.State.FAILED -> {
+                                l.e(workInfo.outputData.getString("errMsg"))
+                            }
+                            WorkInfo.State.RUNNING -> {
+                                l.d("下载进度:" + workInfo.progress.getFloat("progress", 0.00f))
+                            }
+                            else -> {
+                                l.i(workInfo.state)
+                            }
+                        }
+                    } else {
+                        l.e("workInfo == null")
+                    }
+                }
+            })
+    }
+
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -318,7 +382,7 @@ class VideoPalyerActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
-        if(gsyVideoPLayer.currentState == GSYVideoView.CURRENT_STATE_PREPAREING || gsyVideoPLayer.currentState == GSYVideoView.CURRENT_STATE_ERROR) {
+        if (gsyVideoPLayer.currentState == GSYVideoView.CURRENT_STATE_PREPAREING || gsyVideoPLayer.currentState == GSYVideoView.CURRENT_STATE_ERROR) {
             super.onBackPressed()
         }
     }

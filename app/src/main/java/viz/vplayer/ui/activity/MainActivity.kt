@@ -1,14 +1,18 @@
 package viz.vplayer.ui.activity
 
+import android.Manifest.permission.*
 import android.content.Intent
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
+import androidx.annotation.NonNull
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.test.espresso.idling.net.UriIdlingResource
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
@@ -35,7 +39,6 @@ import java.io.Serializable
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
-
 class MainActivity : BaseActivity(), View.OnClickListener {
     private val mainVM: MainVM by lazy {
         ViewModelProvider.AndroidViewModelFactory.getInstance(application)
@@ -54,6 +57,21 @@ class MainActivity : BaseActivity(), View.OnClickListener {
     private var searchUrl = ""
 
     override fun getContentViewId(): Int = R.layout.activity_main
+
+    override fun getPermissions(): Array<String> = arrayOf(
+        WRITE_EXTERNAL_STORAGE,
+        ACCESS_NETWORK_STATE,
+        ACCESS_WIFI_STATE,
+        READ_PHONE_STATE,
+        GET_TASKS,
+        SYSTEM_ALERT_WINDOW,
+        ACCESS_COARSE_LOCATION,
+        ACCESS_FINE_LOCATION,
+        ACCESS_LOCATION_EXTRA_COMMANDS,
+        ACCESS_MEDIA_LOCATION
+    )
+
+    override fun getPermissionsTips(): String = "需要存储,网络,手机信息,悬浮窗,位置等权限"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -133,7 +151,8 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                     )
                 spinner_website.adapter = spinnerAdapter
                 if (BuildConfig.DEBUG) {
-                    spinner_website.setSelection(1)
+//                    spinner_website.setSelection(2)
+//                    materialButton_search.performClick()
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -160,7 +179,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
             }
         })
         if (BuildConfig.DEBUG) {
-            textInputEditText_search.setText("疾速杀机")
+            textInputEditText_search.setText("锦衣之下")
         }
         initViews()
         initListener()
@@ -272,7 +291,8 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                                 from,
                                 htmlParamsList[from],
                                 spinnerItems[from],
-                                htmlList[from].searchHtmlResultBean
+                                htmlList[from].searchHtmlResultBean,
+                                uriIdlingResource
                             )
                         }
                     } else {
@@ -281,7 +301,8 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                             index,
                             htmlParamsList[index],
                             spinnerItems[index],
-                            htmlList[index].searchHtmlResultBean
+                            htmlList[index].searchHtmlResultBean,
+                            uriIdlingResource
                         )
                     }
                 } else {
@@ -350,5 +371,19 @@ class MainActivity : BaseActivity(), View.OnClickListener {
         if (ruleEvent.isRefresh) {
             getRules()
         }
+    }
+
+
+    private var uriIdlingResource: UriIdlingResource? = null
+    /**
+     * Only called from test, creates and returns a new {@link UriIdlingResource}.
+     */
+    @VisibleForTesting
+    @NonNull
+    fun getIdlingResource(): UriIdlingResource {
+        if (uriIdlingResource == null) {
+            uriIdlingResource = UriIdlingResource("http", 15 * 1000)
+        }
+        return uriIdlingResource!!
     }
 }

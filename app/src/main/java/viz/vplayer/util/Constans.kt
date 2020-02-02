@@ -5,3 +5,4 @@ val DEFAULT_UA =
 val UTF8 = "UTF-8"
 val GB2312 = "GB2312"
 val DEFAULT_RULE_URL = "http://viphp-vi.stor.sinaapp.com/rules.txt"
+const val CHANNEL_ID_DOWNLOAD = "download"

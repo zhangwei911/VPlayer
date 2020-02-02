@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.work.Configuration
 import com.shuyu.gsyvideoplayer.player.IjkPlayerManager
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.QbSdk.PreInitCallback
@@ -16,7 +17,7 @@ import com.viz.tools.l
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import viz.vplayer.room.AppDatabase
 
-class App : Application() {
+class App : Application(), Configuration.Provider {
     lateinit var db: AppDatabase
 
     override fun onCreate() {
@@ -75,7 +76,12 @@ class App : Application() {
                 MIGRATION_1_2,
                 MIGRATION_2_3,
                 MIGRATION_3_4,
-                MIGRATION_4_5
+                MIGRATION_4_5,
+                RoomUtil.migration(
+                    5,
+                    6,
+                    "create table download (`notification_id` INTEGER NOT NULL DEFAULT 1,`id` INTEGER NOT NULL,`video_url` TEXT NOT NULL, PRIMARY KEY(`id`))"
+                )
             )
             .build()
         //搜集本地tbs内核信息并上报服务器，服务器返回结果决定使用哪个内核。
@@ -94,6 +100,11 @@ class App : Application() {
         //x5内核初始化接口
         QbSdk.initX5Environment(applicationContext, cb)
     }
+
+    override fun getWorkManagerConfiguration(): Configuration =
+        Configuration.Builder()
+            .setMinimumLoggingLevel(Log.DEBUG)
+            .build()
 
     companion object {
         lateinit var instance: App

@@ -3,14 +3,11 @@ package viz.vplayer.vm
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.test.espresso.idling.net.UriIdlingResource
 import bolts.Task
 import com.lidroid.xutils.HttpUtils
-import com.lidroid.xutils.exception.HttpException
 import com.lidroid.xutils.http.RequestParams
-import com.lidroid.xutils.http.ResponseInfo
-import com.lidroid.xutils.http.callback.RequestCallBack
 import com.lidroid.xutils.http.client.HttpRequest
-import com.viz.tools.l
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import viz.vplayer.bean.*
@@ -23,7 +20,7 @@ class MainVM : ViewModel() {
     val episodes = MutableLiveData<MutableList<String>>()
     val play = MutableLiveData<VideoInfoBean>()
     val errorInfo = MutableLiveData<ErrorInfo>()
-    val rules = MutableLiveData<Pair<String,String>>()
+    val rules = MutableLiveData<Pair<String, String>>()
     val jsonBeanList = MutableLiveData<MutableList<JsonBean>>()
 
     fun getJson(rulesUrl: String) {
@@ -40,9 +37,9 @@ class MainVM : ViewModel() {
                     )
                     return@send
                 }
-                if(result.isJson()) {
+                if (result.isJson()) {
                     rules.postValue(Pair(rulesUrl, result))
-                }else{
+                } else {
                     errorInfo.postValue(
                         ErrorInfo(
                             "解析rule规则数据异常",
@@ -67,9 +64,11 @@ class MainVM : ViewModel() {
         from: Int,
         paramsMap: MutableMap<String, String>,
         videoSearchUrl: String,
-        searchHtmlResultBean: SearchHtmlResultBean
+        searchHtmlResultBean: SearchHtmlResultBean,
+        uriIdlingResource: UriIdlingResource? = null
     ) {
         Task.callInBackground {
+            uriIdlingResource?.beginLoad(videoSearchUrl)
             val http = HttpUtils()
             val params = RequestParams("utf-8")
             paramsMap.forEach {
@@ -131,8 +130,10 @@ class MainVM : ViewModel() {
                     e.printStackTrace()
                     errorInfo.postValue(ErrorInfo("获取搜索数据异常(${e.localizedMessage})"))
                 }
+                uriIdlingResource?.endLoad(videoSearchUrl)
             }, {
                 errorInfo.postValue(ErrorInfo("获取搜索数据异常($it)"))
+                uriIdlingResource?.endLoad(videoSearchUrl)
             }, method = HttpRequest.HttpMethod.POST, params = params)
         }.continueWithEnd("抓取网页")
     }
