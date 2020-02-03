@@ -1,6 +1,7 @@
 package viz.vplayer.ui.activity
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.MotionEvent
@@ -28,6 +29,7 @@ import viz.vplayer.eventbus.VideoEvent
 import viz.vplayer.room.Episode
 import viz.vplayer.room.VideoId
 import viz.vplayer.room.VideoInfo
+import viz.vplayer.util.FileUtil
 import viz.vplayer.util.RecyclerItemClickListener
 import viz.vplayer.util.WorkerUtil
 import viz.vplayer.util.continueWithEnd
@@ -38,6 +40,8 @@ import viz.vplayer.video.Screen
 import viz.vplayer.vm.MainVM
 import viz.vplayer.vm.VideoVM
 import viz.vplayer.worker.DownloadWorker
+import java.io.File
+import java.net.URLDecoder
 import java.util.concurrent.TimeUnit
 
 
@@ -79,12 +83,15 @@ class VideoPalyerActivity : BaseActivity() {
                 }
             }.continueWithEnd("播放")
         })
+        mainVM.play.observe(this, Observer { videoInfoBean ->
+            videoVM.play.postValue(videoInfoBean)
+        })
         mainVM.errorInfo.observe(this, Observer { errorInfo ->
             loadingView_player.visibility = View.GONE
             Toast.showLong(this, errorInfo.errMsg)
         })
         initVideo()
-        val url = intent.getStringExtra("url")
+        var url = intent.getStringExtra("url")
         title = intent.getStringExtra("title") ?: ""
         img = intent.getStringExtra("img") ?: ""
         searchUrl = intent.getStringExtra("searchUrl") ?: ""
@@ -98,6 +105,22 @@ class VideoPalyerActivity : BaseActivity() {
             Toast.show(this, "参数错误")
             return
         }
+        var oldReplaceWords = arrayListOf("+", " ", "*")
+        var newReplaceWords = arrayListOf("%2B", "%20", "%2A")
+        var urlUTF8 = URLDecoder.decode(url, "UTF-8")
+        for (i in oldReplaceWords.indices) {
+            urlUTF8 = urlUTF8.replace(oldReplaceWords[i], newReplaceWords[i])
+        }
+        l.i(urlUTF8)
+        var uri = Uri.parse(urlUTF8)
+        val fileName = MD5Util.MD5(url) + "." + uri.pathSegments.last()
+        val target = FileUtil.getPath(this) + "/" + fileName
+        l.i(target)
+        val videoFile = File(target).apply {
+            if(exists()){
+                url = "file://$target"
+            }
+        }
         videoVM.play.postValue(
             VideoInfoBean(
                 url, title + if (episodes!![0].endsWith(".m3u8")) {
@@ -107,9 +130,6 @@ class VideoPalyerActivity : BaseActivity() {
                 }, duration
             )
         )
-        mainVM.play.observe(this, Observer { videoInfoBean ->
-            videoVM.play.postValue(videoInfoBean)
-        })
     }
 
     private fun initVideo() {
@@ -185,7 +205,7 @@ class VideoPalyerActivity : BaseActivity() {
                 when (it) {
                     R.id.textView_download -> {
                         val url = getOriginalUrl()
-                        download(url)
+                        download(url, title, img)
                     }
                 }
             }
@@ -274,8 +294,8 @@ class VideoPalyerActivity : BaseActivity() {
         }
     }
 
-    private fun download(videoUrl: String) {
-        WorkerUtil.startWorker(videoUrl, applicationContext, this)
+    private fun download(videoUrl: String, videoTitle: String, videoImgUrl: String) {
+        WorkerUtil.startWorker(videoUrl, videoTitle, videoImgUrl, applicationContext, this)
     }
 
     override fun onNewIntent(intent: Intent?) {

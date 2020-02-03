@@ -32,19 +32,21 @@ class SearchAdapter(private val context: Context) :
     override fun getItemCount(): Int = data.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val itemView = holder.itemView
-        val searchBean = data[position]
-        itemView.textView_name.text = searchBean.name + "(${fromNameList[searchBean.from]})"
-        itemView.textView_desc.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            Html.fromHtml(searchBean.desc, Html.FROM_HTML_MODE_LEGACY)
-        } else {
-            Html.fromHtml(searchBean.desc)
-        }
-        if (!searchBean.img.isNullOrEmpty()) {
-            glide!!.load(searchBean.img)
-                .error(R.drawable.ic_fail)
-                .skipMemoryCache(true)
-                .into(itemView.imageView_thumb)
+        data[position].apply {
+            holder.itemView.apply {
+                textView_name.text = name + "(${fromNameList[from]})"
+                textView_desc.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    Html.fromHtml(desc, Html.FROM_HTML_MODE_LEGACY)
+                } else {
+                    Html.fromHtml(desc)
+                }
+                if (!img.isNullOrEmpty()) {
+                    glide!!.load(img)
+                        .error(R.drawable.ic_fail)
+                        .skipMemoryCache(true)
+                        .into(imageView_thumb)
+                }
+            }
         }
     }
 }

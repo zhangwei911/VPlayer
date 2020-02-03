@@ -1,4 +1,4 @@
-package viz.vplayer.ui.activity
+package viz.vplayer.ui.fragment
 
 import android.Manifest
 import android.app.Activity
@@ -9,10 +9,12 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.view.WindowManager
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.viz.tools.Toast
 import com.viz.tools.l
 import org.greenrobot.eventbus.EventBus
@@ -23,28 +25,27 @@ import viz.vplayer.util.App
 import java.io.File
 
 
-abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
+abstract class BaseFragment : Fragment(), EasyPermissions.PermissionCallbacks {
     lateinit var app: App
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val v = inflater.inflate(getContentViewId(), container, false)
+        return v
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
         if(useEventBus()) {
             EventBus.getDefault().register(this)
         }
-        app = application as App
-        if (isFullScreen()) {
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN
-            )
-        }
-        setContentView(getContentViewId())
-        if (isNoTitle()) {
-            supportActionBar?.hide()
-        }
+        app = activity!!.application as App
         updateBG()
         val permissions = getPermissions()
         if (permissions.isNotEmpty()) {
-            if (EasyPermissions.hasPermissions(applicationContext, *permissions)) {
+            if (EasyPermissions.hasPermissions(app.applicationContext, *permissions)) {
                 hasPermissions()
             } else {
                 EasyPermissions.requestPermissions(
@@ -55,10 +56,11 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
                 )
             }
         }
-        findViewById<ImageButton>(R.id.imageButton_back)?.setOnClickListener {
-            finish()
+        view!!.findViewById<ImageButton>(R.id.imageButton_back)?.setOnClickListener {
+            activity?.finish()
         }
-        findViewById<TextView>(R.id.textView_title)?.text = getCommonTtile()
+        view!!.findViewById<TextView>(R.id.textView_title)?.text = getCommonTtile()
+
     }
 
     open fun updateBG() {
@@ -66,19 +68,19 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
         if (cbg.toString().isNotEmpty()) {
             setCustomBackground(cbg)
         } else {
-            val sp = getSharedPreferences("base", Context.MODE_PRIVATE)
-            val isGlobalBG = sp.getBoolean("globalBG", false)
+            val sp = activity!!.getSharedPreferences("base", Context.MODE_PRIVATE)
+            val isGlobalBG = sp.getBoolean("globalBGF", false)
             l.d(isGlobalBG)
             if (isGlobalBG) {
-                val globalBGType = sp.getInt("globalBGType", -1)
+                val globalBGType = sp.getInt("globalBGTypeF", -1)
                 l.d(globalBGType)
                 if (globalBGType == 0) {
-                    val bgResId = sp.getInt("globalResId", -1)
+                    val bgResId = sp.getInt("globalResIdF", -1)
                     if (bgResId != -1) {
                         setCustomBackground(bgResId)
                     }
                 } else if (globalBGType == 1) {
-                    val bgResString = sp.getString("globalResString", "") ?: ""
+                    val bgResString = sp.getString("globalResStringF", "") ?: ""
                     l.d(bgResString)
                     if (bgResString.isNotEmpty()) {
                         setCustomBackground(bgResString)
@@ -87,9 +89,6 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
             }
         }
     }
-
-    open protected fun isFullScreen(): Boolean = false
-    open protected fun isNoTitle(): Boolean = true
 
     open protected fun getCommonTtile(): String = ""
     /**
@@ -122,16 +121,16 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
     open protected fun setCustomBackground(cbg: Any) {
         try {
             if (cbg is Int && cbg != -1) {
-                window.decorView.setBackgroundResource(cbg)
+                view?.setBackgroundResource(cbg)
             } else if (cbg is String && cbg.isNotEmpty()) {
                 val bgFile = File(cbg)
                 if (!bgFile.exists()) {
                     return
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    window.decorView.background = Drawable.createFromPath(cbg.toString())
+                    view?.background = Drawable.createFromPath(cbg.toString())
                 } else {
-                    window.decorView.setBackgroundDrawable(Drawable.createFromPath(cbg.toString()))
+                    view?.setBackgroundDrawable(Drawable.createFromPath(cbg.toString()))
                 }
             }
         } catch (e: Exception) {
@@ -156,10 +155,10 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
         val pn = perms.joinToString { it }
         l.i("需要以下权限:$pn")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && perms.contains(Manifest.permission.SYSTEM_ALERT_WINDOW)) {
-            if(!Settings.canDrawOverlays(this)) {
+            if(!Settings.canDrawOverlays(context)) {
                 val intent = Intent(
                     Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
+                    Uri.parse("package:${activity!!.packageName}")
                 )
                 startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE)
             }
@@ -180,10 +179,10 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
             OVERLAY_PERMISSION_REQ_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if(!Settings.canDrawOverlays(this)){
-                            Toast.show(this,"悬浮窗权限没有打开")
+                        if(!Settings.canDrawOverlays(context)){
+                            Toast.show(context,"悬浮窗权限没有打开")
                         }else{
-                            Toast.show(this,"悬浮窗权限已打开")
+                            Toast.show(context,"悬浮窗权限已打开")
                         }
                     }
                 }

@@ -31,7 +31,7 @@ class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
     }
 
     override fun getItemCount(): Int {
-        return list!!.size
+        return list.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -41,15 +41,18 @@ class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
         holder: ViewHolder,
         pos: Int, @NonNull payloads: MutableList<Any>
     ) {
-        val data = list!![pos]
-        val itemView = holder.itemView
-        itemView.textView_history_name.text = data.videoTitle
-        val leftTime = data.duration - data.currentPosition
-        itemView.textView_history_time_left.text = "剩余" + CommonUtil.stringForTime(leftTime) + "未看" + "第${data.index + 1}集"
-        if (data.videoImgUrl.trim().isNotEmpty()) {
-            glide.load(data.videoImgUrl)
-                .override(60, 80)
-                .into(itemView.imageView_history)
+        list[pos].apply {
+            holder.itemView.apply {
+                textView_history_name.text = videoTitle
+                val leftTime = duration - currentPosition
+                textView_history_time_left.text =
+                    "剩余" + CommonUtil.stringForTime(leftTime) + "未看" + "第${index + 1}集"
+                if (videoImgUrl.trim().isNotEmpty()) {
+                    glide.load(videoImgUrl)
+                        .override(60, 80)
+                        .into(imageView_history)
+                }
+            }
         }
     }
 

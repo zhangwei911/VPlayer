@@ -6,22 +6,25 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.NonNull
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.menu_list_item.view.*
+import kotlinx.android.synthetic.main.local_item.view.*
 import viz.vplayer.R
-import viz.vplayer.bean.MenuBean
+import viz.vplayer.glide.GlideApp
+import viz.vplayer.glide.GlideRequests
+import viz.vplayer.room.Download
 
-
-class MenuAdapter : RecyclerView.Adapter<MenuAdapter.ViewHolder> {
+class LocalAdapter : RecyclerView.Adapter<LocalAdapter.ViewHolder> {
     private var context: Context? = null
-    var list= mutableListOf<MenuBean>()
+    var list = mutableListOf<Download>()
+    private var glide: GlideRequests
 
-    constructor(context: Context, list: MutableList<MenuBean>) {
+    constructor(context: Context, list: MutableList<Download>) {
         this.context = context
         this.list = list
+        glide = GlideApp.with(context)
     }
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): ViewHolder {
-        val view: View = LayoutInflater.from(context).inflate(R.layout.menu_list_item, p0, false)
+        val view: View = LayoutInflater.from(context).inflate(R.layout.local_item, p0, false)
         return ViewHolder(view)
     }
 
@@ -38,14 +41,14 @@ class MenuAdapter : RecyclerView.Adapter<MenuAdapter.ViewHolder> {
     ) {
         list[pos].apply {
             holder.itemView.apply {
-                textView_menu.text = name
-                imageView_menu.visibility = if (resId != -1) {
-                    imageView_menu.setImageResource(resId)
-                    View.VISIBLE
-                } else {
-                    View.GONE
+                textView_local_name.text = videoTitle
+                numberProgressBar.max = 100
+                numberProgressBar.progress = progress
+                if (videoImgUrl.trim().isNotEmpty()) {
+                    glide.load(videoImgUrl)
+                        .override(60, 80)
+                        .into(imageView_local)
                 }
-                textView_menu.setTextColor(menuColor)
             }
         }
     }

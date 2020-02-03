@@ -15,7 +15,7 @@ import viz.vplayer.room.Rule
 
 class RuleAdapter : RecyclerView.Adapter<RuleAdapter.ViewHolder> {
     private var context: Context? = null
-    var list= mutableListOf<Rule>()
+    var list = mutableListOf<Rule>()
 
     constructor(context: Context, list: MutableList<Rule>) {
         this.context = context
@@ -38,16 +38,18 @@ class RuleAdapter : RecyclerView.Adapter<RuleAdapter.ViewHolder> {
         holder: ViewHolder,
         pos: Int, @NonNull payloads: MutableList<Any>
     ) {
-        val data = list!![pos]
-        val itemView = holder.itemView
-        itemView.textView_rule_url.setTextColor(
-            if (data.ruleEnable) {
-                Color.BLACK
-            } else {
-                Color.LTGRAY
+        list[pos].apply {
+            holder.itemView.apply {
+                textView_rule_url.setTextColor(
+                    if (ruleEnable) {
+                        Color.BLACK
+                    } else {
+                        Color.LTGRAY
+                    }
+                )
+                textView_rule_url.text = "[${ruleStatusMsg}]${ruleUrl}"
             }
-        )
-        itemView.textView_rule_url.text = "[${data.ruleStatusMsg}]${data.ruleUrl}"
+        }
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view)

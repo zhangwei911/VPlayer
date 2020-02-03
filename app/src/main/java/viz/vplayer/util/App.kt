@@ -90,7 +90,13 @@ class App : Application(), Configuration.Provider {
                 RoomUtil.migration(
                     7,
                     8,
-                    "ALTER TABLE `episode` ADD INDEX(`video_id`)"
+                    "ALTER TABLE download ADD COLUMN video_img_url TEXT NOT NULL DEFAULT ''",
+                    "ALTER TABLE download ADD COLUMN video_title TEXT NOT NULL DEFAULT ''"
+                ),
+                RoomUtil.migration(
+                    8,
+                    9,
+                    "ALTER TABLE download ADD COLUMN download_progress INTEGER NOT NULL DEFAULT 0"
                 )
             )
             .build()

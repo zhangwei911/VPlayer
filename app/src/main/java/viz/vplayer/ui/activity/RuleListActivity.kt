@@ -110,7 +110,7 @@ class RuleListActivity : BaseActivity() {
                                                 title(R.string.delete_tips)
                                                 message(
                                                     text = String.format(
-                                                        getString(R.string.delete_msg),
+                                                        getString(R.string.delete_msg_rule),
                                                         data.ruleUrl
                                                     )
                                                 )

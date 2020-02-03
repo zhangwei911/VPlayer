@@ -13,7 +13,7 @@ class SelectEpisodesAdapter(private val context: Context) :
     var data = mutableListOf<String>()
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun autoClick(){
+        fun autoClick() {
             itemView.performClick()
         }
     }
@@ -27,7 +27,8 @@ class SelectEpisodesAdapter(private val context: Context) :
     override fun getItemCount(): Int = data.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val itemView = holder.itemView
-        itemView.textView_select_episodes_label.text = ((position + 1).toString())
+        holder.itemView.apply {
+            textView_select_episodes_label.text = ((position + 1).toString())
+        }
     }
 }

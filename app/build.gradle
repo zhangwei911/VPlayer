@@ -6,6 +6,7 @@ apply from: 'version.gradle'
 apply from: 'appName.gradle'
 apply from: 'sign.gradle'
 apply from: 'zip.gradle'
+apply plugin: "androidx.navigation.safeargs"
 
 android {
     compileSdkVersion 29
@@ -160,4 +161,13 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
 
+    // Java language implementation
+    implementation "androidx.navigation:navigation-fragment:$nav_version"
+    implementation "androidx.navigation:navigation-ui:$nav_version"
+
+    // Kotlin
+    implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
+
+    implementation 'com.daimajia.numberprogressbar:library:1.4@aar'
 }

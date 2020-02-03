@@ -15,8 +15,11 @@
     <string name="rule_url_exsit">规则地址已存在,无需重复添加</string>
     <string name="rule_url_add_success">规则地址添加成功</string>
     <string name="delete_tips">删除提示</string>
-    <string name="delete_msg">是否确认删除以下规则地址?\n\n%s</string>
+    <string name="delete_msg_rule">是否确认删除以下规则地址?\n\n%s</string>
+    <string name="delete_msg_local">是否确认删除以下缓存内容?\n\n%s\n%s</string>
     <string name="history">历史记录</string>
     <string name="history_detail">详情</string>
     <string name="close">关闭</string>
+    <string name="menu_search">搜索</string>
+    <string name="menu_local">本地缓存</string>
 </resources>

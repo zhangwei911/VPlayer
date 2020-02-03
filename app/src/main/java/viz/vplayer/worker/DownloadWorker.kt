@@ -17,6 +17,8 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
     override fun startWork(): ListenableFuture<Result> {
         mFuture = SettableFuture.create()
         val videoUrl = inputData.getString("videoUrl")
+        val videoTitle = inputData.getString("videoTitle")
+        val videoImgUrl = inputData.getString("videoImgUrl")
         var result: Result? = null
         if (videoUrl.isNullOrEmpty()) {
             result = Result.failure()
@@ -26,16 +28,24 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
 
             } else {
                 val http = HttpUtils()
-                http.download(applicationContext, videoUrl, suffix = "", onResult = { filePath ->
-                    result = Result.success(workDataOf("videoLocalPath" to filePath))
-                    mFuture?.set(result)
-                }, onError = { httpException, errMsg ->
-                    httpException.printStackTrace()
-                    result = Result.failure(workDataOf("errMsg" to errMsg))
-                    mFuture?.set(result)
-                }, onProgress = { progress ->
-                    setProgressAsync(workDataOf("progress" to progress))
-                })
+                http.download(
+                    applicationContext,
+                    videoUrl,
+                    videoTitle!!,
+                    videoImgUrl!!,
+                    suffix = "",
+                    onResult = { filePath ->
+                        result = Result.success(workDataOf("videoLocalPath" to filePath))
+                        mFuture?.set(result)
+                    },
+                    onError = { httpException, errMsg ->
+                        httpException.printStackTrace()
+                        result = Result.failure(workDataOf("errMsg" to errMsg))
+                        mFuture?.set(result)
+                    },
+                    onProgress = { progress ->
+                        setProgressAsync(workDataOf("progress" to progress))
+                    })
             }
         }
         return mFuture!!

@@ -20,9 +20,10 @@ import com.viz.tools.MD5Util
 import com.viz.tools.TimeFormat
 import com.viz.tools.Toast
 import com.viz.tools.l
+import org.greenrobot.eventbus.EventBus
 import viz.vplayer.R
+import viz.vplayer.eventbus.DownloadProgressEvent
 import viz.vplayer.room.Download
-import viz.vplayer.room.NotificationId
 import java.io.File
 import java.net.URLDecoder
 import kotlin.random.Random
@@ -180,6 +181,8 @@ fun String.isJson(isJsonObject: Boolean = false): Boolean {
 fun HttpUtils.download(
     context: Context,
     url: String,
+    videoTitle: String,
+    videoImgUrl: String,
     onProgress: (progress: Float) -> Unit = {},
     onResult: (target: String) -> Unit = {},
     onError: ((httpException: HttpException, errMsg: String) -> Unit)? = null,
@@ -188,10 +191,12 @@ fun HttpUtils.download(
     var download: Download? = null
     Task.callInBackground {
         l.start("bolts")
-        download = App.instance.db.downloadDao().getByUrl(url + "1")
+        download = App.instance.db.downloadDao().getByUrl(url)
         if (download == null) {
             download = Download()
             download!!.videoUrl = url
+            download!!.videoTitle = videoTitle
+            download!!.videoImgUrl = videoImgUrl
             download!!.notificationId =
                 "${TimeFormat.getCurrentTime("MMddHHmm")}${Random.nextInt(99)}".toInt()
             App.instance.db.downloadDao().insertAll(download!!)
@@ -264,6 +269,8 @@ fun HttpUtils.download(
                 l.d("$current/$total")
                 var progress = String.format("%.2f", current.toFloat() / total * 100)
                 if (progress.toFloat() - progressLast > 1 || progress.toFloat() == 100f || progress.toFloat() == 0f) {
+                    EventBus.getDefault()
+                        .postSticky(DownloadProgressEvent(progress.toFloat().toInt(), url))
                     onProgress.invoke(progress.toFloat())
                     l.i(progress.toString())
                     Toast.show(
@@ -274,23 +281,26 @@ fun HttpUtils.download(
                     val notificationId = download!!.notificationId
                     NotificationManagerCompat.from(context).apply {
                         // Issue the initial notification with zero progress
-                        builder.setProgress(PROGRESS_MAX, progress.toFloat().toInt(), true)
-                        builder.setContentTitle("${progress.toFloat()}%")
-                        notify(notificationId, builder.build())
-                        notify(111111, summaryNotification)
+                        builder.apply {
+                            setProgress(PROGRESS_MAX, progress.toFloat().toInt(), true)
+                            setContentTitle("${progress.toFloat()}%")
+                            notify(notificationId, build())
+                            notify(111111, summaryNotification)
 
-                        // Do the job here that tracks the progress.
-                        // Usually, this should be in a
-                        // worker thread
-                        // To show progress, update PROGRESS_CURRENT and update the notification with:
-                        // builder.setProgress(PROGRESS_MAX, PROGRESS_CURRENT, false);
-                        // notificationManager.notify(notificationId, builder.build());
+                            // Do the job here that tracks the progress.
+                            // Usually, this should be in a
+                            // worker thread
+                            // To show progress, update PROGRESS_CURRENT and update the notification with:
+                            // builder.setProgress(PROGRESS_MAX, PROGRESS_CURRENT, false);
+                            // notificationManager.notify(notificationId, builder.build());
 
-                        if (progress.toFloat() == 100f) {
-                            // When done, update the notification one more time to remove the progress bar
-                            builder.setContentTitle("下载完成")
-                                .setProgress(0, 0, false)
-                            notify(notificationId, builder.build())
+                            if (progress.toFloat() == 100f) {
+                                // When done, update the notification one more time to remove the progress bar
+                                setContentTitle("下载完成")
+                                setProgress(0, 0, false)
+                                setSmallIcon(android.R.drawable.stat_sys_download_done)
+                                notify(notificationId, build())
+                            }
                         }
                     }
                 }
