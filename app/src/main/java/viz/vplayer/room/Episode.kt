@@ -1,11 +1,8 @@
 package viz.vplayer.room
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
+import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
-import androidx.room.PrimaryKey
 import kotlinx.android.parcel.Parcelize
 
 @Entity(
@@ -14,7 +11,8 @@ import kotlinx.android.parcel.Parcelize
         parentColumns = arrayOf("id"),
         childColumns = arrayOf("video_id"),
         onDelete = CASCADE
-    )]
+    )],
+    indices = [Index(value = ["video_id"])]
 )
 @Parcelize
 data class Episode(

@@ -1,10 +1,22 @@
 int total = 0
 int buildCount = 0
 
+ext.splitABI = {
+    android.splits {
+        abi {
+            enable true
+            reset()
+            include 'armeabi-v7a', 'x86'//, 'arm64-v8a', 'x86_64' //select ABIs to build APKs for
+            universalApk false //generate an additional APK that contains all the ABIs
+        }
+    }
+}
+
 ext.autoName = { name ->
     android.applicationVariants.all { variant ->
         variant.outputs.all { output ->
-            def outputName = "${name}_${variant.productFlavors[0].versionName}_build_${variant.productFlavors[0].name}_${variant.productFlavors[0].versionCode}"
+            def abiName = output.getFilter(ABI)
+            def outputName = "${name}_${variant.productFlavors[0].versionName}_build_${variant.productFlavors[0].name}_${variant.productFlavors[0].versionCode}_${abiName}"
             if (!variant.buildType.name.equalsIgnoreCase("debug")) {
                 total++
                 outputFileName = outputName + "_release.apk"

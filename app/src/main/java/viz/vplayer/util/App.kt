@@ -81,6 +81,16 @@ class App : Application(), Configuration.Provider {
                     5,
                     6,
                     "create table download (`notification_id` INTEGER NOT NULL DEFAULT 1,`id` INTEGER NOT NULL,`video_url` TEXT NOT NULL, PRIMARY KEY(`id`))"
+                ),
+                RoomUtil.migration(
+                    6,
+                    7,
+                    "ALTER TABLE download ADD COLUMN download_status INTEGER NOT NULL DEFAULT 0"
+                ),
+                RoomUtil.migration(
+                    7,
+                    8,
+                    "ALTER TABLE `episode` ADD INDEX(`video_id`)"
                 )
             )
             .build()

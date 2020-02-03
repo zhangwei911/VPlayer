@@ -7,6 +7,9 @@ interface DownloadDao {
     @Query("select * from download")
     fun getAll(): MutableList<Download>
 
+    @Query("select * from download where download_status=:status")
+    fun getAllByStatus(status: Int): MutableList<Download>
+
     @Query("select * from download where video_url = :videoUrl LIMIT 1")
     fun getByUrl(videoUrl: String): Download
 

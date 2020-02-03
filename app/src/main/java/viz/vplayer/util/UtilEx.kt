@@ -263,7 +263,7 @@ fun HttpUtils.download(
                 super.onLoading(total, current, isUploading)
                 l.d("$current/$total")
                 var progress = String.format("%.2f", current.toFloat() / total * 100)
-                if (progress.toFloat() - progressLast > 1 || progress.toFloat() == 100f) {
+                if (progress.toFloat() - progressLast > 1 || progress.toFloat() == 100f || progress.toFloat() == 0f) {
                     onProgress.invoke(progress.toFloat())
                     l.i(progress.toString())
                     Toast.show(
@@ -274,7 +274,7 @@ fun HttpUtils.download(
                     val notificationId = download!!.notificationId
                     NotificationManagerCompat.from(context).apply {
                         // Issue the initial notification with zero progress
-                        builder.setProgress(PROGRESS_MAX, progress.toFloat().toInt(), false)
+                        builder.setProgress(PROGRESS_MAX, progress.toFloat().toInt(), true)
                         builder.setContentTitle("${progress.toFloat()}%")
                         notify(notificationId, builder.build())
                         notify(111111, summaryNotification)
@@ -303,8 +303,8 @@ fun HttpUtils.download(
                 l.d("下载成功 $filePath")
                 Task.callInBackground {
                     if (download != null) {
-                        App.instance.db.downloadDao()
-                            .deleteByNotificationId(NotificationId(download!!.notificationId))
+                        download!!.status = 1
+                        App.instance.db.downloadDao().updateALl(download!!)
                     }
                 }.continueWithEnd("下载数据记录删除")
             }

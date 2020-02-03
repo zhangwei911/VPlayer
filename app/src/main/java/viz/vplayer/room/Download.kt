@@ -9,5 +9,6 @@ import androidx.room.PrimaryKey
 data class Download(
     @PrimaryKey(autoGenerate = true) var id: Int = 0,
     @ColumnInfo(name = "video_url") var videoUrl: String = "",
-    @ColumnInfo(name = "notification_id") var notificationId: Int = 0
+    @ColumnInfo(name = "notification_id") var notificationId: Int = 0,
+    @ColumnInfo(name = "download_status") var status: Int = 0
 )

@@ -21,7 +21,6 @@ import com.google.gson.reflect.TypeToken
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.delay
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -32,12 +31,9 @@ import viz.vplayer.bean.*
 import viz.vplayer.eventbus.RuleEvent
 import viz.vplayer.room.Rule
 import viz.vplayer.ui.fragment.MenuFragment
-import viz.vplayer.util.ErrorCode
-import viz.vplayer.util.RecyclerItemClickListener
-import viz.vplayer.util.continueWithEnd
+import viz.vplayer.util.*
 import viz.vplayer.vm.MainVM
 import java.io.Serializable
-import java.lang.Thread.sleep
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -99,7 +95,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
             }
             searchAdapter.notifyDataSetChanged()
             loadingView.visibility = View.GONE
-            if(BuildConfig.DEBUG) {
+            if (BuildConfig.DEBUG) {
                 searchClick(0)
             }
         })
@@ -188,6 +184,14 @@ class MainActivity : BaseActivity(), View.OnClickListener {
         initListener()
 //        mainVM.freeVip("https://v.qq.com/x/cover/rjae621myqca41h/e003358h201.html")
         getRules()
+
+        Task.callInBackground {
+            var downloads = App.instance.db.downloadDao().getAllByStatus(0)
+            downloads.forEachIndexed { index, download ->
+                val videoUrl = download.videoUrl
+                WorkerUtil.startWorker(videoUrl, applicationContext, this)
+            }
+        }.continueWithEnd("启动所有视频下载")
     }
 
     private fun updateRule(url: String, ruleStatus: Int, taskName: String) {
