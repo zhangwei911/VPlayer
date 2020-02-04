@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.viz.tools.Toast
 import com.viz.tools.l
 import org.greenrobot.eventbus.EventBus
+import pub.devrel.easypermissions.AppSettingsDialog
 import pub.devrel.easypermissions.EasyPermissions
 import pub.devrel.easypermissions.PermissionRequest
 import viz.vplayer.R
@@ -28,7 +29,9 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if(useEventBus()) {
-            EventBus.getDefault().register(this)
+            if(!EventBus.getDefault().isRegistered(this)) {
+                EventBus.getDefault().register(this)
+            }
         }
         app = application as App
         if (isFullScreen()) {
@@ -164,7 +167,8 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
                 startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE)
             }
         } else {
-            startActivity(Intent(Settings.ACTION_APPLICATION_SETTINGS))
+            AppSettingsDialog.Builder(this).build().show()
+//            startActivity(Intent(Settings.ACTION_APPLICATION_SETTINGS))
         }
     }
 

@@ -1,7 +1,9 @@
 package viz.vplayer.vm
 
 import android.net.Uri
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.test.espresso.idling.net.UriIdlingResource
 import bolts.Task
@@ -15,13 +17,40 @@ import viz.vplayer.util.*
 import java.net.URLDecoder
 
 
-class MainVM : ViewModel() {
+class MainVM(private val state: SavedStateHandle) : ViewModel() {
     val search = MutableLiveData<MutableList<SearchBean>>()
     val episodes = MutableLiveData<MutableList<String>>()
     val play = MutableLiveData<VideoInfoBean>()
     val errorInfo = MutableLiveData<ErrorInfo>()
     val rules = MutableLiveData<Pair<String, String>>()
     val jsonBeanList = MutableLiveData<MutableList<JsonBean>>()
+    private val KEY_SEARCH_INFO = "searchInfo"
+    private val KEY_SEARCH_URL = "searchUrl"
+    private val KEY_SEARCH_RESULT = "searchResult"
+
+    fun getSearchInfo(): LiveData<String> {
+        return state.getLiveData<String>(KEY_SEARCH_INFO)
+    }
+
+    fun saveSearchInfo(value: String) {
+        state.set(KEY_SEARCH_INFO, value)
+    }
+
+    fun getSearchUrl(): LiveData<String> {
+        return state.getLiveData<String>(KEY_SEARCH_URL)
+    }
+
+    fun saveSearchUrl(searchUrl: String) {
+        state.set(KEY_SEARCH_URL, searchUrl)
+    }
+
+    fun getSearchResult(): LiveData<MutableList<SearchBean>> {
+        return state.getLiveData<MutableList<SearchBean>>(KEY_SEARCH_RESULT)
+    }
+
+    fun saveSearchResult(searchBeanList: MutableList<SearchBean>) {
+        state.set(KEY_SEARCH_RESULT, searchBeanList)
+    }
 
     fun getJson(rulesUrl: String) {
         Task.callInBackground {
@@ -293,6 +322,7 @@ class MainVM : ViewModel() {
                                 )
                             )
                         } else {
+                            videoHtmlResultBean.isFrameProcess = false
                             errorInfo.postValue(ErrorInfo("获取视频数据异常(正则表达式可能错了)"))
                         }
                     } else {

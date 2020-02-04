@@ -39,7 +39,9 @@ abstract class BaseFragment : Fragment(), EasyPermissions.PermissionCallbacks {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if(useEventBus()) {
-            EventBus.getDefault().register(this)
+            if(!EventBus.getDefault().isRegistered(this)) {
+                EventBus.getDefault().register(this)
+            }
         }
         app = activity!!.application as App
         updateBG()

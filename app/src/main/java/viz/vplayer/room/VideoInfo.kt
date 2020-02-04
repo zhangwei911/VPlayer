@@ -18,5 +18,5 @@ data class VideoInfo(
     @ColumnInfo(name = "updated_at") var updatedAt: Long = createdAt,
     @Ignore var episodeList: MutableList<Episode> = mutableListOf(),
     @Ignore var index: Int = 0,
-    @Ignore var searchUrl: String = ""
+    @ColumnInfo(name = "search_url") var searchUrl: String = ""
 )

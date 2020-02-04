@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.activity.addCallback
 import androidx.annotation.NonNull
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.Observer
@@ -20,14 +22,12 @@ import com.google.gson.reflect.TypeToken
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.fragment_home.*
-import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import viz.vplayer.BuildConfig
 import viz.vplayer.R
 import viz.vplayer.adapter.SearchAdapter
 import viz.vplayer.bean.*
-import viz.vplayer.eventbus.HtmlListEvent
 import viz.vplayer.eventbus.RuleEvent
 import viz.vplayer.room.Rule
 import viz.vplayer.ui.activity.RuleListActivity
@@ -58,37 +58,56 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         mainVM = activity?.run {
-            ViewModelProvider.AndroidViewModelFactory.getInstance(app)
-                .create(MainVM::class.java)
+            ViewModelProvider(this).get(MainVM::class.java)
         } ?: throw Exception("Invalid Activity")
         searchAdapter = SearchAdapter(context!!)
         mainVM.play.observe(viewLifecycleOwner, Observer { videoInfoBean ->
-            val intent = Intent(context, VideoPalyerActivity::class.java)
-            intent.putExtra("url", videoInfoBean.url)
-            intent.putExtra("searchUrl", searchUrl)
-            intent.putExtra("title", videoInfoBean.title)
-            intent.putExtra("duration", videoInfoBean.duration)
-            intent.putExtra("img", videoInfoBean.img)
-            intent.putExtra("episodes", mainVM.episodes.value as Serializable)
-            intent.putExtra("html", htmlList[searchAdapter.data[currentPos].from])
-            startActivity(intent)
-            loadingView.visibility = View.GONE
+            videoInfoBean?.let {
+                mainVM.play.postValue(null)
+                if (htmlList.isEmpty()) {
+                    return@let
+                }
+                val intent = Intent(context, VideoPalyerActivity::class.java)
+                intent.putExtra("url", videoInfoBean.url)
+                intent.putExtra("searchUrl", searchUrl)
+                intent.putExtra("title", videoInfoBean.title)
+                intent.putExtra("duration", videoInfoBean.duration)
+                intent.putExtra("img", videoInfoBean.img)
+                intent.putExtra("episodes", mainVM.episodes.value as Serializable)
+                intent.putExtra("html", htmlList[searchAdapter.data[currentPos].from])
+                startActivity(intent)
+                loadingView.visibility = View.GONE
+            }
         })
         mainVM.search.observe(viewLifecycleOwner, Observer { searchList ->
             l.i(searchList)
+            if (searchList.isNullOrEmpty()) {
+                loadingView.visibility = View.GONE
+                return@Observer
+            }
             if (isAll) {
                 searchAdapter.data.addAll(searchList)
             } else {
                 searchAdapter.data = searchList
             }
+            mainVM.saveSearchResult(searchAdapter.data)
+            mainVM.search.postValue(null)
             searchAdapter.notifyDataSetChanged()
             loadingView.visibility = View.GONE
             if (BuildConfig.DEBUG) {
                 searchClick(0)
             }
         })
+        mainVM.getSearchResult().observe(viewLifecycleOwner, Observer { searchResult ->
+            searchAdapter.data = searchResult
+            searchAdapter.notifyDataSetChanged()
+        })
         mainVM.episodes.observe(viewLifecycleOwner, Observer { episodeList ->
             l.i(episodeList)
+            if (episodeList == null) {
+                loadingView.visibility = View.GONE
+                return@Observer
+            }
             if (episodeList.isEmpty()) {
                 loadingView.visibility = View.GONE
                 Toast.show(context, "数据为空")
@@ -151,18 +170,33 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 )
             }
         })
-        mainVM.jsonBeanList.observe(viewLifecycleOwner, Observer {
-            EventBus.getDefault().postSticky(HtmlListEvent(it))
+        mainVM.getSearchInfo().observe(viewLifecycleOwner, Observer {
+            it?.let {
+                textInputEditText_search.setText(it)
+            }
+        })
+        mainVM.getSearchUrl().observe(viewLifecycleOwner, Observer {
+            it?.let {
+                spinnerItems.forEachIndexed { index, s ->
+                    if (s == it) {
+                        spinner_website.setSelection(index)
+                    }
+                }
+            }
         })
         mainVM.errorInfo.observe(viewLifecycleOwner, Observer { errorInfo ->
-            loadingView.visibility = View.GONE
-            Toast.showLong(context, errorInfo.errMsg)
-            when (errorInfo.errCode) {
-                ErrorCode.ERR_JSON_INVALID -> {
-                    updateRule(errorInfo.url, 0, "规则无效")
-                }
-                ErrorCode.ERR_JSON_EMPTY -> {
-                    updateRule(errorInfo.url, -1, "规则数据为空")
+            errorInfo?.let {
+                loadingView.visibility = View.GONE
+                Toast.showLong(context, errorInfo.errMsg)
+                when (errorInfo.errCode) {
+                    ErrorCode.ERR_JSON_INVALID -> {
+                        if(errorInfo.url != DEFAULT_RULE_URL) {
+                            updateRule(errorInfo.url, 0, "规则无效")
+                        }
+                    }
+                    ErrorCode.ERR_JSON_EMPTY -> {
+                        updateRule(errorInfo.url, -1, "规则数据为空")
+                    }
                 }
             }
         })
@@ -174,26 +208,30 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             var downloads = App.instance.db.downloadDao().getAllByStatus(0)
             downloads.forEachIndexed { index, download ->
                 download.apply {
-                    WorkerUtil.startWorker(
-                        videoUrl,
-                        videoTitle,
-                        videoImgUrl,
-                        activity!!.applicationContext,
-                        viewLifecycleOwner
-                    )
+                    activity?.runOnUiThread {
+                        WorkerUtil.startWorker(
+                            videoUrl,
+                            videoTitle,
+                            videoImgUrl,
+                            activity!!.applicationContext,
+                            viewLifecycleOwner
+                        )
+                    }
                 }
             }
         }.continueWithEnd("启动所有视频下载")
+        val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
+            requireActivity().finish()
+        }
     }
 
     private fun test() {
         if (BuildConfig.DEBUG) {
-            textInputEditText_search.setText("锦衣之下")
-            spinner_website.setSelection(2)
+//            textInputEditText_search.setText("锦衣之下")
+//            spinner_website.setSelection(2)
 //            materialButton_search.performClick()
         }
     }
-
 
     private fun updateRule(url: String, ruleStatus: Int, taskName: String) {
         Task.callInBackground {
@@ -204,15 +242,17 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
     }
 
     private fun getRules() {
+        if (mainVM.rules.value != null) {
+            return
+        }
         Task.callInBackground {
-            val url = "http://viphp-vi.stor.sinaapp.com/rules.txt"
             val urlList = mutableListOf<String>()
-            val rule = app.db.ruleDao().getByUrl(url)
+            val rule = app.db.ruleDao().getByUrl(DEFAULT_RULE_URL)
             if (rule == null) {
                 val ruleNew = Rule()
-                ruleNew.ruleUrl = url
+                ruleNew.ruleUrl = DEFAULT_RULE_URL
                 app.db.ruleDao().insertAll(ruleNew)
-                urlList.add(url)
+                urlList.add(DEFAULT_RULE_URL)
             } else {
                 val rules = app.db.ruleDao().getAll()
                 rules.filter { it.ruleEnable && it.ruleStatus == 1 }.forEach {
@@ -263,9 +303,6 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                     }
                 })
         )
-        htmlList.forEach { htmlBean: HtmlBean ->
-            l.d(gson.toJson(htmlBean))
-        }
         textInputEditText_search.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 materialButton_search.performClick()
@@ -273,17 +310,42 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             }
             false
         }
+        spinner_website.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                mainVM.saveSearchUrl(spinnerItems[position])
+            }
+
+        }
     }
 
     private fun searchClick(position: Int) {
-        loadingView.visibility = View.VISIBLE
         currentPos = position
-        val searchBean = searchAdapter.data[position]
-        searchUrl = spinnerItems[searchBean.from]
-        mainVM.getVideoEpisodesInfo(
-            searchBean.url,
-            htmlList[searchBean.from].episodesBean
-        )
+        searchAdapter.data.run {
+            if (isEmpty()) {
+                null
+            } else {
+                loadingView.visibility = View.VISIBLE
+                this[position]
+            }
+        }?.apply {
+            if (spinnerItems.isEmpty() || htmlList.isEmpty()) {
+                return@apply
+            }
+            searchUrl = spinnerItems[from]
+            mainVM.getVideoEpisodesInfo(
+                url,
+                htmlList[from].episodesBean
+            )
+        }
     }
 
     override fun onClick(v: View?) {
@@ -292,6 +354,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             R.id.materialButton_search -> {
                 val kw = textInputEditText_search.text.toString()
                 if (!kw.isNullOrEmpty()) {
+                    mainVM.saveSearchInfo(kw)
                     loadingView.visibility = View.VISIBLE
                     textInputLayout_search.clearFocus()
                     val index = spinner_website.selectedItemPosition
@@ -374,13 +437,18 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        mainVM.errorInfo.postValue(null)
+        mainVM.episodes.postValue(null)
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun ruleEvent(ruleEvent: RuleEvent) {
         if (ruleEvent.isRefresh) {
             getRules()
         }
     }
-
 
     private var uriIdlingResource: UriIdlingResource? = null
     /**

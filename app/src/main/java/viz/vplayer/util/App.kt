@@ -97,6 +97,11 @@ class App : Application(), Configuration.Provider {
                     8,
                     9,
                     "ALTER TABLE download ADD COLUMN download_progress INTEGER NOT NULL DEFAULT 0"
+                ),
+                RoomUtil.migration(
+                    9,
+                    10,
+                    "ALTER TABLE videoinfo ADD COLUMN search_url TEXT NOT NULL DEFAULT ''"
                 )
             )
             .build()

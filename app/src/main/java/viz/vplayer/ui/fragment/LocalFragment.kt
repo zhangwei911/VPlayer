@@ -4,6 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
+import androidx.activity.addCallback
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
@@ -23,6 +27,7 @@ import viz.vplayer.ui.activity.VideoPalyerActivity
 import viz.vplayer.util.RecyclerItemClickListener
 import viz.vplayer.util.WorkerUtil
 import viz.vplayer.util.continueWithEnd
+import viz.vplayer.vm.MainVM
 import java.io.Serializable
 
 class LocalFragment : BaseFragment() {
@@ -31,9 +36,16 @@ class LocalFragment : BaseFragment() {
     private var localAdapter: LocalAdapter? = null
     private val list = mutableListOf<Download>()
     private var htmlList = mutableListOf<JsonBean>()
+    private lateinit var mainVM: MainVM
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        mainVM = activity?.run {
+            ViewModelProvider(this).get(MainVM::class.java)
+        } ?: throw Exception("Invalid Activity")
+        mainVM.jsonBeanList.observe(viewLifecycleOwner, Observer {
+            htmlList = it
+        })
         initViews()
         Task.callInBackground {
             app.db.downloadDao().getAll().apply {
@@ -45,6 +57,9 @@ class LocalFragment : BaseFragment() {
                 }
             }
         }.continueWithEnd("获取下载记录")
+        val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
+            findNavController().navigate(R.id.homeFragment)
+        }
     }
 
     private fun initViews() {
@@ -160,7 +175,7 @@ class LocalFragment : BaseFragment() {
         localAdapter?.list?.forEachIndexed { index, download ->
             if (download.videoUrl == downloadProgressEvent.videoUrl) {
                 download.progress = downloadProgressEvent.progress
-                if(download.progress == 100){
+                if (download.progress == 100) {
                     download.status = 1
                 }
                 localAdapter?.notifyItemChanged(index)

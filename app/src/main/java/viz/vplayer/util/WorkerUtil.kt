@@ -6,6 +6,7 @@ import androidx.lifecycle.Observer
 import androidx.work.*
 import com.viz.tools.MD5Util
 import com.viz.tools.l
+import viz.vplayer.BuildConfig
 import viz.vplayer.worker.DownloadWorker
 import java.util.concurrent.TimeUnit
 
@@ -22,15 +23,15 @@ object WorkerUtil {
             .getWorkInfosForUniqueWork(uniqueName).get()
         if (wis.isNullOrEmpty()) {
             val constraintsBuilder = Constraints.Builder().apply {
-//                setRequiredNetworkType(
-//                    NetworkType.UNMETERED
-//                )// 网络状态
-//                setRequiresBatteryNotLow(true)                 // 不在电量不足时执行
+                if(!BuildConfig.DEBUG) {
+                    setRequiredNetworkType(NetworkType.UNMETERED)// 网络状态
+                    setRequiresBatteryNotLow(true)                 // 不在电量不足时执行
 //                setRequiresCharging(true)                      // 在充电时执行
-//                setRequiresStorageNotLow(true)                 // 不在存储容量不足时执行
+                    setRequiresStorageNotLow(true)                 // 不在存储容量不足时执行
 //                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //                    setRequiresDeviceIdle(true)  // 在待机状态下执行
 //                }
+                }
             }
             val constraints = constraintsBuilder
                 .build()

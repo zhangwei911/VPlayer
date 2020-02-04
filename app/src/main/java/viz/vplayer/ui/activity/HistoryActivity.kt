@@ -22,8 +22,7 @@ import java.io.Serializable
 
 class HistoryActivity : BaseActivity() {
     private val mainVM: MainVM by lazy {
-        ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-            .create(MainVM::class.java)
+        ViewModelProvider(this).get(MainVM::class.java)
     }
 
     override fun getContentViewId(): Int = R.layout.activity_history

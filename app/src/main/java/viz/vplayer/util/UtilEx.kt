@@ -1,6 +1,8 @@
 package viz.vplayer.util
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -24,6 +26,7 @@ import org.greenrobot.eventbus.EventBus
 import viz.vplayer.R
 import viz.vplayer.eventbus.DownloadProgressEvent
 import viz.vplayer.room.Download
+import viz.vplayer.ui.activity.MainActivity
 import java.io.File
 import java.net.URLDecoder
 import kotlin.random.Random
@@ -224,14 +227,20 @@ fun HttpUtils.download(
     var progressLast = 0.00f
     NotificationUtil.createNotificationChannel(context)
     val GROUP_KEY_WORK_VIDEO = "viz.vplayer.WORK_VIDEO"
-
+    val intent = Intent(context, MainActivity::class.java)
+    intent.putExtra("to",R.id.localFragment)
+    val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
     val builder = NotificationCompat.Builder(context, CHANNEL_ID_DOWNLOAD).apply {
-        setContentText("视频下载${fileName}")
+        val text  = "视频下载${fileName}"
+        setContentText(text)
         setContentTitle("0.00%")
         setSmallIcon(android.R.drawable.stat_sys_download)
         priority = NotificationCompat.PRIORITY_LOW
         setOnlyAlertOnce(true)
         setGroup(GROUP_KEY_WORK_VIDEO)
+        setStyle(NotificationCompat.BigTextStyle()
+            .bigText(text))
+        setContentIntent(pendingIntent)
     }
     val summaryNotification = NotificationCompat.Builder(context, CHANNEL_ID_DOWNLOAD).apply {
         setContentTitle("视频下载")
@@ -295,8 +304,12 @@ fun HttpUtils.download(
                             // notificationManager.notify(notificationId, builder.build());
 
                             if (progress.toFloat() == 100f) {
+                                val text  = "视频下载${fileName}"
+                                setContentText(text)
                                 // When done, update the notification one more time to remove the progress bar
                                 setContentTitle("下载完成")
+                                setStyle(NotificationCompat.BigTextStyle()
+                                    .bigText(text))
                                 setProgress(0, 0, false)
                                 setSmallIcon(android.R.drawable.stat_sys_download_done)
                                 notify(notificationId, build())
@@ -314,6 +327,7 @@ fun HttpUtils.download(
                 Task.callInBackground {
                     if (download != null) {
                         download!!.status = 1
+                        download!!.progress = 100
                         App.instance.db.downloadDao().updateALl(download!!)
                     }
                 }.continueWithEnd("下载数据记录删除")

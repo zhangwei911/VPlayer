@@ -2,14 +2,12 @@ package viz.vplayer.ui.activity
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.BounceInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.work.*
 import bolts.Task
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.utils.GSYVideoType
@@ -39,20 +37,16 @@ import viz.vplayer.video.MoveType
 import viz.vplayer.video.Screen
 import viz.vplayer.vm.MainVM
 import viz.vplayer.vm.VideoVM
-import viz.vplayer.worker.DownloadWorker
 import java.io.File
 import java.net.URLDecoder
-import java.util.concurrent.TimeUnit
 
 
 class VideoPalyerActivity : BaseActivity() {
     private val videoVM: VideoVM by lazy {
-        ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-            .create(VideoVM::class.java)
+        ViewModelProvider(this).get(VideoVM::class.java)
     }
     private val mainVM: MainVM by lazy {
-        ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-            .create(MainVM::class.java)
+        ViewModelProvider(this).get(MainVM::class.java)
     }
     private var episodes: MutableList<String>? = null
     private var html: HtmlBean? = null
@@ -68,27 +62,34 @@ class VideoPalyerActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         EventBus.getDefault().register(this)
         videoVM.play.observe(this, Observer { videoInfoBean ->
-            var url = videoInfoBean.url
-            l.d("视频地址:$url")
-            loadingView_player.visibility = View.GONE
-            gsyVideoPLayer.setUp(url, true, videoInfoBean.title)
-            Task.callInBackground {
-                val vi = app.db.videoInfoDao().getByUrl(videoInfoBean.url)
-                l.d(vi)
-                runOnUiThread {
-                    if (vi != null) {
-                        gsyVideoPLayer.seekOnStart = vi.currentPosition.toLong()
+            videoInfoBean?.let {
+                var url = videoInfoBean.url
+                l.d("视频地址:$url")
+                loadingView_player.visibility = View.GONE
+                title = videoInfoBean.title
+                gsyVideoPLayer.setUp(url, true, videoInfoBean.title)
+                Task.callInBackground {
+                    val vi = app.db.videoInfoDao().getByUrl(videoInfoBean.url)
+                    l.d(vi)
+                    runOnUiThread {
+                        if (vi != null) {
+                            gsyVideoPLayer.seekOnStart = vi.currentPosition.toLong()
+                        }
+                        gsyVideoPLayer.startPlayLogic()
                     }
-                    gsyVideoPLayer.startPlayLogic()
-                }
-            }.continueWithEnd("播放")
+                }.continueWithEnd("播放")
+            }
         })
         mainVM.play.observe(this, Observer { videoInfoBean ->
-            videoVM.play.postValue(videoInfoBean)
+            videoInfoBean?.let {
+                videoVM.play.postValue(videoInfoBean)
+            }
         })
         mainVM.errorInfo.observe(this, Observer { errorInfo ->
-            loadingView_player.visibility = View.GONE
-            Toast.showLong(this, errorInfo.errMsg)
+            errorInfo?.let {
+                loadingView_player.visibility = View.GONE
+                Toast.showLong(this, errorInfo.errMsg)
+            }
         })
         initVideo()
         var url = intent.getStringExtra("url")
@@ -117,7 +118,7 @@ class VideoPalyerActivity : BaseActivity() {
         val target = FileUtil.getPath(this) + "/" + fileName
         l.i(target)
         val videoFile = File(target).apply {
-            if(exists()){
+            if (exists()) {
                 url = "file://$target"
             }
         }
