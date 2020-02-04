@@ -20,7 +20,7 @@
         android:id="@+id/bottomNavigationView_main"
         android:layout_width="0dp"
         android:layout_height="@dimen/bottomNavHeight"
-        android:background="#FF5722"
+        android:background="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
