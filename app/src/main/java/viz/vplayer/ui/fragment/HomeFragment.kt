@@ -443,9 +443,15 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 }
             }
             R.id.imageButton_menu -> {
-                val menuFragment = MenuFragment()
-                menuFragment.jsonBeanList = mainVM.jsonBeanList.value!!
-                menuFragment.show(childFragmentManager, "menu")
+                if (!isWifi) {
+                    Toast.show("非WIFI连接或没有网络")
+                    return
+                }
+                mainVM.jsonBeanList.value?.apply {
+                    val menuFragment = MenuFragment()
+                    menuFragment.jsonBeanList = this
+                    menuFragment.show(childFragmentManager, "menu")
+                }
             }
         }
     }
