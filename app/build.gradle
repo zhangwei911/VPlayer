@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         applicationId "viz.vplayer"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 29
         versionCode project.VERSION_CODE
         versionName project.VERSION_NAME
@@ -160,6 +160,7 @@ dependencies {
     // optional - Test helpers
 //    androidTestImplementation "androidx.work:work-testing:$work_version"
 
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.3"
 
     // Java language implementation
@@ -187,4 +188,18 @@ dependencies {
 
     // optional - Test helpers for LiveData
 //    testImplementation "androidx.arch.core:core-testing:$lifecycle_version"
+
+//    implementation 'com.arialyy.aria:core:3.8.5'
+    implementation 'viz.commonlib:aria-core:1.0.0'
+//    kapt 'com.arialyy.aria:compiler:3.8.5'
+    kapt 'viz.commonlib:aria-compiler:1.0.0'
+//    implementation 'com.arialyy.aria:ftpComponent:3.8.5' // 如果需要使用ftp，请增加该组件
+//    implementation 'com.arialyy.aria:sftpComponent:3.8.5' // 如果需要使用ftp，请增加该组件
+//    implementation 'com.arialyy.aria:m3u8Component:3.8.5' // 如果需要使用m3u8下载功能，请增加该组件
+    implementation 'viz.commonlib:aria-m3u8:1.0.0'
+
+    implementation 'com.squareup.okhttp3:okhttp:4.2.2'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.14.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
 }

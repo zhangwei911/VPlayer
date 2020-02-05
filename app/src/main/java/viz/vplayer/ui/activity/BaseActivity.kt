@@ -28,8 +28,8 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
     lateinit var app: App
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if(useEventBus()) {
-            if(!EventBus.getDefault().isRegistered(this)) {
+        if (useEventBus()) {
+            if (!EventBus.getDefault().isRegistered(this)) {
                 EventBus.getDefault().register(this)
             }
         }
@@ -158,18 +158,8 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
         l.ifo(requestCode, perms.toString())
         val pn = perms.joinToString { it }
         l.i("需要以下权限:$pn")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && perms.contains(Manifest.permission.SYSTEM_ALERT_WINDOW)) {
-            if(!Settings.canDrawOverlays(this)) {
-                val intent = Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
-                )
-                startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE)
-            }
-        } else {
-            AppSettingsDialog.Builder(this).build().show()
+        AppSettingsDialog.Builder(this).build().show()
 //            startActivity(Intent(Settings.ACTION_APPLICATION_SETTINGS))
-        }
     }
 
     override fun onPermissionsGranted(requestCode: Int, perms: MutableList<String>) {
@@ -184,10 +174,10 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
             OVERLAY_PERMISSION_REQ_CODE -> {
                 if (resultCode == Activity.RESULT_OK) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if(!Settings.canDrawOverlays(this)){
-                            Toast.show(this,"悬浮窗权限没有打开")
-                        }else{
-                            Toast.show(this,"悬浮窗权限已打开")
+                        if (!Settings.canDrawOverlays(this)) {
+                            Toast.show(this, "悬浮窗权限没有打开")
+                        } else {
+                            Toast.show(this, "悬浮窗权限已打开")
                         }
                     }
                 }
@@ -195,11 +185,11 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
         }
     }
 
-    open protected fun useEventBus():Boolean = false
+    open protected fun useEventBus(): Boolean = false
 
     override fun onDestroy() {
         super.onDestroy()
-        if(useEventBus()) {
+        if (useEventBus()) {
             EventBus.getDefault().unregister(this)
         }
     }

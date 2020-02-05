@@ -6,6 +6,9 @@ import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.work.Configuration
+import androidx.work.WorkManager
+import com.arialyy.aria.core.Aria
+import com.arialyy.aria.core.AriaConfig
 import com.shuyu.gsyvideoplayer.player.IjkPlayerManager
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.QbSdk.PreInitCallback
@@ -13,6 +16,7 @@ import com.tencent.stat.StatConfig
 import com.tencent.stat.StatCrashCallback
 import com.tencent.stat.StatCrashReporter
 import com.tencent.stat.StatService
+import com.viz.tools.Toast
 import com.viz.tools.l
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import viz.vplayer.room.AppDatabase
@@ -24,9 +28,10 @@ class App : Application(), Configuration.Provider {
         super.onCreate()
         l.init(this)
         l.SUFFIX = ".kt"
+        Toast.init(applicationContext)
         IjkPlayerManager.setLogLevel(IjkMediaPlayer.IJK_LOG_SILENT)
         // [可选]设置是否打开debug输出，上线时请关闭，Logcat标签为"MtaSDK"
-        StatConfig.setDebugEnable(true)
+//        StatConfig.setDebugEnable(true)
         // 基础统计API
         StatService.registerActivityLifecycleCallbacks(this)
         StatCrashReporter.getStatCrashReporter(applicationContext).javaCrashHandlerStatus = true
@@ -126,6 +131,11 @@ class App : Application(), Configuration.Provider {
         Configuration.Builder()
             .setMinimumLoggingLevel(Log.DEBUG)
             .build()
+
+    override fun onTerminate() {
+        super.onTerminate()
+        WorkManager.getInstance(this).pruneWork()
+    }
 
     companion object {
         lateinit var instance: App

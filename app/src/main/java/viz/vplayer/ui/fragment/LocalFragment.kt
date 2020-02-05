@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItems
+import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.fragment_local.*
 import org.greenrobot.eventbus.Subscribe
@@ -21,6 +22,7 @@ import viz.vplayer.adapter.LocalAdapter
 import viz.vplayer.bean.JsonBean
 import viz.vplayer.eventbus.DownloadProgressEvent
 import viz.vplayer.eventbus.HtmlListEvent
+import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.room.Download
 import viz.vplayer.room.NotificationId
 import viz.vplayer.ui.activity.VideoPalyerActivity
@@ -184,5 +186,10 @@ class LocalFragment : BaseFragment() {
                 }.continueWithEnd("保存下载进度")
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun netEvent(netEvent: NetEvent) {
+        isWifi = netEvent.isWifi
     }
 }

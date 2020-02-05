@@ -22,4 +22,9 @@
     <string name="close">关闭</string>
     <string name="menu_search">搜索</string>
     <string name="menu_local">本地缓存</string>
+    <string name="network_invalid_tips">网络不可用</string>
+    <string name="network_invalid">网络不可用,点击检测网络</string>
+    <string name="open_float">去打开</string>
+    <string name="float_play">悬浮窗播放</string>
+    <string name="float_tips">需要允许打开悬浮窗</string>
 </resources>

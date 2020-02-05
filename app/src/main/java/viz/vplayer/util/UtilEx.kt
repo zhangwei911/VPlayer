@@ -136,7 +136,7 @@ fun <T> HttpUtils.send(
     method: HttpRequest.HttpMethod = HttpRequest.HttpMethod.GET,
     userAgent: String = DEFAULT_UA,
     charset: String = UTF8,
-    timeout: Int = 1000 * 60,
+    timeout: Int = 1000 * 5,
     params: RequestParams? = null
 ) {
     configUserAgent(userAgent)
@@ -184,28 +184,12 @@ fun String.isJson(isJsonObject: Boolean = false): Boolean {
 fun HttpUtils.download(
     context: Context,
     url: String,
-    videoTitle: String,
-    videoImgUrl: String,
-    onProgress: (progress: Float) -> Unit = {},
-    onResult: (target: String) -> Unit = {},
+    onStart: (() -> Unit)?=null,
+    onProgress: ((progress: Float,current:Long,total:Long) -> Unit)?=null,
+    onResult: ((target: String) -> Unit)?=null,
     onError: ((httpException: HttpException, errMsg: String) -> Unit)? = null,
     suffix: String = ""
 ): HttpHandler<File> {
-    var download: Download? = null
-    Task.callInBackground {
-        l.start("bolts")
-        download = App.instance.db.downloadDao().getByUrl(url)
-        if (download == null) {
-            download = Download()
-            download!!.videoUrl = url
-            download!!.videoTitle = videoTitle
-            download!!.videoImgUrl = videoImgUrl
-            download!!.notificationId =
-                "${TimeFormat.getCurrentTime("MMddHHmm")}${Random.nextInt(99)}".toInt()
-            App.instance.db.downloadDao().insertAll(download!!)
-        }
-        l.end("bolts")
-    }.continueWithEnd("下载数据记录")
     //int downloadLength = downloadFileSize(context, url);
     //判断手机内存是否够下载文件
     l.i(url)
@@ -224,50 +208,12 @@ fun HttpUtils.download(
     }
     val target = FileUtil.getPath(context) + "/" + fileName
     l.i(target)
-    var progressLast = 0.00f
-    NotificationUtil.createNotificationChannel(context)
-    val GROUP_KEY_WORK_VIDEO = "viz.vplayer.WORK_VIDEO"
-    val intent = Intent(context, MainActivity::class.java)
-    intent.putExtra("to",R.id.localFragment)
-    val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, 0)
-    val builder = NotificationCompat.Builder(context, CHANNEL_ID_DOWNLOAD).apply {
-        val text  = "视频下载${fileName}"
-        setContentText(text)
-        setContentTitle("0.00%")
-        setSmallIcon(android.R.drawable.stat_sys_download)
-        priority = NotificationCompat.PRIORITY_LOW
-        setOnlyAlertOnce(true)
-        setGroup(GROUP_KEY_WORK_VIDEO)
-        setStyle(NotificationCompat.BigTextStyle()
-            .bigText(text))
-        setContentIntent(pendingIntent)
-    }
-    val summaryNotification = NotificationCompat.Builder(context, CHANNEL_ID_DOWNLOAD).apply {
-        setContentTitle("视频下载")
-        //set content text to support devices running API level < 24
-        setContentText("more download")
-        setSmallIcon(R.drawable.vplayer_logo)
-        //build summary info into InboxStyle template
-//        .setStyle(NotificationCompat.InboxStyle()
-//            .addLine("Alex Faarborg Check this out")
-//            .addLine("Jeff Chang Launch Party")
-//            .setBigContentTitle("2 new messages")
-//            .setSummaryText("janedoe@example.com"))
-        //specify which group this notification belongs to
-        setGroup(GROUP_KEY_WORK_VIDEO)
-        //set this notification as the summary for the group
-        setGroupSummary(true)
-        setOnlyAlertOnce(true)
-    }
-        .build()
 
-    val PROGRESS_MAX = 100
     val handlerDownload = download(urlUTF8, target, true, true,
         object : RequestCallBack<File>() {
             override fun onStart() {
                 super.onStart()
-                Toast.show(context, "开始下载")
-                l.d("开始下载")
+                onStart?.invoke()
             }
 
             override fun onLoading(
@@ -277,60 +223,12 @@ fun HttpUtils.download(
                 super.onLoading(total, current, isUploading)
                 l.d("$current/$total")
                 var progress = String.format("%.2f", current.toFloat() / total * 100)
-                if (progress.toFloat() - progressLast > 1 || progress.toFloat() == 100f || progress.toFloat() == 0f) {
-                    EventBus.getDefault()
-                        .postSticky(DownloadProgressEvent(progress.toFloat().toInt(), url))
-                    onProgress.invoke(progress.toFloat())
-                    l.i(progress.toString())
-                    Toast.show(
-                        context,
-                        "$progress%($current/$total)"
-                    )
-                    progressLast = progress.toFloat()
-                    val notificationId = download!!.notificationId
-                    NotificationManagerCompat.from(context).apply {
-                        // Issue the initial notification with zero progress
-                        builder.apply {
-                            setProgress(PROGRESS_MAX, progress.toFloat().toInt(), true)
-                            setContentTitle("${progress.toFloat()}%")
-                            notify(notificationId, build())
-                            notify(111111, summaryNotification)
-
-                            // Do the job here that tracks the progress.
-                            // Usually, this should be in a
-                            // worker thread
-                            // To show progress, update PROGRESS_CURRENT and update the notification with:
-                            // builder.setProgress(PROGRESS_MAX, PROGRESS_CURRENT, false);
-                            // notificationManager.notify(notificationId, builder.build());
-
-                            if (progress.toFloat() == 100f) {
-                                val text  = "视频下载${fileName}"
-                                setContentText(text)
-                                // When done, update the notification one more time to remove the progress bar
-                                setContentTitle("下载完成")
-                                setStyle(NotificationCompat.BigTextStyle()
-                                    .bigText(text))
-                                setProgress(0, 0, false)
-                                setSmallIcon(android.R.drawable.stat_sys_download_done)
-                                notify(notificationId, build())
-                            }
-                        }
-                    }
-                }
+                onProgress?.invoke(progress.toFloat(),current,total)
             }
 
             override fun onSuccess(responseInfo: ResponseInfo<File>) {
                 val filePath = responseInfo.result.absolutePath
-                onResult.invoke(filePath)
-                Toast.show(context, "下载成功\n$filePath")
-                l.d("下载成功 $filePath")
-                Task.callInBackground {
-                    if (download != null) {
-                        download!!.status = 1
-                        download!!.progress = 100
-                        App.instance.db.downloadDao().updateALl(download!!)
-                    }
-                }.continueWithEnd("下载数据记录删除")
+                onResult?.invoke(filePath)
             }
 
             override fun onFailure(
@@ -338,8 +236,6 @@ fun HttpUtils.download(
                 arg1: String
             ) {
                 onError?.invoke(arg0, arg1)
-                Toast.show(context, "下载失败")
-                l.e("下载失败")
             }
         })
     return handlerDownload

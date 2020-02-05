@@ -64,6 +64,7 @@ object WorkerUtil {
                                 l.i("下载成功")
                             }
                             WorkInfo.State.FAILED -> {
+                                l.e(workInfo)
                                 l.e(workInfo.outputData.getString("errMsg"))
                             }
                             WorkInfo.State.RUNNING -> {

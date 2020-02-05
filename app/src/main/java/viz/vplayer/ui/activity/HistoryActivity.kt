@@ -9,13 +9,17 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.lifecycle.lifecycleOwner
+import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_history.*
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import viz.vplayer.R
 import viz.vplayer.util.RecyclerItemClickListener
 import viz.vplayer.adapter.HistoryAdapter
 import viz.vplayer.bean.HtmlBean
 import viz.vplayer.bean.JsonBean
+import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.util.continueWithEnd
 import viz.vplayer.vm.MainVM
 import java.io.Serializable
@@ -28,6 +32,7 @@ class HistoryActivity : BaseActivity() {
     override fun getContentViewId(): Int = R.layout.activity_history
     override fun getCommonTtile(): String = getString(R.string.history)
     private lateinit var adapter: HistoryAdapter
+    private var isWifi = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val htmlList = intent.getParcelableArrayExtra("htmlList").toMutableList()
@@ -61,6 +66,10 @@ class HistoryActivity : BaseActivity() {
                 object :
                     RecyclerItemClickListener.OnItemClickListener {
                     override fun onItemClick(view: View, position: Int, e: MotionEvent) {
+                        if(!isWifi){
+                            Toast.show("非WIFI连接或没有网络")
+                            return
+                        }
                         val data = adapter.list[position]
 //                        if (data.videoUrl.endsWith("m3u8")) {
                         val intent = Intent(this@HistoryActivity, VideoPalyerActivity::class.java)
@@ -118,5 +127,10 @@ class HistoryActivity : BaseActivity() {
                     }
                 })
         )
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun netEvent(netEvent: NetEvent) {
+        isWifi = netEvent.isWifi
     }
 }

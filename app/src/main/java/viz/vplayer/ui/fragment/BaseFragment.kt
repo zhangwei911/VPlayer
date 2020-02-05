@@ -27,6 +27,7 @@ import java.io.File
 
 abstract class BaseFragment : Fragment(), EasyPermissions.PermissionCallbacks {
     lateinit var app: App
+    var isWifi = true
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

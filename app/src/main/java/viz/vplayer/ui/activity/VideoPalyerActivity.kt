@@ -1,14 +1,19 @@
 package viz.vplayer.ui.activity
 
+import android.Manifest
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.BounceInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import bolts.Task
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.lifecycle.lifecycleOwner
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.utils.GSYVideoType
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoView
@@ -19,10 +24,12 @@ import kotlinx.android.synthetic.main.activity_video.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import pub.devrel.easypermissions.AppSettingsDialog
 import viz.vplayer.R
 import viz.vplayer.adapter.SelectEpisodesAdapter
 import viz.vplayer.bean.HtmlBean
 import viz.vplayer.bean.VideoInfoBean
+import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.eventbus.VideoEvent
 import viz.vplayer.room.Episode
 import viz.vplayer.room.VideoId
@@ -54,6 +61,7 @@ class VideoPalyerActivity : BaseActivity() {
     private var img = ""
     private var searchUrl = ""
     var index = 0
+    private var isWifi = true
 
     override fun getContentViewId(): Int = R.layout.activity_video
     override fun isFullScreen(): Boolean = true
@@ -149,6 +157,10 @@ class VideoPalyerActivity : BaseActivity() {
                         object :
                             RecyclerItemClickListener.OnItemClickListener {
                             override fun onItemClick(view: View, position: Int, e: MotionEvent) {
+                                if (!isWifi) {
+                                    Toast.show("非WIFI连接或没有网络")
+                                    return
+                                }
                                 index = position
                                 if (episodes!![position].endsWith("m3u8")) {
                                     videoVM.play.postValue(
@@ -212,6 +224,26 @@ class VideoPalyerActivity : BaseActivity() {
             }
         }
         imageButton_float.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (!Settings.canDrawOverlays(this)) {
+                    MaterialDialog(applicationContext).show {
+                        title(R.string.float_play)
+                        message(
+                            text = getString(R.string.float_tips)
+                        )
+                        negativeButton(R.string.open_float, click = {
+                            val intent = Intent(
+                                Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                Uri.parse("package:$packageName")
+                            )
+                            startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE)
+                        })
+                        positiveButton(R.string.cancel)
+                        lifecycleOwner(this@VideoPalyerActivity)
+                    }
+                    return@setOnClickListener
+                }
+            }
             float(videoVM.play.value!!.url, videoVM.play.value!!.title)
             val intent = Intent(Intent.ACTION_MAIN)
             intent.addCategory(Intent.CATEGORY_HOME)
@@ -333,5 +365,10 @@ class VideoPalyerActivity : BaseActivity() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun videoEvent(videoEvent: VideoEvent) {
         gsyVideoPLayer.seekOnStart = videoEvent.currentPosition.toLong()
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun netEvent(netEvent: NetEvent) {
+        isWifi = netEvent.isWifi
     }
 }

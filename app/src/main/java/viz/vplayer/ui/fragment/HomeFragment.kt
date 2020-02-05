@@ -28,6 +28,7 @@ import viz.vplayer.BuildConfig
 import viz.vplayer.R
 import viz.vplayer.adapter.SearchAdapter
 import viz.vplayer.bean.*
+import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.eventbus.RuleEvent
 import viz.vplayer.room.Rule
 import viz.vplayer.ui.activity.RuleListActivity
@@ -190,7 +191,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 Toast.showLong(context, errorInfo.errMsg)
                 when (errorInfo.errCode) {
                     ErrorCode.ERR_JSON_INVALID -> {
-                        if(errorInfo.url != DEFAULT_RULE_URL) {
+                        if (errorInfo.url != DEFAULT_RULE_URL) {
                             updateRule(errorInfo.url, 0, "规则无效")
                         }
                     }
@@ -203,11 +204,20 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         initViews()
         initListener()
         getRules()
+        val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
+            requireActivity().finish()
+        }
 
         Task.callInBackground {
+            if (!isWifi) {
+                Toast.show("非WIFI连接或没有网络")
+                return@callInBackground
+            }
             var downloads = App.instance.db.downloadDao().getAllByStatus(0)
+            l.d("共${downloads.size}个下载任务")
             downloads.forEachIndexed { index, download ->
                 download.apply {
+                    l.df("启动视频", videoUrl, videoTitle, "下载任务")
                     activity?.runOnUiThread {
                         WorkerUtil.startWorker(
                             videoUrl,
@@ -220,9 +230,6 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 }
             }
         }.continueWithEnd("启动所有视频下载")
-        val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
-            requireActivity().finish()
-        }
     }
 
     private fun test() {
@@ -242,6 +249,10 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
     }
 
     private fun getRules() {
+        if (!isWifi) {
+            Toast.show("非WIFI连接或没有网络")
+            return
+        }
         if (mainVM.rules.value != null) {
             return
         }
@@ -281,8 +292,6 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
     }
 
     private fun initViews() {
-        textView_version.text =
-            "版本号:" + activity!!.packageManager.getPackageInfo(activity!!.packageName, 0).versionName
         val lm = LinearLayoutManager(context)
         recyclerView_search.layoutManager = lm
         recyclerView_search.adapter = searchAdapter
@@ -352,6 +361,10 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         val vid = v!!.id
         when (vid) {
             R.id.materialButton_search -> {
+                if (!isWifi) {
+                    Toast.show("非WIFI连接或没有网络")
+                    return
+                }
                 val kw = textInputEditText_search.text.toString()
                 if (!kw.isNullOrEmpty()) {
                     mainVM.saveSearchInfo(kw)
@@ -446,6 +459,14 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun ruleEvent(ruleEvent: RuleEvent) {
         if (ruleEvent.isRefresh) {
+            getRules()
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun netEvent(netEvent: NetEvent) {
+        isWifi = netEvent.isWifi
+        if (isWifi) {
             getRules()
         }
     }

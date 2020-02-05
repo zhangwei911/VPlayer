@@ -53,6 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="10dp"
         android:hint="@string/search_hint"
+        app:hintTextColor="@color/colorAccent"
         app:layout_constraintEnd_toStartOf="@id/materialButton_search"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textView_label_website">
@@ -64,6 +65,7 @@
             android:layout_marginTop="10dp"
             android:imeOptions="actionDone"
             android:lines="1"
+            android:textCursorDrawable="@null"
             android:singleLine="true"
             android:maxLines="1"
             android:hint="@string/search_hint"
@@ -87,7 +89,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
-        app:layout_constraintBottom_toTopOf="@+id/textView_version"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textInputLayout_search" />
@@ -103,17 +105,4 @@
         android:layout_weight="1"
         android:background="#2A77736A"
         app:loading_renderer="SwapLoadingRenderer"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/textView_version"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        tools:text="版本号:1.4"
-        />
-
 </androidx.constraintlayout.widget.ConstraintLayout>
