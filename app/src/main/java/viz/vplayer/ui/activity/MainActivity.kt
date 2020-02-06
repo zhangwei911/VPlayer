@@ -80,7 +80,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 EventBus.getDefault().postSticky(NetEvent(false))
             }
             else -> {
-                if(!BuildConfig.DEBUG) {
+                if (!BuildConfig.DEBUG) {
                     l.d("移动网络禁止下载")
                     EventBus.getDefault().postSticky(NetEvent(false))
                 }
@@ -90,15 +90,19 @@ class MainActivity : BaseActivity(), View.OnClickListener {
     }
 
     fun checkNet() {
-        GlobalScope.launch(CoroutineUtil().handler) {
-            val isConnect = NetUtil().netCheck()
-            EventBus.getDefault().postSticky(NetEvent(isConnect))
-            if (!isConnect) {
-                EventBus.getDefault()
-                    .postSticky(CommonInfoEvent(true, getString(R.string.network_invalid)))
-                runOnUiThread {
-                    Toast.show(R.string.network_invalid_tips)
+        GlobalScope.launch() {
+            try {
+                val isConnect = NetUtil().netCheck()
+                EventBus.getDefault().postSticky(NetEvent(isConnect))
+                if (!isConnect) {
+                    EventBus.getDefault()
+                        .postSticky(CommonInfoEvent(true, getString(R.string.network_invalid)))
+                    runOnUiThread {
+                        Toast.show(R.string.network_invalid_tips)
+                    }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

@@ -50,6 +50,7 @@ interface HttpUtil {
             val rBuilder = Retrofit.Builder()
                 .baseUrl(url)
                 .client(builder.build())
+            rBuilder.addConverterFactory(NullOnEmptyConverterFactory())
             if (addGsonConverterFactory) {
                 rBuilder.addConverterFactory(GsonConverterFactory.create(gson))
             }

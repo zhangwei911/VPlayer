@@ -10,9 +10,9 @@ import androidx.annotation.RequiresPermission
 import com.viz.tools.l
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.ResponseBody
 import org.greenrobot.eventbus.EventBus
-import retrofit2.Call
+import viz.vplayer.R
+import viz.vplayer.eventbus.CommonInfoEvent
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.http.HttpApi
 
@@ -37,6 +37,8 @@ class NetUtil {
             true
         }
         EventBus.getDefault().postSticky(NetEvent(isWifi))
+        EventBus.getDefault()
+            .postSticky(CommonInfoEvent(!isWifi, App.instance.getString(R.string.network_invalid)))
         return isWifi
     }
 
