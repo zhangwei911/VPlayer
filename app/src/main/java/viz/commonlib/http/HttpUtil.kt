@@ -1,17 +1,12 @@
 package viz.commonlib.http
 
 import com.google.gson.GsonBuilder
-import com.secway.happyvoice.util.NetworkInterceptor
 import com.viz.tools.l
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.ResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Url
 import viz.vplayer.util.App
 import java.util.concurrent.TimeUnit
 
@@ -43,7 +38,6 @@ interface HttpUtil {
             interceptorList.forEach {
                 builder.addInterceptor(it)
             }
-            builder.addInterceptor(NetworkInterceptor(App.instance.applicationContext))
             if (debug) {
                 builder.addInterceptor(
                     ResultInterceptor(
@@ -51,6 +45,7 @@ interface HttpUtil {
                     )
                 )
             }
+            builder.addInterceptor(NetworkInterceptor(App.instance.applicationContext))
             return Retrofit.Builder()
                 .baseUrl(url)
                 .client(builder.build())

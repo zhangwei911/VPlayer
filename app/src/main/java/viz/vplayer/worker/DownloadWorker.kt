@@ -30,6 +30,7 @@ import com.viz.tools.l
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
+import viz.vplayer.BuildConfig
 import viz.vplayer.R
 import viz.vplayer.eventbus.CommonInfoEvent
 import viz.vplayer.eventbus.DownloadProgressEvent
@@ -71,11 +72,13 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                     return mFuture!!
                 }
                 else -> {
-                    l.d("移动网络禁止下载")
-                    EventBus.getDefault().postSticky(NetEvent(false))
-                    result = Result.failure(workDataOf("errMsg" to "移动网络禁止下载"))
-                    mFuture?.set(result)
-                    return mFuture!!
+                    if(!BuildConfig.DEBUG) {
+                        l.d("移动网络禁止下载")
+                        EventBus.getDefault().postSticky(NetEvent(false))
+                        result = Result.failure(workDataOf("errMsg" to "移动网络禁止下载"))
+                        mFuture?.set(result)
+                        return mFuture!!
+                    }
                 }
             }
             GlobalScope.launch(CoroutineUtil().handler) {

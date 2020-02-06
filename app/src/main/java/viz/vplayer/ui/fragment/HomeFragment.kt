@@ -132,6 +132,9 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             }
         })
         mainVM.rules.observe(viewLifecycleOwner, Observer { rulesJsonPair ->
+            if (rulesJsonPair == null) {
+                return@Observer
+            }
             try {
                 val type = object : TypeToken<MutableList<JsonBean>>() {}.type
                 val jsonBeanList = gson.fromJson<MutableList<JsonBean>>(rulesJsonPair.second, type)
@@ -178,9 +181,16 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         })
         mainVM.getSearchUrl().observe(viewLifecycleOwner, Observer {
             it?.let {
-                spinnerItems.forEachIndexed { index, s ->
-                    if (s == it) {
-                        spinner_website.setSelection(index)
+                if (spinner_website.count == 0) {
+                    return@Observer
+                }
+                if (it == "all") {
+                    spinner_website.setSelection(spinner_website.count - 1)
+                } else {
+                    spinnerItems.forEachIndexed { index, s ->
+                        if (s == it) {
+                            spinner_website.setSelection(index)
+                        }
                     }
                 }
             }
@@ -283,6 +293,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         htmlParamsList.clear()
         htmlParamsKWList.clear()
         htmlList.clear()
+        mainVM.rules.postValue(null)
     }
 
     private fun initListener() {
@@ -330,7 +341,13 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 position: Int,
                 id: Long
             ) {
-                mainVM.saveSearchUrl(spinnerItems[position])
+                mainVM.saveSearchUrl(
+                    if (position == spinnerItems.size) {
+                        "all"
+                    } else {
+                        spinnerItems[position]
+                    }
+                )
             }
 
         }

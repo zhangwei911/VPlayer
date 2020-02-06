@@ -38,7 +38,7 @@ class ResultInterceptor(private var excludeUrls: MutableList<String> = mutableLi
                 }
                 body = buffer.readString(charset)
             }
-            l.df(
+            l.dff(
                 "发送请求\nmethod：%s\nurl：%s\nheaders: %s",
                 request.method, rUrl, request.headers.toString()
             )
@@ -67,13 +67,13 @@ class ResultInterceptor(private var excludeUrls: MutableList<String> = mutableLi
                 rBody = buffer.clone().readString(charset)
             }
 
-            l.df(
+            l.dff(
                 "收到响应 %s%s %ss\n请求url：%s",
                 response.code.toString(), response.message, tookMs, response.request.url
             )
 
             parseBody(body, rUrl, "请求body")
-            l.df("响应body(%s)：%s", rUrl, rBody)
+            l.dff("响应body(%s)：%s", rUrl, rBody)
         }
         return response
     }
@@ -85,16 +85,16 @@ class ResultInterceptor(private var excludeUrls: MutableList<String> = mutableLi
                 for (key in bodyJson.keys()) {
                     val value = bodyJson[key].toString()
                     if (value.length > 1024) {
-                        l.df("$tag(%s)：%s>>%s", rUrl, key, value.substring(0, 1010) + "...数据超长省略")
+                        l.dff("$tag(%s)：%s>>%s", rUrl, key, value.substring(0, 1010) + "...数据超长省略")
                     } else {
-                        l.df("$tag(%s)：%s>>%s", rUrl, key, value)
+                        l.dff("$tag(%s)：%s>>%s", rUrl, key, value)
                     }
                 }
             } catch (e: Exception) {
-                l.df("$tag(%s)：%s", rUrl, body)
+                l.dff("$tag(%s)：%s", rUrl, body)
             }
         } else {
-            l.df("$tag(%s)：%s", rUrl, body)
+            l.dff("$tag(%s)：%s", rUrl, body)
         }
     }
 
