@@ -26,20 +26,30 @@ class NetUtil {
     }
 
     suspend fun netCheck(): Boolean {
-        val result = apiCall {
-            HttpApi.createHttp(debug = false, addGsonConverterFactory = false).anyUrlS("")
+        try {
+            val result = apiCall {
+                HttpApi.createHttp(debug = false, addGsonConverterFactory = false).anyUrlS("")
+            }
+            l.d(result)
+            val isWifi = if (result.code() == 30000) {
+                l.d("网络不可用")
+                false
+            } else {
+                true
+            }
+            EventBus.getDefault().postSticky(NetEvent(isWifi))
+            EventBus.getDefault()
+                .postSticky(
+                    CommonInfoEvent(
+                        !isWifi,
+                        App.instance.getString(R.string.network_invalid)
+                    )
+                )
+            return isWifi
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
         }
-        l.d(result)
-        val isWifi = if (result.code() == 30000) {
-            l.d("网络不可用")
-            false
-        } else {
-            true
-        }
-        EventBus.getDefault().postSticky(NetEvent(isWifi))
-        EventBus.getDefault()
-            .postSticky(CommonInfoEvent(!isWifi, App.instance.getString(R.string.network_invalid)))
-        return isWifi
     }
 
 
