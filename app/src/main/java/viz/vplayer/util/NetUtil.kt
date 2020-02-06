@@ -10,17 +10,26 @@ import androidx.annotation.RequiresPermission
 import com.viz.tools.l
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
 import org.greenrobot.eventbus.EventBus
+import retrofit2.Call
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.http.HttpApi
 
 
 class NetUtil {
-    suspend fun netCheck(): Boolean {
-        val result = withContext(Dispatchers.IO) {
-            HttpApi.createHttp().anyUrl("http://www.baidu.com").execute()
+    suspend fun <T : Any> apiCall(call: suspend () -> T): T {
+        return withContext(Dispatchers.IO) { call.invoke() }.apply {
+            // 特殊处理
+
         }
-        l.d(result.toString())
+    }
+
+    suspend fun netCheck(): Boolean {
+        val result = apiCall {
+            HttpApi.createHttp(debug = false, addGsonConverterFactory = false).anyUrlS("")
+        }
+        l.d(result)
         val isWifi = if (result.code() == 30000) {
             l.d("网络不可用")
             false

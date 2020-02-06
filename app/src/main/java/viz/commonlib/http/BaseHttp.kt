@@ -12,9 +12,14 @@ interface BaseHttp {
             jsonContentType: Boolean = true,
             contentType: String = "",
             commonDataMethod: CommonInterceptor.CommonRequestType = CommonInterceptor.CommonRequestType.POST_JSON,
-            excludeUrls: MutableList<String> = mutableListOf()
+            interceptorList: MutableList<Interceptor> = mutableListOf<Interceptor>(),
+            connectTimeout: Long = 60,
+            readTimeout: Long = 60,
+            writeTimeout: Long = 60,
+            excludeUrls: MutableList<String> = mutableListOf(),
+            addGsonConverterFactory: Boolean = true
         ): T {
-            return HttpUtil.createHttp<T>(url, debug)
+            return HttpUtil.createHttp<T>(url, debug,interceptorList,connectTimeout,readTimeout, writeTimeout, excludeUrls, addGsonConverterFactory)
         }
     }
 }

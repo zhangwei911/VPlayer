@@ -20,7 +20,8 @@ interface HttpUtil {
             connectTimeout: Long = 60,
             readTimeout: Long = 60,
             writeTimeout: Long = 60,
-            excludeUrls: MutableList<String> = mutableListOf()
+            excludeUrls: MutableList<String> = mutableListOf(),
+            addGsonConverterFactory: Boolean = true
         ): T {
             val gson = GsonBuilder()
                 //配置你的Gson
@@ -46,10 +47,13 @@ interface HttpUtil {
                 )
             }
             builder.addInterceptor(NetworkInterceptor(App.instance.applicationContext))
-            return Retrofit.Builder()
+            val rBuilder = Retrofit.Builder()
                 .baseUrl(url)
                 .client(builder.build())
-                .addConverterFactory(GsonConverterFactory.create(gson))
+            if (addGsonConverterFactory) {
+                rBuilder.addConverterFactory(GsonConverterFactory.create(gson))
+            }
+            return rBuilder
                 .build().create(T::class.java)
         }
     }

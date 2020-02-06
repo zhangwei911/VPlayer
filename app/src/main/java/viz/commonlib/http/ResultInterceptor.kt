@@ -9,6 +9,7 @@ import org.json.JSONObject
 import java.io.IOException
 import java.nio.charset.Charset
 import java.nio.charset.UnsupportedCharsetException
+import java.security.spec.ECField
 import java.util.concurrent.TimeUnit
 
 class ResultInterceptor(private var excludeUrls: MutableList<String> = mutableListOf()) :
@@ -50,21 +51,25 @@ class ResultInterceptor(private var excludeUrls: MutableList<String> = mutableLi
             var rBody: String? = null
 
             if (response.promisesBody()) {
-                val source = responseBody!!.source()
-                source.request(java.lang.Long.MAX_VALUE) // Buffer the entire body.
-                val buffer = source.buffer()
+                try {
+                    val source = responseBody!!.source()
+                    source.request(java.lang.Long.MAX_VALUE) // Buffer the entire body.
+                    val buffer = source.buffer()
 
-                var charset = UTF8
-                val contentType = responseBody.contentType()
-                if (contentType != null) {
-                    try {
-                        charset = contentType.charset(UTF8)
-                    } catch (e: UnsupportedCharsetException) {
-                        e.printStackTrace()
+                    var charset = UTF8
+                    val contentType = responseBody.contentType()
+                    if (contentType != null) {
+                        try {
+                            charset = contentType.charset(UTF8)
+                        } catch (e: UnsupportedCharsetException) {
+                            e.printStackTrace()
+                        }
+
                     }
-
+                    rBody = buffer.clone().readString(charset)
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
-                rBody = buffer.clone().readString(charset)
             }
 
             l.dff(
