@@ -126,148 +126,150 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
     ) {
         Task.callInBackground {
             uriIdlingResource?.beginLoad(videoSearchUrl)
-            HttpApi.createHttp().anyUrl(videoSearchUrl,paramsMap).enqueue(VCallback<ResponseBody>(onResult = {call, response, resultResponseBody ->
-                try {
-                    val result = resultResponseBody.string()
-                    val searchList = mutableListOf<SearchBean>()
-                    val doc = Jsoup.parse(result)
-                    val uls = doc.select(searchHtmlResultBean.mainCss)
-                    val ul = uls[searchHtmlResultBean.mainListIndex]
-                    val lis = ul.select(searchHtmlResultBean.searchListCss)
-                    lis.forEachIndexed { index, element ->
-                        val nameElements = element.select(searchHtmlResultBean.nameCss)
-                        val nameElement = nameElements[searchHtmlResultBean.nameIndex]
-                        val name = if (searchHtmlResultBean.isNameAttr) {
-                            nameElement.attr(searchHtmlResultBean.nameAttr)
-                        } else {
-                            nameElement.html()
-                        }
-                        val imgElements = element.select(searchHtmlResultBean.imgCss)
-                        val imgElement = imgElements[searchHtmlResultBean.imgIndex]
-                        val img = if (searchHtmlResultBean.isImgAttr) {
-                            imgElement.attr(searchHtmlResultBean.imgAttr)
-                        } else {
-                            imgElement.html()
-                        }
-                        val descElements = element.select(searchHtmlResultBean.descCss)
-                        val descElement = descElements[searchHtmlResultBean.descIndex]
-                        val desc = if (searchHtmlResultBean.isDescAttr) {
-                            descElement.attr(searchHtmlResultBean.descAttr)
-                        } else {
-                            descElement.html()
-                        }
-                        val urlElements = element.select(searchHtmlResultBean.urlCss)
-                        val urlElement = urlElements[searchHtmlResultBean.urlIndex]
-                        val url = if (searchHtmlResultBean.isUrlAttr) {
-                            urlElement.attr(searchHtmlResultBean.urlAttr)
-                        } else {
-                            urlElement.html()
-                        }
-                        val uri = Uri.parse(videoSearchUrl)
-                        searchList.add(
-                            SearchBean(
-                                name,
-                                desc,
-                                img,
-                                if (searchHtmlResultBean.hasUrlPrefix) {
-                                    ""
-                                } else {
-                                    uri.scheme + "://" + uri.host
-                                } + url,
-                                from
+            HttpApi.createHttp().anyUrl(videoSearchUrl, paramsMap)
+                .enqueue(VCallback<ResponseBody>(onResult = { call, response, resultResponseBody ->
+                    try {
+                        val result = resultResponseBody.string()
+                        val searchList = mutableListOf<SearchBean>()
+                        val doc = Jsoup.parse(result)
+                        val uls = doc.select(searchHtmlResultBean.mainCss)
+                        val ul = uls[searchHtmlResultBean.mainListIndex]
+                        val lis = ul.select(searchHtmlResultBean.searchListCss)
+                        lis.forEachIndexed { index, element ->
+                            val nameElements = element.select(searchHtmlResultBean.nameCss)
+                            val nameElement = nameElements[searchHtmlResultBean.nameIndex]
+                            val name = if (searchHtmlResultBean.isNameAttr) {
+                                nameElement.attr(searchHtmlResultBean.nameAttr)
+                            } else {
+                                nameElement.html()
+                            }
+                            val imgElements = element.select(searchHtmlResultBean.imgCss)
+                            val imgElement = imgElements[searchHtmlResultBean.imgIndex]
+                            val img = if (searchHtmlResultBean.isImgAttr) {
+                                imgElement.attr(searchHtmlResultBean.imgAttr)
+                            } else {
+                                imgElement.html()
+                            }
+                            val descElements = element.select(searchHtmlResultBean.descCss)
+                            val descElement = descElements[searchHtmlResultBean.descIndex]
+                            val desc = if (searchHtmlResultBean.isDescAttr) {
+                                descElement.attr(searchHtmlResultBean.descAttr)
+                            } else {
+                                descElement.html()
+                            }
+                            val urlElements = element.select(searchHtmlResultBean.urlCss)
+                            val urlElement = urlElements[searchHtmlResultBean.urlIndex]
+                            val url = if (searchHtmlResultBean.isUrlAttr) {
+                                urlElement.attr(searchHtmlResultBean.urlAttr)
+                            } else {
+                                urlElement.html()
+                            }
+                            val uri = Uri.parse(videoSearchUrl)
+                            searchList.add(
+                                SearchBean(
+                                    name,
+                                    desc,
+                                    img,
+                                    if (searchHtmlResultBean.hasUrlPrefix) {
+                                        ""
+                                    } else {
+                                        uri.scheme + "://" + uri.host
+                                    } + url,
+                                    from
+                                )
                             )
-                        )
+                        }
+                        search.postValue(searchList)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        errorInfo.postValue(ErrorInfo("获取搜索数据异常(${e.localizedMessage})"))
                     }
-                    search.postValue(searchList)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    errorInfo.postValue(ErrorInfo("获取搜索数据异常(${e.localizedMessage})"))
-                }
-                uriIdlingResource?.endLoad(videoSearchUrl)
-            },onError = {errorEntity, call, t, response ->
-                errorInfo.postValue(
-                    ErrorInfo(
-                        "获取json规则(${errorEntity.error}-${errorEntity.message})"
+                    uriIdlingResource?.endLoad(videoSearchUrl)
+                }, onError = { errorEntity, call, t, response ->
+                    errorInfo.postValue(
+                        ErrorInfo(
+                            "获取json规则(${errorEntity.error}-${errorEntity.message})"
+                        )
                     )
-                )
-                uriIdlingResource?.endLoad(videoSearchUrl)
-            }))
+                    uriIdlingResource?.endLoad(videoSearchUrl)
+                }))
         }.continueWithEnd("抓取网页")
     }
 
     fun getVideoEpisodesInfo(singleVideoPageUrl: String, episodesBean: EpisodesBean) {
         Task.callInBackground {
-            HttpApi.createHttp().anyUrl(singleVideoPageUrl).enqueue(VCallback<ResponseBody>(onResult = { call, response, resultResponseBody ->
-                try {
-                    val result = resultResponseBody.string()
-                    val doc = Jsoup.parse(result)
-                    val episodeList = mutableListOf<String>()
-                    val divs = doc.select(episodesBean.mainCss)
-                    val div = divs[episodesBean.mainIndex]
-                    if (episodesBean.isReg) {
-                        val script = div.html()
-                        var successRegCount = 0
-                        episodesBean.regStrList.forEachIndexed { index, regStr ->
-                            val reg = Regex(regStr)
-                            val result = reg.find(script)
-                            if (result != null) {
-                                val urlList =
-                                    result.groupValues[episodesBean.regIndexList[index]].split(
-                                        episodesBean.regSplitList[index]
-                                    )
-                                val regList = Regex(episodesBean.regItemStr)
-                                for (urlStr in urlList) {
-                                    val resultList = regList.find(urlStr)
-                                    if (resultList != null) {
-                                        episodeList.add(
-                                            if (episodesBean.isRegNeedDecoder) {
-                                                URLDecoder.decode(resultList.groupValues[episodesBean.regItemIndex])
-                                            } else {
-                                                resultList.groupValues[episodesBean.regItemIndex]
-                                            }
+            HttpApi.createHttp().anyUrl(singleVideoPageUrl)
+                .enqueue(VCallback<ResponseBody>(onResult = { call, response, resultResponseBody ->
+                    try {
+                        val result = resultResponseBody.string()
+                        val doc = Jsoup.parse(result)
+                        val episodeList = mutableListOf<String>()
+                        val divs = doc.select(episodesBean.mainCss)
+                        val div = divs[episodesBean.mainIndex]
+                        if (episodesBean.isReg) {
+                            val script = div.html()
+                            var successRegCount = 0
+                            episodesBean.regStrList.forEachIndexed { index, regStr ->
+                                val reg = Regex(regStr)
+                                val result = reg.find(script)
+                                if (result != null) {
+                                    val urlList =
+                                        result.groupValues[episodesBean.regIndexList[index]].split(
+                                            episodesBean.regSplitList[index]
                                         )
-                                        successRegCount++
-                                    } else {
-                                        if (successRegCount == 0 && index == episodesBean.regStrList.size - 1) {
-                                            errorInfo.postValue(ErrorInfo("获取剧集url数据异常(正则表达式可能错了)"))
+                                    val regList = Regex(episodesBean.regItemStr)
+                                    for (urlStr in urlList) {
+                                        val resultList = regList.find(urlStr)
+                                        if (resultList != null) {
+                                            episodeList.add(
+                                                if (episodesBean.isRegNeedDecoder) {
+                                                    URLDecoder.decode(resultList.groupValues[episodesBean.regItemIndex])
+                                                } else {
+                                                    resultList.groupValues[episodesBean.regItemIndex]
+                                                }
+                                            )
+                                            successRegCount++
+                                        } else {
+                                            if (successRegCount == 0 && index == episodesBean.regStrList.size - 1) {
+                                                errorInfo.postValue(ErrorInfo("获取剧集url数据异常(正则表达式可能错了)"))
+                                            }
+                                            break
                                         }
-                                        break
                                     }
+                                } else {
+                                    errorInfo.postValue(ErrorInfo("获取剧集数据异常(正则表达式可能错了)"))
                                 }
-                            } else {
-                                errorInfo.postValue(ErrorInfo("获取剧集数据异常(正则表达式可能错了)"))
+                            }
+                        } else {
+                            val lis = div.select(episodesBean.listCss)
+                            val uri = Uri.parse(singleVideoPageUrl)
+                            lis.forEachIndexed { index, element ->
+                                val aArr = element.select(episodesBean.listItemCss)
+                                val a = aArr[episodesBean.listItemIndex]
+                                val href = if (episodesBean.hasUrlPrefix) {
+                                    ""
+                                } else {
+                                    uri.scheme + "://" + uri.host
+                                } + if (episodesBean.isListItemAttr) {
+                                    a.attr(episodesBean.listItemAttr)
+                                } else {
+                                    a.html()
+                                }
+                                episodeList.add(href)
                             }
                         }
-                    } else {
-                        val lis = div.select(episodesBean.listCss)
-                        val uri = Uri.parse(singleVideoPageUrl)
-                        lis.forEachIndexed { index, element ->
-                            val aArr = element.select(episodesBean.listItemCss)
-                            val a = aArr[episodesBean.listItemIndex]
-                            val href = if (episodesBean.hasUrlPrefix) {
-                                ""
-                            } else {
-                                uri.scheme + "://" + uri.host
-                            } + if (episodesBean.isListItemAttr) {
-                                a.attr(episodesBean.listItemAttr)
-                            } else {
-                                a.html()
-                            }
-                            episodeList.add(href)
-                        }
+                        episodes.postValue(episodeList)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        errorInfo.postValue(ErrorInfo("获取搜索数据异常(${e.localizedMessage})"))
                     }
-                    episodes.postValue(episodeList)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    errorInfo.postValue(ErrorInfo("获取搜索数据异常(${e.localizedMessage})"))
-                }
-            },onError = {errorEntity, call, t, response ->
-                errorInfo.postValue(
-                    ErrorInfo(
-                        "获取搜索数据异常(${errorEntity.error}-${errorEntity.message})"
+                }, onError = { errorEntity, call, t, response ->
+                    errorInfo.postValue(
+                        ErrorInfo(
+                            "获取搜索数据异常(${errorEntity.error}-${errorEntity.message})"
+                        )
                     )
-                )
-            }))
+                }))
         }.continueWithEnd("抓取网页")
     }
 
@@ -277,9 +279,10 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
         img: String
     ) {
         Task.callInBackground {
-            HttpApi.createHttp().anyUrl(singleVideoPageUrl).enqueue(VCallback<ResponseBody>(onResult = { call, response, resultResponseBody ->
-                try {
-                    val result = resultResponseBody.string()
+            HttpApi.createHttp().anyUrl(singleVideoPageUrl)
+                .enqueue(VCallback<ResponseBody>(onResult = { call, response, resultResponseBody ->
+                    try {
+                        val result = resultResponseBody.string()
                         val doc = Jsoup.parse(result)
                         val title = doc.title()
                         if (videoHtmlResultBean.isFrame && !videoHtmlResultBean.isFrameProcess) {
@@ -371,13 +374,13 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
                         errorInfo.postValue(ErrorInfo("获取视频数据异常(${e.message})"))
                     }
 
-                },onError = {errorEntity, call, t, response ->
-                errorInfo.postValue(
-                    ErrorInfo(
-                        "获取视频(${errorEntity.error}-${errorEntity.message})"
+                }, onError = { errorEntity, call, t, response ->
+                    errorInfo.postValue(
+                        ErrorInfo(
+                            "获取视频(${errorEntity.error}-${errorEntity.message})"
+                        )
                     )
-                )
-            }))
+                }))
         }.continueWithEnd("抓取网页")
     }
 }
