@@ -108,7 +108,7 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
                 }, onError = { errorEntity, call, t, response ->
                     errorInfo.postValue(
                         ErrorInfo(
-                            "获取json规则(${errorEntity.error})",
+                            "获取json规则(${errorEntity.error}-${errorEntity.message})",
                             ErrorCode.ERR_JSON_INVALID,
                             rulesUrl
                         )
@@ -187,9 +187,7 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
             },onError = {errorEntity, call, t, response ->
                 errorInfo.postValue(
                     ErrorInfo(
-                        "获取json规则(${errorEntity.error})",
-                        ErrorCode.ERR_JSON_INVALID,
-                        videoSearchUrl
+                        "获取json规则(${errorEntity.error}-${errorEntity.message})"
                     )
                 )
                 uriIdlingResource?.endLoad(videoSearchUrl)
@@ -266,7 +264,7 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
             },onError = {errorEntity, call, t, response ->
                 errorInfo.postValue(
                     ErrorInfo(
-                        "获取搜索数据异常(${errorEntity.error})"
+                        "获取搜索数据异常(${errorEntity.error}-${errorEntity.message})"
                     )
                 )
             }))
@@ -376,7 +374,7 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
                 },onError = {errorEntity, call, t, response ->
                 errorInfo.postValue(
                     ErrorInfo(
-                        "获取视频(${errorEntity.error})"
+                        "获取视频(${errorEntity.error}-${errorEntity.message})"
                     )
                 )
             }))
