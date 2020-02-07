@@ -1,0 +1,465 @@
+[
+    {
+        "search_url": "http://www.lexianglive.com/index.php?s=vod-search-name",
+        "web_name": "乐享网",
+        "kw": "wd",
+        "params": [
+            {
+                "key": "key",
+                "value": "value"
+            }
+        ],
+        "html": {
+            "episodes": {
+                "hasUrlPrefix": false,
+                "isListItemAttr": true,
+                "isReg": false,
+                "isRegNeedDecoder": false,
+                "listCss": "li",
+                "listItemAttr": "href",
+                "listItemCss": "a",
+                "listItemIndex": 0,
+                "mainCss": "div.num-tab-main",
+                "mainIndex": 0,
+                "regIndexList": [
+                    0
+                ],
+                "regItemIndex": 0,
+                "regItemStr": "",
+                "regSplitList": [
+                    ""
+                ],
+                "regStrList": [
+                    ""
+                ]
+            },
+            "search": {
+                "isWebPlay":false,
+                "descAttr": "",
+                "descCss": "div.detail",
+                "descIndex": 0,
+                "hasUrlPrefix": false,
+                "imgAttr": "data-original",
+                "imgCss": "a",
+                "imgIndex": 0,
+                "isDescAttr": false,
+                "isImgAttr": true,
+                "isNameAttr": true,
+                "isUrlAttr": true,
+                "mainCss": "ul.stui-vodlist__media",
+                "mainListIndex": 0,
+                "nameAttr": "title",
+                "nameCss": "a",
+                "nameIndex": 0,
+                "searchListCss": "li",
+                "urlAttr": "href",
+                "urlCss": "a",
+                "urlIndex": 0
+            },
+            "video": {
+                "episodesListCss": "li",
+                "episodesMainCss": "div.num-tab-main",
+                "episodesMainIndex": 0,
+                "hasEpisodes": true,
+                "hasUrlPrefix": false,
+                "iframeAttr": "",
+                "iframeIndex": 0,
+                "isFrame": false,
+                "isFrameProcess": false,
+                "isItemAttr": false,
+                "isNameAttr": false,
+                "isReg": true,
+                "isUrlAttr": true,
+                "itemAttr": "",
+                "itemCss": "script",
+                "itemIndex": 0,
+                "mainCss": "div#cms_player",
+                "mainIndex": 0,
+                "nameAttr": "",
+                "nameCss": "a",
+                "nameIndex": 0,
+                "regIndex": 0,
+                "regStr": "(?<=var cms_player \\= \\{\"url\":\")(.*\\.m3u8)(?=\",)",
+                "title": "",
+                "urlAttr": "href",
+                "urlCss": "a",
+                "urlIndex": 0,
+"videoCss": "",
+"videoIndex": 1,
+"isVideoUrlAttr": true,
+"videoUrlAttr": ""
+            }
+        }
+    },
+    {
+        "search_url": "http://5nj.com/index.php?m=vod-search",
+        "web_name": "策驰网",
+        "kw": "wd",
+        "params": [
+            {
+                "key": "key",
+                "value": "value"
+            }
+        ],
+        "html": {
+            "episodes": {
+                "hasUrlPrefix": false,
+                "isListItemAttr": false,
+                "isReg": true,
+                "isRegNeedDecoder": true,
+                "listCss": "",
+                "listItemAttr": "",
+                "listItemCss": "",
+                "listItemIndex": 0,
+                "mainCss": "div.main > script",
+                "mainIndex": 0,
+                "regIndexList": [
+                    1,
+                    0
+                ],
+                "regItemIndex": 0,
+                "regItemStr": "(?:https|http)(((?!https|http).)*?)(?:\\.m3u8)",
+                "regSplitList": [
+                    "%23",
+                    "%24"
+                ],
+                "regStrList": [
+                    "(?<=mac_url=unescape\\('|\\%24\\%24\\%24)(((?!\\%24\\%24\\%24).)*?)(?='\\);)",
+                    "(?:https|http)(((?!https|http).)*?)(?:\\.m3u8)"
+                ]
+            },
+            "search": {
+                "isWebPlay":false,
+                "descAttr": "",
+                "descCss": "a > span.lzbz",
+                "descIndex": 0,
+                "hasUrlPrefix": false,
+                "imgAttr": "data-original",
+                "imgCss": "img",
+                "imgIndex": 0,
+                "isDescAttr": false,
+                "isImgAttr": true,
+                "isNameAttr": true,
+                "isUrlAttr": true,
+                "mainCss": "div.index-area",
+                "mainListIndex": 0,
+                "nameAttr": "title",
+                "nameCss": "a",
+                "nameIndex": 0,
+                "searchListCss": "ul > li",
+                "urlAttr": "href",
+                "urlCss": "a",
+                "urlIndex": 0
+            },
+            "video": {
+                "episodesListCss": "li",
+                "episodesMainCss": "div.num-tab-main",
+                "episodesMainIndex": 0,
+                "hasEpisodes": true,
+                "hasUrlPrefix": false,
+                "iframeAttr": "",
+                "iframeIndex": 0,
+                "isFrame": false,
+                "isFrameProcess": false,
+                "isItemAttr": false,
+                "isNameAttr": false,
+                "isReg": true,
+                "isUrlAttr": true,
+                "itemAttr": "",
+                "itemCss": "script",
+                "itemIndex": 0,
+                "mainCss": "div#cms_player",
+                "mainIndex": 0,
+                "nameAttr": "",
+                "nameCss": "a",
+                "nameIndex": 0,
+                "regIndex": 0,
+                "regStr": "(?<=var cms_player \\= \\{\"url\":\")(.*\\.m3u8)(?=\",)",
+                "title": "",
+                "urlAttr": "href",
+                "urlCss": "a",
+                "urlIndex": 0,
+                "videoCss": "",
+                "videoIndex": 1,
+                "isVideoUrlAttr": true,
+                "videoUrlAttr": ""
+            }
+        }
+    },
+    {
+        "search_url": "http://1090ys.com/?c=search",
+        "web_name": "1090影视",
+        "kw": "wd",
+        "params": [
+            {
+                "key": "key",
+                "value": "value"
+            }
+        ],
+        "html": {
+            "episodes": {
+                "hasUrlPrefix": false,
+                "isListItemAttr": true,
+                "isReg": false,
+                "isRegNeedDecoder": false,
+                "listCss": "ul > li",
+                "listItemAttr": "href",
+                "listItemCss": "a",
+                "listItemIndex": 0,
+                "mainCss": "div#play_1",
+                "mainIndex": 0,
+                "regIndexList": [
+                    0
+                ],
+                "regItemIndex": 0,
+                "regItemStr": "",
+                "regSplitList": [
+                    ""
+                ],
+                "regStrList": [
+                    ""
+                ]
+            },
+            "search": {
+                "isWebPlay":false,
+                "descAttr": "",
+                "descCss": "div.detail",
+                "descIndex": 0,
+                "hasUrlPrefix": false,
+                "imgAttr": "data-original",
+                "imgCss": "a",
+                "imgIndex": 0,
+                "isDescAttr": false,
+                "isImgAttr": true,
+                "isNameAttr": true,
+                "isUrlAttr": true,
+                "mainCss": "div.stui-pannel_bd",
+                "mainListIndex": 0,
+                "nameAttr": "title",
+                "nameCss": "a",
+                "nameIndex": 0,
+                "searchListCss": "ul > li",
+                "urlAttr": "href",
+                "urlCss": "a",
+                "urlIndex": 0
+            },
+            "video": {
+                "episodesListCss": "",
+                "episodesMainCss": "",
+                "episodesMainIndex": 0,
+                "hasEpisodes": false,
+                "hasUrlPrefix": false,
+                "iframeAttr": "src",
+                "iframeIndex": 0,
+                "isFrame": true,
+                "isFrameProcess": false,
+                "isItemAttr": false,
+                "isNameAttr": false,
+                "isReg": true,
+                "isUrlAttr": false,
+                "itemAttr": "",
+                "itemCss": "script",
+                "itemIndex": 2,
+                "mainCss": "body",
+                "mainIndex": 0,
+                "nameAttr": "",
+                "nameCss": "",
+                "nameIndex": 0,
+                "regIndex": 0,
+                "regStr": "(?<=<video src=\")(.*)(?=\" controls=)",
+                "title": "",
+                "urlAttr": "",
+                "urlCss": "",
+                "urlIndex": 0,
+                "videoCss": "",
+                "videoIndex": 1,
+                "isVideoUrlAttr": true,
+                "videoUrlAttr": ""
+            }
+        }
+    },
+    {
+        "search_url": "https://www.weixintv8.com/index.php?m=vod-search",
+        "web_name": "微信影院",
+        "kw": "wd",
+        "params": [
+            {
+                "key": "key",
+                "value": "value"
+            }
+        ],
+        "html": {
+            "episodes": {
+                "hasUrlPrefix": false,
+                "isListItemAttr": true,
+                "isReg": false,
+                "isRegNeedDecoder": false,
+                "listCss": "ul:eq(7) > a",
+                "listItemAttr": "href",
+                "listItemCss": "a",
+                "listItemIndex": 0,
+                "mainCss": "div.playerlist",
+                "mainIndex": 0,
+                "regIndexList": [
+                    0
+                ],
+                "regItemIndex": 0,
+                "regItemStr": "",
+                "regSplitList": [
+                    ""
+                ],
+                "regStrList": [
+                    ""
+                ]
+            },
+            "search": {
+                "isWebPlay":false,
+                "descAttr": "",
+                "descCss": "div.txt",
+                "descIndex": 0,
+                "hasUrlPrefix": false,
+                "imgAttr": "data-original",
+                "imgCss": "img",
+                "imgIndex": 0,
+                "isDescAttr": false,
+                "isImgAttr": true,
+                "isNameAttr": true,
+                "isUrlAttr": true,
+                "mainCss": "div.back-tab",
+                "mainListIndex": 0,
+                "nameAttr": "title",
+                "nameCss": "img",
+                "nameIndex": 0,
+                "searchListCss": "ul > li",
+                "urlAttr": "href",
+                "urlCss": "a",
+                "urlIndex": 0
+            },
+            "video": {
+                "episodesListCss": "",
+                "episodesMainCss": "",
+                "episodesMainIndex": 0,
+                "hasEpisodes": false,
+                "hasUrlPrefix": false,
+                "iframeAttr": "src",
+                "iframeIndex": 0,
+                "isFrame": false,
+                "isFrameProcess": false,
+                "isItemAttr": false,
+                "isNameAttr": false,
+                "isReg": true,
+                "isUrlAttr": false,
+                "itemAttr": "",
+                "itemCss": "script",
+                "itemIndex": 0,
+                "mainCss": "div#zanpiancms_player",
+                "mainIndex": 0,
+                "nameAttr": "",
+                "nameCss": "",
+                "nameIndex": 0,
+                "regIndex": 0,
+                "regStr": "(?:https|http)(((?!https|http).)*?)(?:\\.m3u8)",
+                "title": "",
+                "urlAttr": "",
+                "urlCss": "",
+                "urlIndex": 0,
+                "videoCss": "td#playleft > iframe",
+                "videoIndex": 1,
+                "isVideoUrlAttr": true,
+                "videoUrlAttr": "src"
+            }
+        }
+    },
+    {
+        "search_url": "http://6d.2hatv.com/?c=search",
+        "web_name": "六度TV",
+        "kw": "wd",
+        "params": [
+            {
+                "key": "key",
+                "value": "value"
+            }
+        ],
+        "html": {
+            "episodes": {
+                "hasUrlPrefix": false,
+                "isListItemAttr": true,
+                "isReg": false,
+                "isRegNeedDecoder": false,
+                "listCss": "ul > li",
+                "listItemAttr": "href",
+                "listItemCss": "a",
+                "listItemIndex": 0,
+                "mainCss": "div.tab-pane:eq(7)",
+                "mainIndex": 0,
+                "regIndexList": [
+                    0
+                ],
+                "regItemIndex": 0,
+                "regItemStr": "",
+                "regSplitList": [
+                    ""
+                ],
+                "regStrList": [
+                    ""
+                ]
+            },
+            "search": {
+                "isWebPlay":true,
+                "descAttr": "",
+                "descCss": "div.detail",
+                "descIndex": 0,
+                "hasUrlPrefix": false,
+                "imgAttr": "data-original",
+                "imgCss": "div.thumb > a",
+                "imgIndex": 0,
+                "isDescAttr": false,
+                "isImgAttr": true,
+                "isNameAttr": true,
+                "isUrlAttr": true,
+                "mainCss": "div.stui-pannel_bd",
+                "mainListIndex": 0,
+                "nameAttr": "title",
+                "nameCss": "div.thumb > a",
+                "nameIndex": 0,
+                "searchListCss": "ul > li",
+                "urlAttr": "href",
+                "urlCss": "div.thumb > a",
+                "urlIndex": 0
+            },
+            "video": {
+                "episodesListCss": "",
+                "episodesMainCss": "",
+                "episodesMainIndex": 0,
+                "hasEpisodes": false,
+                "hasUrlPrefix": false,
+                "iframeAttr": "src",
+                "iframeIndex": 0,
+                "isFrame": false,
+                "isFrameProcess": false,
+                "isItemAttr": false,
+                "isNameAttr": false,
+                "isReg": true,
+                "isUrlAttr": false,
+                "itemAttr": "",
+                "itemCss": "script",
+                "itemIndex": 0,
+                "mainCss": "div#zanpiancms_player",
+                "mainIndex": 0,
+                "nameAttr": "",
+                "nameCss": "",
+                "nameIndex": 0,
+                "regIndex": 0,
+                "regStr": "(?:https|http)(((?!https|http).)*?)(?:\\.m3u8)",
+                "title": "",
+                "urlAttr": "",
+                "urlCss": "",
+                "urlIndex": 0,
+                "videoCss": "td#playleft > iframe",
+                "videoIndex": 1,
+                "isVideoUrlAttr": true,
+                "videoUrlAttr": "src"
+            }
+        }
+    }
+]
