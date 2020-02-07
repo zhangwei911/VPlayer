@@ -80,7 +80,7 @@ class LocalFragment : BaseFragment() {
                                     intent.putExtra("title", videoTitle)
                                     intent.putExtra("img", videoImgUrl)
                                     Task.callInBackground {
-                                        app.db.videoInfoDao().getByUrl(videoUrl).apply {
+                                        app.db.downloadDao().getByUrl(videoUrl).apply {
                                             intent.putExtra("duration", duration)
                                             val episodes = mutableListOf<String>()
                                             app.db.episodeDao().getByVid(id).forEach {
@@ -150,6 +150,8 @@ class LocalFragment : BaseFragment() {
                                                     videoUrl,
                                                     videoTitle,
                                                     videoImgUrl,
+                                                    searchUrl,
+                                                    duration,
                                                     app.applicationContext,
                                                     viewLifecycleOwner
                                                 )

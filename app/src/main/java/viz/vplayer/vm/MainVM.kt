@@ -7,10 +7,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.test.espresso.idling.net.UriIdlingResource
 import bolts.Task
-import com.lidroid.xutils.HttpUtils
-import com.lidroid.xutils.http.RequestParams
-import com.lidroid.xutils.http.client.HttpRequest
-import com.viz.tools.l
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.ResponseBody
@@ -208,7 +204,23 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
                             val result = resultResponseBody.string()
                             val doc = Jsoup.parse(result)
                             val episodeList = mutableListOf<String>()
-                            val divs = doc.select(episodesBean.mainCss)
+                            val mainCss = episodesBean.mainCss
+                            var divs = doc.select(mainCss)
+                            val mainCssRegStr = ":[a-z]{2}\\(([0-9]{1,3})\\)"
+                            val regMain = Regex(mainCssRegStr)
+                            if (mainCss.contains(regMain) && divs.size == 0) {
+                                val resultList = regMain.find(mainCss)
+                                if (resultList != null) {
+                                    val index = resultList.groupValues[1].toInt()
+                                    for (i in index - 1 downTo 0) {
+                                        val newListCss = mainCss.replace("($index)", "($i)")
+                                        divs = doc.select(newListCss)
+                                        if (divs.size > 0) {
+                                            break
+                                        }
+                                    }
+                                }
+                            }
                             val div = divs[episodesBean.mainIndex]
                             if (episodesBean.isReg) {
                                 val script = div.html()
@@ -245,7 +257,23 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
                                     }
                                 }
                             } else {
-                                val lis = div.select(episodesBean.listCss)
+                                val listCss = episodesBean.listCss
+                                var lis = div.select(listCss)
+                                val listCssRegStr = ":[a-z]{2}\\(([0-9]{1,3})\\)"
+                                val regList = Regex(listCssRegStr)
+                                if (listCss.contains(regList) && lis.size == 0) {
+                                    val resultList = regList.find(listCss)
+                                    if (resultList != null) {
+                                        val index = resultList.groupValues[1].toInt()
+                                        for (i in index - 1 downTo 0) {
+                                            val newListCss = listCss.replace("($index)", "($i)")
+                                            lis = div.select(newListCss)
+                                            if (lis.size > 0) {
+                                                break
+                                            }
+                                        }
+                                    }
+                                }
                                 val uri = Uri.parse(singleVideoPageUrl)
                                 lis.forEachIndexed { index, element ->
                                     val aArr = element.select(episodesBean.listItemCss)
@@ -367,8 +395,14 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
                                     errorInfo.postValue(ErrorInfo("获取视频数据异常(正则表达式可能错了)"))
                                 }
                             } else {
-//                            val url = ""
-//                            play.postValue(VideoInfoBean(url, title, 0, videoList))
+                                val videoElements = doc.select(videoHtmlResultBean.videoCss)
+                                val videoElement = videoElements[videoHtmlResultBean.videoIndex]
+                                val videoUrl = if (videoHtmlResultBean.isVideoUrlAttr) {
+                                    videoElement.attr(videoHtmlResultBean.videoUrlAttr)
+                                } else {
+                                    videoElement.html()
+                                }
+                                play.postValue(VideoInfoBean(videoUrl, title, 0, img, videoList))
                             }
 //                        if (videoHtmlResultBean.isFrame && videoHtmlResultBean.isFrameProcess) {
 //                            val url = script.attr(videoHtmlResultBean.itemAttr)

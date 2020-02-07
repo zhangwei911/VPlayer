@@ -184,30 +184,19 @@ fun String.isJson(isJsonObject: Boolean = false): Boolean {
 fun HttpUtils.download(
     context: Context,
     url: String,
-    onStart: (() -> Unit)?=null,
-    onProgress: ((progress: Float,current:Long,total:Long) -> Unit)?=null,
-    onResult: ((target: String) -> Unit)?=null,
+    onStart: (() -> Unit)? = null,
+    onProgress: ((progress: Float, current: Long, total: Long) -> Unit)? = null,
+    onResult: ((target: String) -> Unit)? = null,
     onError: ((httpException: HttpException, errMsg: String) -> Unit)? = null,
     suffix: String = ""
 ): HttpHandler<File> {
     //int downloadLength = downloadFileSize(context, url);
     //判断手机内存是否够下载文件
     l.i(url)
-    var oldReplaceWords = arrayListOf("+", " ", "*")
-    var newReplaceWords = arrayListOf("%2B", "%20", "%2A")
-    var urlUTF8 = URLDecoder.decode(url, "UTF-8")
-    for (i in oldReplaceWords.indices) {
-        urlUTF8 = urlUTF8.replace(oldReplaceWords[i], newReplaceWords[i])
-    }
-    l.i(urlUTF8)
-    var uri = Uri.parse(urlUTF8)
-    val fileName = MD5Util.MD5(url) + "." + if (suffix == "") {
-        uri.pathSegments.last()
-    } else {
-        suffix
-    }
-    val target = FileUtil.getPath(context) + "/" + fileName
-    l.i(target)
+    val urlUTF8 = UrlUtil.format(url)
+    val ft = UrlUtil.generatLocalFileNameAndPath(context, url, true)
+    val fileName = ft.first
+    val target = ft.second
 
     val handlerDownload = download(urlUTF8, target, true, true,
         object : RequestCallBack<File>() {
@@ -223,7 +212,7 @@ fun HttpUtils.download(
                 super.onLoading(total, current, isUploading)
                 l.d("$current/$total")
                 var progress = String.format("%.2f", current.toFloat() / total * 100)
-                onProgress?.invoke(progress.toFloat(),current,total)
+                onProgress?.invoke(progress.toFloat(), current, total)
             }
 
             override fun onSuccess(responseInfo: ResponseInfo<File>) {

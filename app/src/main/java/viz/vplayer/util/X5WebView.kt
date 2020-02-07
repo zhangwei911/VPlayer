@@ -17,6 +17,8 @@ import java.net.URLEncoder
 
 class X5WebView : WebView {
     var title: TextView? = null
+    var shouldOverrideUrlLoading: ((url: String) -> Unit)? = null
+    var onPageFinished: ((url: String) -> Unit)? = null
     private val client: WebViewClient =
         object : WebViewClient() {
             /**
@@ -28,18 +30,20 @@ class X5WebView : WebView {
             ): Boolean {
                 com.viz.tools.l.d(url)
                 view.loadUrl(
-                    if (url.startsWith("https://v.qq.com/x/cover")||url.startsWith("https://m.v.qq.com/x")) {
-                        "http://vip.jlsprh.com/index.php?url=" + URLEncoder.encode(url, "UTF-8")
-                    } else {
+//                    if (url.startsWith("https://v.qq.com/x/cover")||url.startsWith("https://m.v.qq.com/x")) {
+//                        "http://vip.jlsprh.com/index.php?url=" + URLEncoder.encode(url, "UTF-8")
+//                    } else {
                         url
-                    }
+//                    }
                 )
+                shouldOverrideUrlLoading?.invoke(url)
                 return true
             }
 
-            override fun onPageFinished(p0: WebView?, p1: String?) {
-                super.onPageFinished(p0, p1)
+            override fun onPageFinished(webView: WebView, url: String) {
+                super.onPageFinished(webView, url)
                 addImageClickListner()
+                onPageFinished?.invoke(url)
             }
         }
 
@@ -58,25 +62,28 @@ class X5WebView : WebView {
     // 注入js函数监听
     private fun addImageClickListner() {
         // 这段js函数的功能就是，遍历所有的img几点，并添加onclick函数，函数的功能是在图片点击的时候调用本地java接口并传递url过去
-        this.loadUrl("javascript:(function(){" +
-                "var objs = document.getElementsByTagName(\"a\"); " +
-                "for(var i=0;i<objs.length;i++)  " +
-                "{"
-                + "    objs[i].οnclick=function()  " +
-                "    {  "
-                + "        window.longClick.onJsFunctionCalled(this.innerHTML);  " +
-                "    }  " +
-                "}" +
-                "})()")
+        this.loadUrl(
+            "javascript:(function(){" +
+                    "var objs = document.getElementsByTagName(\"a\"); " +
+                    "for(var i=0;i<objs.length;i++)  " +
+                    "{"
+                    + "    objs[i].οnclick=function()  " +
+                    "    {  "
+                    + "        window.longClick.onJsFunctionCalled(this.innerHTML);  " +
+                    "    }  " +
+                    "}" +
+                    "})()"
+        )
     }
+
     private fun initWebViewSettings() {
         val webSetting = this.settings
         webSetting.javaScriptEnabled = true
-        this.addJavascriptInterface(object: WebViewJavaScriptFunction{
+        this.addJavascriptInterface(object : WebViewJavaScriptFunction {
             override fun onJsFunctionCalled(tag: String?) {
                 com.viz.tools.l.d(tag)
             }
-        },"longClick")
+        }, "longClick")
         webSetting.javaScriptCanOpenWindowsAutomatically = true
         webSetting.allowFileAccess = true
         webSetting.layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS

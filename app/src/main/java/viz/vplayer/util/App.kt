@@ -107,6 +107,12 @@ class App : Application(), Configuration.Provider {
                     9,
                     10,
                     "ALTER TABLE videoinfo ADD COLUMN search_url TEXT NOT NULL DEFAULT ''"
+                ),
+                RoomUtil.migration(
+                    10,
+                    11,
+                    "ALTER TABLE download ADD COLUMN duration INTEGER NOT NULL DEFAULT 0",
+                    "ALTER TABLE download ADD COLUMN search_url TEXT NOT NULL DEFAULT ''"
                 )
             )
             .build()

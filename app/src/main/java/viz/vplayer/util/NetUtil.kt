@@ -28,7 +28,7 @@ class NetUtil {
     suspend fun netCheck(): Boolean {
         try {
             val result = apiCall {
-                HttpApi.createHttp(debug = false, addGsonConverterFactory = false).anyUrlS("")
+                HttpApi.createHttp(addGsonConverterFactory = false).anyUrlS("")
             }
             l.d(result)
             val isWifi = if (result.code() == 30000) {
@@ -48,7 +48,7 @@ class NetUtil {
             return isWifi
         } catch (e: Exception) {
             e.printStackTrace()
-            return false
+            return true
         }
     }
 

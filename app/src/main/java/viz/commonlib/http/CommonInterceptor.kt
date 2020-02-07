@@ -132,6 +132,7 @@ class CommonInterceptor(
     ) {
         when (type) {
             CommonRequestType.HEADER -> {
+                builderHeader.removeHeader(map.key)
                 builderHeader.addHeader(map.key, commonInfo.value)
             }
             CommonRequestType.POST -> {

@@ -13,5 +13,7 @@ data class Download(
     @ColumnInfo(name = "video_title") var videoTitle: String = "",
     @ColumnInfo(name = "video_img_url") var videoImgUrl: String = "",
     @ColumnInfo(name = "download_status") var status: Int = 0,
-    @ColumnInfo(name = "download_progress")  var progress:Int = 0
+    @ColumnInfo(name = "download_progress")  var progress:Int = 0,
+    @ColumnInfo(name = "duration")  var duration:Long = 0,
+    @ColumnInfo(name = "search_url")  var searchUrl:String = ""
 )

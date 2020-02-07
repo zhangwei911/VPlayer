@@ -27,7 +27,7 @@
         android:textColor="@android:color/black"
         app:layout_constraintBottom_toBottomOf="@id/imageButton_back"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/imageButton_back"
+        app:layout_constraintStart_toEndOf="@id/imageButton_back"
         app:layout_constraintTop_toTopOf="@id/imageButton_back"
         tools:text="@tools:sample/full_names" />
 

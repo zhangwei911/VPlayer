@@ -59,9 +59,9 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
             }
         }
         findViewById<ImageButton>(R.id.imageButton_back)?.setOnClickListener {
-            finish()
+            getCommonBack()
         }
-        findViewById<TextView>(R.id.textView_title)?.text = getCommonTtile()
+        setCommonTitle(getCommonTtile())
     }
 
     open fun updateBG() {
@@ -91,10 +91,19 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
         }
     }
 
-    open protected fun isFullScreen(): Boolean = false
-    open protected fun isNoTitle(): Boolean = true
+    fun setCommonTitle(title: String) {
+        findViewById<TextView>(R.id.textView_title)?.text = title
+    }
 
-    open protected fun getCommonTtile(): String = ""
+    protected open fun isFullScreen(): Boolean = false
+    protected open fun isNoTitle(): Boolean = true
+
+    protected open fun getCommonTtile(): String = ""
+
+    protected open fun getCommonBack() {
+        finish()
+    }
+
     /**
      * 当前布局文件资源
      */
@@ -103,26 +112,26 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
     /**
      * 需要的权限列表
      */
-    open protected fun getPermissions(): Array<String> = arrayOf()
+    protected open fun getPermissions(): Array<String> = arrayOf()
 
     /**
      * 需要的权限提示文字
      */
-    open protected fun getPermissionsTips(): String = ""
+    protected open fun getPermissionsTips(): String = ""
 
     /**
      * 拥有权限时需要执行的部分
      */
-    open protected fun hasPermissions() {}
+    protected open fun hasPermissions() {}
 
-    open protected fun getCustomBackground(): Any {
+    protected open fun getCustomBackground(): Any {
         return ""
     }
 
     /**
      * 设置背景
      */
-    open protected fun setCustomBackground(cbg: Any) {
+    protected open fun setCustomBackground(cbg: Any) {
         try {
             if (cbg is Int && cbg != -1) {
                 window.decorView.setBackgroundResource(cbg)
@@ -185,12 +194,14 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
         }
     }
 
-    open protected fun useEventBus(): Boolean = false
+    protected open fun useEventBus(): Boolean = false
 
     override fun onDestroy() {
         super.onDestroy()
         if (useEventBus()) {
-            EventBus.getDefault().unregister(this)
+            if (EventBus.getDefault().isRegistered(this)) {
+                EventBus.getDefault().unregister(this)
+            }
         }
     }
 }

@@ -34,17 +34,19 @@ class SearchAdapter(private val context: Context) :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         data[position].apply {
             holder.itemView.apply {
-                textView_name.text = name + "(${fromNameList[from]})"
-                textView_desc.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    Html.fromHtml(desc, Html.FROM_HTML_MODE_LEGACY)
-                } else {
-                    Html.fromHtml(desc)
-                }
-                if (!img.isNullOrEmpty()) {
-                    glide!!.load(img)
-                        .error(R.drawable.ic_fail)
-                        .skipMemoryCache(true)
-                        .into(imageView_thumb)
+                if (fromNameList.size > 0) {
+                    textView_name.text = name + "(${fromNameList[from]})"
+                    textView_desc.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        Html.fromHtml(desc, Html.FROM_HTML_MODE_LEGACY)
+                    } else {
+                        Html.fromHtml(desc)
+                    }
+                    if (!img.isNullOrEmpty()) {
+                        glide!!.load(img)
+                            .error(R.drawable.ic_fail)
+                            .skipMemoryCache(true)
+                            .into(imageView_thumb)
+                    }
                 }
             }
         }

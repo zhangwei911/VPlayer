@@ -12,6 +12,7 @@ import androidx.annotation.NonNull
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.test.espresso.idling.net.UriIdlingResource
 import bolts.Task
@@ -233,6 +234,8 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                             videoUrl,
                             videoTitle,
                             videoImgUrl,
+                            searchUrl,
+                            duration,
                             activity!!.applicationContext,
                             viewLifecycleOwner
                         )
@@ -244,9 +247,9 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
 
     private fun test() {
         if (BuildConfig.DEBUG) {
-//            textInputEditText_search.setText("锦衣之下")
-//            spinner_website.setSelection(2)
-//            materialButton_search.performClick()
+            textInputEditText_search.setText("锦衣之下")
+            spinner_website.setSelection(4)
+            materialButton_search.performClick()
         }
     }
 
@@ -366,11 +369,18 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             if (spinnerItems.isEmpty() || htmlList.isEmpty()) {
                 return@apply
             }
-            searchUrl = spinnerItems[from]
-            mainVM.getVideoEpisodesInfo(
-                url,
-                htmlList[from].episodesBean
-            )
+            val isWebPlay = htmlList[from].searchHtmlResultBean.isWebPlay
+            if (isWebPlay) {
+                val bundle = Bundle()
+                bundle.putString("url", url)
+                findNavController().navigate(R.id.webActivity, bundle)
+            } else {
+                searchUrl = spinnerItems[from]
+                mainVM.getVideoEpisodesInfo(
+                    url,
+                    htmlList[from].episodesBean
+                )
+            }
         }
     }
 
@@ -477,6 +487,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         super.onPause()
         mainVM.errorInfo.postValue(null)
         mainVM.episodes.postValue(null)
+        mainVM.rules.postValue(null)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

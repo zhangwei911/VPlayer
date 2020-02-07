@@ -5,7 +5,7 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class VideoHtmlResultBean(
-    var title:String,
+    var title: String,
     var mainCss: String,
     var isFrameProcess: Boolean,
     var isFrame: Boolean,
@@ -31,5 +31,9 @@ data class VideoHtmlResultBean(
     var nameIndex: Int,
     var isNameAttr: Boolean,
     var nameAttr: String,
-    var hasUrlPrefix: Boolean
+    var hasUrlPrefix: Boolean,
+    var videoCss: String,
+    var videoIndex: Int,
+    var isVideoUrlAttr: Boolean,
+    var videoUrlAttr: String
 ) : Parcelable

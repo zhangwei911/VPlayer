@@ -24,7 +24,7 @@ interface HttpApi {
             connectTimeout: Long = 60,
             readTimeout: Long = 60,
             writeTimeout: Long = 60,
-            excludeUrls: MutableList<String> = mutableListOf("/"),
+            excludeUrls: MutableList<String> = mutableListOf(),
             addGsonConverterFactory: Boolean = true
         ): HttpApi {
             return BaseHttp.createHttp(

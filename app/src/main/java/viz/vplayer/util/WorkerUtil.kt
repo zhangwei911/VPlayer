@@ -15,15 +15,23 @@ object WorkerUtil {
         videoUrl: String,
         videoTitle: String,
         videoImgUrl: String,
+        searchUrl: String,
+        duration: Long,
         appContext: Context,
         lo: LifecycleOwner
     ) {
         val uniqueName = MD5Util.MD5(videoUrl)
         val wis = WorkManager.getInstance(appContext)
             .getWorkInfosForUniqueWork(uniqueName).get()
+        wis.forEach {
+            if (it.state == WorkInfo.State.FAILED) {
+                WorkManager.getInstance(appContext).cancelWorkById(it.id)
+                wis.remove(it)
+            }
+        }
         if (wis.isNullOrEmpty()) {
             val constraintsBuilder = Constraints.Builder().apply {
-                if(!BuildConfig.DEBUG) {
+                if (!BuildConfig.DEBUG) {
                     setRequiredNetworkType(NetworkType.UNMETERED)// 网络状态
                     setRequiresBatteryNotLow(true)                 // 不在电量不足时执行
 //                setRequiresCharging(true)                      // 在充电时执行
@@ -40,7 +48,9 @@ object WorkerUtil {
                     workDataOf(
                         "videoUrl" to videoUrl,
                         "videoTitle" to videoTitle,
-                        "videoImgUrl" to videoImgUrl
+                        "videoImgUrl" to videoImgUrl,
+                        "searchUrl" to searchUrl,
+                        "duration" to duration
                     )
                 )
                 .setConstraints(constraints)
@@ -69,7 +79,7 @@ object WorkerUtil {
                             }
                             WorkInfo.State.RUNNING -> {
                                 val progress = workInfo.progress.getFloat("progress", 0.00f)
-                                l.d("下载进度:$progress")
+                                l.d("[${uniqueName}]下载进度:$progress")
                             }
                             else -> {
                                 l.i(workInfo.state)
@@ -82,7 +92,7 @@ object WorkerUtil {
             })
     }
 
-    fun isWorking(videoUrl: String,appContext: Context): Boolean {
+    fun isWorking(videoUrl: String, appContext: Context): Boolean {
         val uniqueName = MD5Util.MD5(videoUrl)
         val wis = WorkManager.getInstance(appContext)
             .getWorkInfosForUniqueWork(uniqueName).get()

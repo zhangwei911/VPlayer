@@ -34,10 +34,7 @@ import viz.vplayer.eventbus.VideoEvent
 import viz.vplayer.room.Episode
 import viz.vplayer.room.VideoId
 import viz.vplayer.room.VideoInfo
-import viz.vplayer.util.FileUtil
-import viz.vplayer.util.RecyclerItemClickListener
-import viz.vplayer.util.WorkerUtil
-import viz.vplayer.util.continueWithEnd
+import viz.vplayer.util.*
 import viz.vplayer.video.FloatPlayerView
 import viz.vplayer.video.FloatWindow
 import viz.vplayer.video.MoveType
@@ -60,6 +57,7 @@ class VideoPalyerActivity : BaseActivity() {
     private var title = ""
     private var img = ""
     private var searchUrl = ""
+    private var duration = 0L
     var index = 0
     private var isWifi = true
 
@@ -72,9 +70,24 @@ class VideoPalyerActivity : BaseActivity() {
         videoVM.play.observe(this, Observer { videoInfoBean ->
             videoInfoBean?.let {
                 var url = videoInfoBean.url
+                val urlUTF8 = UrlUtil.format(url)
+                val ft = UrlUtil.generatLocalFileNameAndPath(this, url, true)
+                val fileName = ft.first
+                val target = ft.second
+                val videoFile = File(target).apply {
+                    url = if (exists()) {
+                        "file://$target"
+                    }else{
+                        urlUTF8
+                    }
+                }
                 l.d("视频地址:$url")
                 loadingView_player.visibility = View.GONE
                 title = videoInfoBean.title
+                duration = it.duration
+                if (!title.contains(Regex("第[0-9]{1,3}集"))) {
+                    title += "第${index + 1}集"
+                }
                 gsyVideoPLayer.setUp(url, true, videoInfoBean.title)
                 Task.callInBackground {
                     val vi = app.db.videoInfoDao().getByUrl(videoInfoBean.url)
@@ -104,7 +117,7 @@ class VideoPalyerActivity : BaseActivity() {
         title = intent.getStringExtra("title") ?: ""
         img = intent.getStringExtra("img") ?: ""
         searchUrl = intent.getStringExtra("searchUrl") ?: ""
-        val duration = intent.getLongExtra("duration", 0)
+        duration = intent.getLongExtra("duration", 0)
         episodes = intent.getSerializableExtra("episodes") as MutableList<String>
         html = intent.getParcelableExtra("html")
         gsyVideoPLayer.selectEpisodes = {
@@ -113,22 +126,6 @@ class VideoPalyerActivity : BaseActivity() {
         if (url.isNullOrEmpty() || title.isNullOrEmpty()) {
             Toast.show(this, "参数错误")
             return
-        }
-        var oldReplaceWords = arrayListOf("+", " ", "*")
-        var newReplaceWords = arrayListOf("%2B", "%20", "%2A")
-        var urlUTF8 = URLDecoder.decode(url, "UTF-8")
-        for (i in oldReplaceWords.indices) {
-            urlUTF8 = urlUTF8.replace(oldReplaceWords[i], newReplaceWords[i])
-        }
-        l.i(urlUTF8)
-        var uri = Uri.parse(urlUTF8)
-        val fileName = MD5Util.MD5(url) + "." + uri.pathSegments.last()
-        val target = FileUtil.getPath(this) + "/" + fileName
-        l.i(target)
-        val videoFile = File(target).apply {
-            if (exists()) {
-                url = "file://$target"
-            }
         }
         videoVM.play.postValue(
             VideoInfoBean(
@@ -328,7 +325,7 @@ class VideoPalyerActivity : BaseActivity() {
     }
 
     private fun download(videoUrl: String, videoTitle: String, videoImgUrl: String) {
-        WorkerUtil.startWorker(videoUrl, videoTitle, videoImgUrl, applicationContext, this)
+        WorkerUtil.startWorker(videoUrl, videoTitle, videoImgUrl, searchUrl, duration, applicationContext, this)
     }
 
     override fun onNewIntent(intent: Intent?) {

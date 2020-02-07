@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [VideoInfo::class, Episode::class, Rule::class, Download::class],
-    version = 10
+    version = 11
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun videoInfoDao(): VideoInfoDao

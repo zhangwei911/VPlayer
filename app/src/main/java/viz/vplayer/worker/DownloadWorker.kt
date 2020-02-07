@@ -35,6 +35,7 @@ import viz.vplayer.R
 import viz.vplayer.eventbus.CommonInfoEvent
 import viz.vplayer.eventbus.DownloadProgressEvent
 import viz.vplayer.eventbus.NetEvent
+import viz.vplayer.room.Download
 import viz.vplayer.ui.activity.MainActivity
 import viz.vplayer.util.*
 import java.net.URLDecoder
@@ -43,13 +44,14 @@ import kotlin.random.Random
 class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
     ListenableWorker(appContext, workerParams) {
     private var mFuture: SettableFuture<Result>? = null
-    private var download: viz.vplayer.room.Download? = null
     @SuppressLint("RestrictedApi")
     override fun startWork(): ListenableFuture<Result> {
         mFuture = SettableFuture.create()
         val videoUrl = inputData.getString("videoUrl")
         val videoTitle = inputData.getString("videoTitle")
         val videoImgUrl = inputData.getString("videoImgUrl")
+        val searchUrl = inputData.getString("searchUrl")
+        val duration = inputData.getLong("duration",0)
         var result: Result? = null
         if (videoUrl.isNullOrEmpty()) {
             result = Result.failure()
@@ -72,7 +74,7 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                     return mFuture!!
                 }
                 else -> {
-                    if(!BuildConfig.DEBUG) {
+                    if (!BuildConfig.DEBUG) {
                         l.d("移动网络禁止下载")
                         EventBus.getDefault().postSticky(NetEvent(false))
                         result = Result.failure(workDataOf("errMsg" to "移动网络禁止下载"))
@@ -96,50 +98,31 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                     mFuture?.set(result)
                     return@launch
                 }
+                var download: Download? = null
                 Task.callInBackground {
                     l.start("bolts")
                     download = App.instance.db.downloadDao().getByUrl(videoUrl)
                     if (download == null) {
-                        download = viz.vplayer.room.Download()
+                        download = Download()
                         download!!.videoUrl = videoUrl
                         download!!.videoTitle = videoTitle!!
                         download!!.videoImgUrl = videoImgUrl!!
+                        download!!.searchUrl = searchUrl!!
+                        download!!.duration = duration!!
                         download!!.notificationId =
                             "${TimeFormat.getCurrentTime("MMddHHmm")}${Random.nextInt(99)}".toInt()
                         App.instance.db.downloadDao().insertAll(download!!)
                     }
                     l.end("bolts")
                 }.continueWithEnd("下载数据记录")
-                var oldReplaceWords = arrayListOf("+", " ", "*")
-                var newReplaceWords = arrayListOf("%2B", "%20", "%2A")
-                var urlUTF8 = URLDecoder.decode(videoUrl, "UTF-8")
-                for (i in oldReplaceWords.indices) {
-                    urlUTF8 = urlUTF8.replace(oldReplaceWords[i], newReplaceWords[i])
-                }
-                l.d(urlUTF8)
-                var uri = Uri.parse(urlUTF8)
-                val fileName = MD5Util.MD5(videoUrl) + "." + uri.pathSegments.last() + ".mp4"
-                val target = FileUtil.getPath(applicationContext) + "/" + fileName
-                l.d(target)
+                val ft = UrlUtil.generatLocalFileNameAndPath(applicationContext, videoUrl, true)
+                val fileName = ft.first
+                val target = ft.second
                 var progressLast = 0.00f
                 val PROGRESS_MAX = 100
                 val notificationUtil = NotificationUtil(applicationContext)
                 notificationUtil.createNotificationChannel()
                 val GROUP_KEY_WORK_VIDEO = "viz.vplayer.WORK_VIDEO"
-                val intent = Intent(applicationContext, MainActivity::class.java)
-                intent.putExtra("to", R.id.localFragment)
-                val text = "视频下载${fileName}"
-                val builder = notificationUtil.createNotificationBuilder(
-                    CHANNEL_ID_DOWNLOAD,
-                    GROUP_KEY_WORK_VIDEO,
-                    "0.00%",
-                    text,
-                    android.R.drawable.stat_sys_download,
-                    isBigText = true,
-                    bigText = text,
-                    clickable = true,
-                    intent = intent
-                )
                 val summaryNotification = notificationUtil.createNotificationBuilder(
                     CHANNEL_ID_DOWNLOAD,
                     GROUP_KEY_WORK_VIDEO,
@@ -175,6 +158,7 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
 
                     Aria.download(this)
                         .setM3U8PeerTaskListener(
+                            videoUrl,
                             TaskEnum.M3U8_PEER,
                             object : M3U8PeerTaskListener() {
                                 override fun onPeerStart(
@@ -230,6 +214,7 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                             })
 
                     Aria.download(this).setNormalTaskListener(
+                        videoUrl,
                         TaskEnum.DOWNLOAD,
                         object : NormalTaskListener<DownloadTask>() {
                             override fun onWait(task: DownloadTask) {
@@ -314,10 +299,22 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                                     "AriaCallback",
                                     String.format("onTaskComplete key:%s", task.key)
                                 )
+                                Task.callInBackground {
+                                    if (download != null) {
+                                        download!!.status = 1
+                                        download!!.progress = 100
+                                        App.instance.db.downloadDao().updateALl(download!!)
+                                    }
+                                }.continueWithEnd("下载数据记录删除")
+                                result = Result.success(workDataOf("videoLocalPath" to task.filePath))
+                                mFuture?.set(result)
                             }
 
                             override fun onTaskRunning(task: DownloadTask) {
                                 super.onTaskRunning(task)
+                                if (task.key != videoUrl) {
+                                    return
+                                }
                                 l.d(
                                     "AriaCallback",
                                     String.format("onTaskRunning key:%s", task.key)
@@ -332,8 +329,30 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                                     )
                                 )
                                 val progress = task.entity.percent.toFloat()
-                                setProgressAsync(workDataOf("progress" to progress))
                                 if (progress - progressLast > 1 || progress == 100f || progress == 0f) {
+                                    setProgressAsync(
+                                        workDataOf(
+                                            "progress" to progress,
+                                            "uniqueName" to MD5Util.MD5(videoUrl),
+                                            "videoUrl" to videoUrl,
+                                            "url" to task.key
+                                        )
+                                    )
+                                    val intent =
+                                        Intent(applicationContext, MainActivity::class.java)
+                                    intent.putExtra("to", R.id.localFragment)
+                                    val text = "视频下载${task.key}"
+                                    val builder = notificationUtil.createNotificationBuilder(
+                                        CHANNEL_ID_DOWNLOAD,
+                                        GROUP_KEY_WORK_VIDEO,
+                                        "0.00%",
+                                        text,
+                                        android.R.drawable.stat_sys_download,
+                                        isBigText = true,
+                                        bigText = text,
+                                        clickable = true,
+                                        intent = intent
+                                    )
                                     EventBus.getDefault()
                                         .postSticky(
                                             DownloadProgressEvent(
@@ -341,6 +360,13 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                                                 videoUrl
                                             )
                                         )
+                                    download!!.progress = progress.toInt()
+                                    if (download!!.progress == 100) {
+                                        download!!.status = 1
+                                    }
+                                    Task.callInBackground {
+                                        App.instance.db.downloadDao().updateALl(download!!)
+                                    }.continueWithEnd("保存下载进度")
                                     l.i(progress.toString())
                                     Toast.show(
                                         applicationContext,
@@ -352,7 +378,7 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                                         // Issue the initial notification with zero progress
                                         builder.apply {
                                             setProgress(PROGRESS_MAX, progress.toInt(), true)
-                                            setContentTitle("${progress}%")
+                                            setContentTitle("${progress}%-${notificationId}")
                                             notify(notificationId, build())
                                             notify(111111, summaryNotification)
 
@@ -364,7 +390,7 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                                             // notificationManager.notify(notificationId, builder.build());
 
                                             if (progress == 100f) {
-                                                val text = "视频下载${fileName}"
+                                                val text = "视频下载${task.key}"
                                                 setContentText(text)
                                                 // When done, update the notification one more time to remove the progress bar
                                                 setContentTitle("下载完成")
@@ -391,7 +417,9 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                         })
 
                     Aria.download(applicationContext)
-                        .setSubTaskListener(TaskEnum.DOWNLOAD_GROUP_SUB,
+                        .setSubTaskListener(
+                            videoUrl,
+                            TaskEnum.DOWNLOAD_GROUP_SUB,
                             object : SubTaskListener<DownloadTask, AbsNormalEntity>() {
                                 override fun onSubTaskCancel(
                                     task: DownloadTask,
@@ -490,10 +518,37 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                             mFuture?.set(result)
                         },
                         onProgress = { progress, current, total ->
-                            setProgressAsync(workDataOf("progress" to progress))
                             if (progress - progressLast > 1 || progress == 100f || progress == 0f) {
+                                setProgressAsync(
+                                    workDataOf(
+                                        "progress" to progress,
+                                        "uniqueName" to MD5Util.MD5(videoUrl),
+                                        "videoUrl" to videoUrl
+                                    )
+                                )
+                                val intent = Intent(applicationContext, MainActivity::class.java)
+                                intent.putExtra("to", R.id.localFragment)
+                                val text = "视频下载${fileName}"
+                                val builder = notificationUtil.createNotificationBuilder(
+                                    CHANNEL_ID_DOWNLOAD,
+                                    GROUP_KEY_WORK_VIDEO,
+                                    "0.00%",
+                                    text,
+                                    android.R.drawable.stat_sys_download,
+                                    isBigText = true,
+                                    bigText = text,
+                                    clickable = true,
+                                    intent = intent
+                                )
                                 EventBus.getDefault()
                                     .postSticky(DownloadProgressEvent(progress.toInt(), videoUrl))
+                                download!!.progress = progress.toInt()
+                                if (download!!.progress == 100) {
+                                    download!!.status = 1
+                                }
+                                Task.callInBackground {
+                                    App.instance.db.downloadDao().updateALl(download!!)
+                                }.continueWithEnd("保存下载进度")
                                 l.i(progress.toString())
                                 Toast.show(
                                     applicationContext,
@@ -505,7 +560,7 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                                     // Issue the initial notification with zero progress
                                     builder.apply {
                                         setProgress(PROGRESS_MAX, progress.toInt(), true)
-                                        setContentTitle("${progress}%")
+                                        setContentTitle("${progress}%-${notificationId}")
                                         notify(notificationId, build())
                                         notify(111111, summaryNotification)
 
