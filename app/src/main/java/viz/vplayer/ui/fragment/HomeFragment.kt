@@ -163,6 +163,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                         R.layout.simple_spinner_item, spinnerNameItems
                     )
                 spinner_website.adapter = spinnerAdapter
+                mainVM.rules.postValue(null)
                 test()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -249,7 +250,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         if (BuildConfig.DEBUG) {
             textInputEditText_search.setText("锦衣之下")
             spinner_website.setSelection(4)
-            materialButton_search.performClick()
+//            materialButton_search.performClick()
         }
     }
 

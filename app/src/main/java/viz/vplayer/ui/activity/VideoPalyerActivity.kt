@@ -76,6 +76,7 @@ class VideoPalyerActivity : BaseActivity() {
                 val target = ft.second
                 val videoFile = File(target).apply {
                     url = if (exists()) {
+                        Toast.show("已缓存,播放离线视频")
                         "file://$target"
                     }else{
                         urlUTF8

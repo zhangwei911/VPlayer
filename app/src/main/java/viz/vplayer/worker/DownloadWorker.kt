@@ -51,7 +51,7 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
         val videoTitle = inputData.getString("videoTitle")
         val videoImgUrl = inputData.getString("videoImgUrl")
         val searchUrl = inputData.getString("searchUrl")
-        val duration = inputData.getLong("duration",0)
+        val duration = inputData.getLong("duration", 0)
         var result: Result? = null
         if (videoUrl.isNullOrEmpty()) {
             result = Result.failure()
@@ -132,29 +132,38 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                     isGroupSummary = true
                 ).build()
                 if (videoUrl.contains(".m3u8")) {
-                    val option = M3U8VodOption() // 创建m3u8点播文件配置
-                        .apply {
-                            merge(true)
-                            setVodTsUrlConvert { m3u8Url, tsUrls ->
-                                // 转换ts文件的url地址
-                                val parentUrl = m3u8Url.substringBeforeLast("/") + "/"
-                                val newUrls = ArrayList<String>()
-                                tsUrls.forEachIndexed { index, s ->
-                                    s?.apply {
-                                        newUrls.add(parentUrl + this)
+                    val isTaskExist = Aria.download(applicationContext).taskExists(videoUrl)
+                    if (!isTaskExist) {
+                        val option = M3U8VodOption() // 创建m3u8点播文件配置
+                            .apply {
+                                merge(true)
+                                setVodTsUrlConvert { m3u8Url, tsUrls ->
+                                    // 转换ts文件的url地址
+                                    val parentUrl = m3u8Url.substringBeforeLast("/") + "/"
+                                    val newUrls = ArrayList<String>()
+                                    tsUrls.forEachIndexed { index, s ->
+                                        s?.apply {
+                                            newUrls.add(parentUrl + this)
+                                        }
                                     }
+                                    newUrls // 返回有效的ts文件url集合
                                 }
-                                newUrls // 返回有效的ts文件url集合
+                                setBandWidthUrlConverter {
+                                    videoUrl.substringBeforeLast("/") + "/" + it
+                                }
                             }
-                            setBandWidthUrlConverter {
-                                videoUrl.substringBeforeLast("/") + "/" + it
+                        val taskId = Aria.download(applicationContext)
+                            .load(videoUrl) // 设置点播文件下载地址
+                            .setFilePath(target, true) // 设置点播文件保存路径
+                            .m3u8VodOption(option)   // 调整下载模式为m3u8点播
+                            .create()
+                    } else {
+                        Aria.download(applicationContext).getDownloadEntity(videoUrl)?.apply {
+                            if(this.size>0) {
+                                Aria.download(applicationContext).load(this[0].id).resume()
                             }
                         }
-                    val taskId = Aria.download(applicationContext)
-                        .load(videoUrl) // 设置点播文件下载地址
-                        .setFilePath(target, true) // 设置点播文件保存路径
-                        .m3u8VodOption(option)   // 调整下载模式为m3u8点播
-                        .create()
+                    }
 
                     Aria.download(this)
                         .setM3U8PeerTaskListener(
@@ -306,7 +315,8 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                                         App.instance.db.downloadDao().updateALl(download!!)
                                     }
                                 }.continueWithEnd("下载数据记录删除")
-                                result = Result.success(workDataOf("videoLocalPath" to task.filePath))
+                                result =
+                                    Result.success(workDataOf("videoLocalPath" to task.filePath))
                                 mFuture?.set(result)
                             }
 
