@@ -56,6 +56,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
     private val spinnerNameItems = mutableListOf<String>()
     private val gson = Gson()
     private var searchUrl = ""
+    private var rulesUrlList = mutableListOf<String>()
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -137,6 +138,11 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 return@Observer
             }
             try {
+                if (rulesUrlList.contains(rulesJsonPair.first)) {
+                    clearRules()
+                }else{
+                    rulesUrlList.add(rulesJsonPair.first)
+                }
                 val type = object : TypeToken<MutableList<JsonBean>>() {}.type
                 val jsonBeanList = gson.fromJson<MutableList<JsonBean>>(rulesJsonPair.second, type)
                 l.d(jsonBeanList)
@@ -219,31 +225,6 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
             requireActivity().finish()
         }
-
-        Task.callInBackground {
-            if (!isWifi) {
-                Toast.show("非WIFI连接或没有网络")
-                return@callInBackground
-            }
-            var downloads = App.instance.db.downloadDao().getAllByStatus(0)
-            l.d("共${downloads.size}个下载任务")
-            downloads.forEachIndexed { index, download ->
-                download.apply {
-                    l.df("启动视频", videoUrl, videoTitle, "下载任务")
-                    activity?.runOnUiThread {
-                        WorkerUtil.startWorker(
-                            videoUrl,
-                            videoTitle,
-                            videoImgUrl,
-                            searchUrl,
-                            duration,
-                            activity!!.applicationContext,
-                            viewLifecycleOwner
-                        )
-                    }
-                }
-            }
-        }.continueWithEnd("启动所有视频下载")
     }
 
     private fun test() {
@@ -252,6 +233,11 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             spinner_website.setSelection(4)
 //            materialButton_search.performClick()
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        mainVM.rules.postValue(null)
     }
 
     private fun updateRule(url: String, ruleStatus: Int, taskName: String) {
