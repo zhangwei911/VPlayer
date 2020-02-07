@@ -38,7 +38,12 @@ class WebActivity : BaseActivity(), View.OnClickListener {
         }
 
         val callback = onBackPressedDispatcher.addCallback(this) {
-            getCommonBack()
+            if (webView.canGoBack()) {
+                webView.goBack()
+                setWebInfo(webView.url)
+            } else {
+                navigateUpTo(Intent(this@WebActivity, MainActivity::class.java))
+            }
         }
     }
 
@@ -83,12 +88,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
     }
 
     override fun getCommonBack() {
-        if (webView.canGoBack()) {
-            webView.goBack()
-            setWebInfo(webView.url)
-        } else {
-            navigateUpTo(Intent(this, MainActivity::class.java))
-        }
+        navigateUpTo(Intent(this, MainActivity::class.java))
     }
 
     private fun setWebInfo(url: String) {
