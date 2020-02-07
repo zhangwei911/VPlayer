@@ -9,6 +9,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.WorkManager
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItems
@@ -26,6 +27,7 @@ import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.room.Download
 import viz.vplayer.room.NotificationId
 import viz.vplayer.ui.activity.VideoPalyerActivity
+import viz.vplayer.util.App
 import viz.vplayer.util.RecyclerItemClickListener
 import viz.vplayer.util.WorkerUtil
 import viz.vplayer.util.continueWithEnd
@@ -59,6 +61,43 @@ class LocalFragment : BaseFragment() {
                 }
             }
         }.continueWithEnd("获取下载记录")
+        materialButton_download.setOnClickListener {
+            Task.callInBackground {
+                if (!isWifi) {
+                    Toast.show("非WIFI连接或没有网络")
+                    return@callInBackground
+                }
+                if(materialButton_download.text == getString(R.string.start_all)) {
+                    var downloads = App.instance.db.downloadDao().getAllByStatus(0)
+                    val downloadSize = downloads.size
+                    l.d("共${downloadSize}个下载任务")
+                    downloads.forEachIndexed { index, download ->
+                        download.apply {
+                            l.df("启动视频", videoUrl, videoTitle, "下载任务")
+                            activity?.runOnUiThread {
+                                WorkerUtil.startWorker(
+                                    videoUrl,
+                                    videoTitle,
+                                    videoImgUrl,
+                                    searchUrl,
+                                    duration,
+                                    activity!!.applicationContext,
+                                    viewLifecycleOwner
+                                )
+                            }
+                        }
+                    }
+                    if(downloadSize>0) {
+                        materialButton_download.text = getString(R.string.stop_all)
+                    }
+                }else{
+                    activity?.run {
+                        WorkManager.getInstance(applicationContext).pruneWork()
+                        materialButton_download.text = getString(R.string.start_all)
+                    }
+                }
+            }.continueWithEnd("启动所有视频下载")
+        }
         val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
             findNavController().navigate(R.id.homeFragment)
         }

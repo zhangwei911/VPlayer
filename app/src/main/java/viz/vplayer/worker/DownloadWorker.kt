@@ -272,6 +272,7 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                                     "AriaCallback",
                                     String.format("onTaskStop key:%s", task.key)
                                 )
+                                Toast.show("开始下载")
                             }
 
                             override fun onTaskCancel(task: DownloadTask) {
@@ -308,6 +309,7 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                                     "AriaCallback",
                                     String.format("onTaskComplete key:%s", task.key)
                                 )
+                                Toast.show("下载完成")
                                 Task.callInBackground {
                                     if (download != null) {
                                         download!!.status = 1
@@ -378,10 +380,10 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                                         App.instance.db.downloadDao().updateALl(download!!)
                                     }.continueWithEnd("保存下载进度")
                                     l.i(progress.toString())
-                                    Toast.show(
-                                        applicationContext,
-                                        "$progress%"
-                                    )
+//                                    Toast.show(
+//                                        applicationContext,
+//                                        "$progress%"
+//                                    )
                                     progressLast = progress
                                     val notificationId = download!!.notificationId
                                     NotificationManagerCompat.from(applicationContext).apply {
@@ -560,10 +562,10 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
                                     App.instance.db.downloadDao().updateALl(download!!)
                                 }.continueWithEnd("保存下载进度")
                                 l.i(progress.toString())
-                                Toast.show(
-                                    applicationContext,
-                                    "$progress%"
-                                )
+//                                Toast.show(
+//                                    applicationContext,
+//                                    "$progress%"
+//                                )
                                 progressLast = progress
                                 val notificationId = download!!.notificationId
                                 NotificationManagerCompat.from(applicationContext).apply {
