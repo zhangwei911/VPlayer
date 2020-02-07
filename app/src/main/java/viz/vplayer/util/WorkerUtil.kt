@@ -6,7 +6,9 @@ import androidx.lifecycle.Observer
 import androidx.work.*
 import com.viz.tools.MD5Util
 import com.viz.tools.l
+import org.greenrobot.eventbus.EventBus
 import viz.vplayer.BuildConfig
+import viz.vplayer.eventbus.DownloadStatusEvent
 import viz.vplayer.worker.DownloadWorker
 import java.util.concurrent.TimeUnit
 
@@ -78,6 +80,7 @@ object WorkerUtil {
                                 l.e(workInfo.outputData.getString("errMsg"))
                             }
                             WorkInfo.State.RUNNING -> {
+                                EventBus.getDefault().postSticky(DownloadStatusEvent(true))
                                 val progress = workInfo.progress.getFloat("progress", 0.00f)
                                 l.d("[${uniqueName}]下载进度:$progress")
                             }

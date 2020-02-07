@@ -305,6 +305,9 @@ class DownloadWorker(appContext: Context, workerParams: WorkerParameters) :
 
                             override fun onTaskComplete(task: DownloadTask) {
                                 super.onTaskComplete(task)
+                                if (task.key != videoUrl) {
+                                    return
+                                }
                                 l.d(
                                     "AriaCallback",
                                     String.format("onTaskComplete key:%s", task.key)

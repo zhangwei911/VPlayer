@@ -22,6 +22,7 @@ import viz.vplayer.R
 import viz.vplayer.adapter.LocalAdapter
 import viz.vplayer.bean.JsonBean
 import viz.vplayer.eventbus.DownloadProgressEvent
+import viz.vplayer.eventbus.DownloadStatusEvent
 import viz.vplayer.eventbus.HtmlListEvent
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.room.Download
@@ -67,7 +68,7 @@ class LocalFragment : BaseFragment() {
                     Toast.show("非WIFI连接或没有网络")
                     return@callInBackground
                 }
-                if(materialButton_download.text == getString(R.string.start_all)) {
+                if (materialButton_download.text == getString(R.string.start_all)) {
                     var downloads = App.instance.db.downloadDao().getAllByStatus(0)
                     val downloadSize = downloads.size
                     l.d("共${downloadSize}个下载任务")
@@ -87,16 +88,22 @@ class LocalFragment : BaseFragment() {
                             }
                         }
                     }
-                    if(downloadSize>0) {
+                    if (downloadSize > 0) {
                         materialButton_download.text = getString(R.string.stop_all)
                     }
-                }else{
+                } else {
                     activity?.run {
                         WorkManager.getInstance(applicationContext).pruneWork()
                         materialButton_download.text = getString(R.string.start_all)
                     }
                 }
-            }.continueWithEnd("启动所有视频下载")
+            }.continueWithEnd(
+                if (materialButton_download.text == getString(R.string.start_all)) {
+                    "启动"
+                } else {
+                    "暂停"
+                } + "所有视频下载"
+            )
         }
         val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
             findNavController().navigate(R.id.homeFragment)
@@ -232,5 +239,16 @@ class LocalFragment : BaseFragment() {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun netEvent(netEvent: NetEvent) {
         isWifi = netEvent.isWifi
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun downloadStatusEvent(downloadStatusEvent: DownloadStatusEvent) {
+        materialButton_download.setText(
+            if (downloadStatusEvent.isDownloading) {
+                R.string.stop_all
+            } else {
+                R.string.start_all
+            }
+        )
     }
 }
