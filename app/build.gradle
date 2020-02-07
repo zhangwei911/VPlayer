@@ -80,6 +80,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation files('libs/Baidu_Mtj_android_3.9.8.4.jar')
     testImplementation 'junit:junit:4.12'
     androidTestImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     androidTestImplementation 'androidx.test:core:1.3.0-alpha03'
@@ -133,7 +134,7 @@ dependencies {
     testImplementation "androidx.room:room-testing:$room_version"
 
     //MTA主包
-    implementation 'com.qq.mta:mta:3.4.2'
+    implementation 'com.qq.mta:mta:3.4.7-Release'
     //MID基础包
     implementation 'com.tencent.mid:mid:3.73-release'
     implementation 'com.google.code.gson:gson:2.8.6'
