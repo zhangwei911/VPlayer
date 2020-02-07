@@ -108,17 +108,19 @@ class MainActivity : BaseActivity(), View.OnClickListener {
     }
 
     fun changeBottomNavigationViewSelectItem(to: Int) {
-        bottomNavigationView_main.selectedItemId = when (to) {
+        val sii = when (to) {
             R.id.homeFragment -> {
                 R.id.action_search
             }
             R.id.localFragment -> {
                 R.id.action_download
             }
-            else -> {
-                navController.navigate(to)
-                0
+            else-> {
+                -1
             }
+        }
+        if(sii != -1) {
+            bottomNavigationView_main.selectedItemId = sii
         }
     }
 

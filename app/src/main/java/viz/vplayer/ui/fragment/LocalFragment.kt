@@ -1,6 +1,7 @@
 package viz.vplayer.ui.fragment
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
@@ -12,6 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.WorkManager
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.WhichButton
+import com.afollestad.materialdialogs.actions.getActionButton
 import com.afollestad.materialdialogs.list.listItems
 import com.viz.tools.Toast
 import com.viz.tools.l
@@ -189,6 +192,10 @@ class LocalFragment : BaseFragment() {
                                                             localAdapter?.notifyItemRemoved(position)
                                                         })
                                                     negativeButton(R.string.cancel)
+                                                    val btnNeg = getActionButton(WhichButton.NEGATIVE)
+                                                    btnNeg.setTextColor(Color.LTGRAY)
+                                                    val btnPos = getActionButton(WhichButton.POSITIVE)
+                                                    btnPos.setTextColor(context.getColor(R.color.colorPrimary))
                                                 }
                                             }
                                             "下载" -> {
@@ -243,7 +250,7 @@ class LocalFragment : BaseFragment() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun downloadStatusEvent(downloadStatusEvent: DownloadStatusEvent) {
-        materialButton_download.setText(
+        materialButton_download?.setText(
             if (downloadStatusEvent.isDownloading) {
                 R.string.stop_all
             } else {
