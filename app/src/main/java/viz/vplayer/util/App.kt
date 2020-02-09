@@ -7,17 +7,9 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.work.Configuration
 import androidx.work.WorkManager
-import com.arialyy.aria.core.Aria
-import com.arialyy.aria.core.AriaConfig
 import com.shuyu.gsyvideoplayer.player.IjkPlayerManager
-import com.tencent.mid.api.MidCallback
-import com.tencent.mid.api.MidService
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.QbSdk.PreInitCallback
-import com.tencent.stat.StatConfig
-import com.tencent.stat.StatCrashCallback
-import com.tencent.stat.StatCrashReporter
-import com.tencent.stat.StatService
 import com.viz.tools.Toast
 import com.viz.tools.l
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
@@ -32,29 +24,6 @@ class App : Application(), Configuration.Provider {
         l.SUFFIX = ".kt"
         Toast.init(applicationContext)
         IjkPlayerManager.setLogLevel(IjkMediaPlayer.IJK_LOG_SILENT)
-        // [可选]设置是否打开debug输出，上线时请关闭，Logcat标签为"MtaSDK"
-        StatConfig.setDebugEnable(true)
-        // 基础统计API
-        StatService.registerActivityLifecycleCallbacks(this)
-        StatCrashReporter.getStatCrashReporter(applicationContext).apply {
-            javaCrashHandlerStatus = true
-            jniNativeCrashStatus = true
-            addCrashCallback(
-                object : StatCrashCallback {
-                    override fun onJniNativeCrash(nativeCrashStacks: String) { // native crash happened
-                        Log.e("nativeCrash", nativeCrashStacks)
-                    }
-
-                    override fun onJavaCrash(
-                        thread: Thread,
-                        ex: Throwable
-                    ) { // java crash happened
-                        ex.printStackTrace()
-                    }
-                })
-            isEnableInstantReporting = true
-        }
-        getMID()
         instance = this
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
@@ -137,24 +106,6 @@ class App : Application(), Configuration.Provider {
         //x5内核初始化接口
         QbSdk.initX5Environment(applicationContext, cb)
         com.baidu.mobstat.StatService.autoTrace(this)
-    }
-
-    private fun getMID() {
-        MidService.requestMid(this, object : MidCallback {
-            override fun onSuccess(mid: Any) {
-                l.d(mid)
-            }
-
-            override fun onFail(errCode: Int, msg: String) {
-                l.e(
-                    "failed to get mid, errCode:"
-                            + errCode +
-                            ",msg:"
-                            + msg
-                )
-            }
-
-        })
     }
 
     override fun getWorkManagerConfiguration(): Configuration =

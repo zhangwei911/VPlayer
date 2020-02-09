@@ -30,12 +30,6 @@ android {
                         "room.expandProjection":"true"]
             }
         }
-        manifestPlaceholders = [
-                //A3X1WK4A5YDZ 属于应用"VPlayer"独有的 Android AppKey, 用于配置SDK
-                MTA_APPKEY:"A3X1WK4A5YDZ",
-                //标注应用推广渠道用以区分新用户来源，可填写如应用宝，豌豆荚等
-                MTA_CHANNEL:"test"
-        ]
     }
 
     buildTypes {
@@ -63,7 +57,6 @@ android {
     flavorDimensions "default"
     productFlavors.all {
         flavor ->
-            flavor.manifestPlaceholders = [MTA_CHANNEL: name]
     }
     customVersion()
     autoName("VPlayer")
@@ -133,10 +126,6 @@ dependencies {
     // Test helpers
     testImplementation "androidx.room:room-testing:$room_version"
 
-    //MTA主包
-    implementation 'com.qq.mta:mta:3.4.7-Release'
-    //MID基础包
-    implementation 'com.tencent.mid:mid:3.73-release'
     implementation 'com.google.code.gson:gson:2.8.6'
 
     implementation 'com.afollestad.material-dialogs:core:3.1.1'
