@@ -13,13 +13,17 @@ import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.test.espresso.idling.net.UriIdlingResource
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
+import com.afollestad.materialdialogs.list.customListAdapter
+import com.afollestad.materialdialogs.list.getRecyclerView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.michaelflisar.dragselectrecyclerview.DragSelectTouchListener
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -28,6 +32,7 @@ import org.greenrobot.eventbus.ThreadMode
 import viz.vplayer.BuildConfig
 import viz.vplayer.R
 import viz.vplayer.adapter.SearchAdapter
+import viz.vplayer.adapter.SelectEpisodesAdapter
 import viz.vplayer.bean.*
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.eventbus.RuleEvent
@@ -57,6 +62,9 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
     private val gson = Gson()
     private var searchUrl = ""
     private var rulesUrlList = mutableListOf<String>()
+    private var isLongClick = false
+    private var totalSelectSize = 0
+    private var successAddCacheCount = 0
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -64,18 +72,36 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             ViewModelProvider(this).get(MainVM::class.java)
         } ?: throw Exception("Invalid Activity")
         searchAdapter = SearchAdapter(context!!)
+        mainVM.addCache.observe(viewLifecycleOwner, Observer {
+            l.d("已成功添加${it}个任务(总共${totalSelectSize}个)")
+        })
         mainVM.play.observe(viewLifecycleOwner, Observer { videoInfoBean ->
-            videoInfoBean?.let {
+            videoInfoBean?.apply {
                 mainVM.play.postValue(null)
                 if (htmlList.isEmpty()) {
-                    return@let
+                    return@apply
+                }
+                if (isDownload) {
+                    WorkerUtil.startWorker(
+                        url,
+                        title,
+                        img,
+                        searchUrl,
+                        duration,
+                        app.applicationContext,
+                        this@HomeFragment
+                    )
+                    successAddCacheCount++
+                    mainVM.addCache.postValue(successAddCacheCount)
+                    Toast.show("添加${successAddCacheCount}个缓冲任务成功")
+                    return@apply
                 }
                 val intent = Intent(context, VideoPalyerActivity::class.java)
-                intent.putExtra("url", videoInfoBean.url)
+                intent.putExtra("url", url)
                 intent.putExtra("searchUrl", searchUrl)
-                intent.putExtra("title", videoInfoBean.title)
-                intent.putExtra("duration", videoInfoBean.duration)
-                intent.putExtra("img", videoInfoBean.img)
+                intent.putExtra("title", title)
+                intent.putExtra("duration", duration)
+                intent.putExtra("img", img)
                 intent.putExtra("episodes", mainVM.episodes.value as Serializable)
                 intent.putExtra("html", htmlList[searchAdapter.data[currentPos].from])
                 startActivity(intent)
@@ -98,7 +124,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             searchAdapter.notifyDataSetChanged()
             loadingView.visibility = View.GONE
             if (BuildConfig.DEBUG) {
-                searchClick(0)
+//                searchClick(0)
             }
         })
         mainVM.getSearchResult().observe(viewLifecycleOwner, Observer { searchResult ->
@@ -114,6 +140,14 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             if (episodeList.isEmpty()) {
                 loadingView.visibility = View.GONE
                 Toast.show(context, "数据为空")
+                return@Observer
+            }
+            if (isLongClick) {
+                val data = mutableListOf<EpisodeListBean>()
+                episodeList.forEachIndexed { index, s ->
+                    data.add(EpisodeListBean(index, s))
+                }
+                cacheDirect(data)
                 return@Observer
             }
             if (episodeList[0].endsWith(".m3u8")) {
@@ -140,12 +174,12 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             try {
                 if (rulesUrlList.contains(rulesJsonPair.first)) {
                     clearRules()
-                }else{
+                } else {
                     rulesUrlList.add(rulesJsonPair.first)
                 }
                 val type = object : TypeToken<MutableList<JsonBean>>() {}.type
                 val jsonBeanList = gson.fromJson<MutableList<JsonBean>>(rulesJsonPair.second, type)
-                l.d(jsonBeanList)
+//                l.d(jsonBeanList)
                 mainVM.jsonBeanList.postValue(jsonBeanList)
                 if (spinnerNameItems.size > 0) {
                     spinnerNameItems.remove("所有")
@@ -227,10 +261,105 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         }
     }
 
+    private fun cacheDirect(data: MutableList<EpisodeListBean>) {
+        loadingView.visibility = View.GONE
+        MaterialDialog(context!!).show {
+            val adapter = SelectEpisodesAdapter(context)
+            adapter.data = data
+            adapter.isMultiSelect = true
+            val gridWidth = windowContext.resources.getInteger(R.integer.md_grid_width)
+            val layoutManager = GridLayoutManager(windowContext, gridWidth)
+            customListAdapter(
+                adapter = adapter,
+                layoutManager = layoutManager
+            )
+            val rv = getRecyclerView()
+            val onDragSelectionListener =
+                DragSelectTouchListener.OnDragSelectListener { start, end, isSelected ->
+                    if (isSelected) {
+                        for (i in start..end) {
+                            adapter.select(i)
+                        }
+                    } else {
+                        for (i in start..end) {
+                            adapter.unselect(i)
+                        }
+                    }
+                }
+            val mDragSelectTouchListener = DragSelectTouchListener().apply {
+                // check region OnDragSelectListener for more infos
+                withSelectListener(onDragSelectionListener)
+                // following is all optional
+                withMaxScrollDistance(16)    // default: 16; 	defines the speed of the auto scrolling
+                withTopOffset(0)       // default: 0; 		set an offset for the touch region on top of the RecyclerView
+                withBottomOffset(0)    // default: 0; 		set an offset for the touch region on bottom of the RecyclerView
+                withScrollAboveTopRegion(true)  // default: true; 	enable auto scrolling, even if the finger is moved above the top region
+                withScrollBelowTopRegion(true)  // default: true; 	enable auto scrolling, even if the finger is moved below the top region
+//                withDebug(true)               // default: false;
+            }
+            rv.addOnItemTouchListener(mDragSelectTouchListener)
+            rv.addOnItemTouchListener(
+                RecyclerItemClickListener(
+                    context,
+                    rv,
+                    object : RecyclerItemClickListener.OnItemClickListener {
+                        override fun onItemClick(view: View, position: Int, e: MotionEvent) {
+                            adapter.select(position)
+                        }
+
+                        override fun onItemLongClick(view: View, position: Int, e: MotionEvent) {
+                            if (adapter.data[position].isSelect) {
+                                adapter.unselect(position)
+                            } else {
+                                adapter.select(position)
+                            }
+                            mDragSelectTouchListener.startDragSelection(position)
+                        }
+
+                        override fun onItemDoubleClick(view: View, position: Int, e: MotionEvent) {
+
+                        }
+                    })
+            )
+            positiveButton(R.string.cache) {
+                data.filter { it.isSelect }.apply { totalSelectSize = size }
+                    .forEachIndexed { index, episodeListBean ->
+                        episodeListBean.apply {
+                            if (url.endsWith(".html")) {
+                                mainVM.getVideoInfo(
+                                    url,
+                                    htmlList[searchAdapter.data[currentPos].from].videoHtmlResultBean,
+                                    searchAdapter.data[currentPos].img,
+                                    true,
+                                    index == totalSelectSize - 1
+                                )
+                            } else {
+                                WorkerUtil.startWorker(
+                                    url,
+                                    searchAdapter.data[currentPos].name,
+                                    searchAdapter.data[currentPos].img,
+                                    spinnerItems[spinner_website.selectedItemPosition],
+                                    0,
+                                    app.applicationContext,
+                                    this@HomeFragment
+                                )
+                                successAddCacheCount++
+                                mainVM.addCache.postValue(successAddCacheCount)
+                                if (index == totalSelectSize - 1) {
+                                    Toast.show("添加${successAddCacheCount}个缓冲任务成功(总共${totalSelectSize}个)")
+                                }
+                            }
+                        }
+                    }
+            }
+            negativeButton(R.string.cancel)
+        }
+    }
+
     private fun test() {
         if (BuildConfig.DEBUG) {
-            textInputEditText_search.setText("锦衣之下")
-            spinner_website.setSelection(4)
+            textInputEditText_search.setText("精英律师")
+            spinner_website.setSelection(0)
 //            materialButton_search.performClick()
         }
     }
@@ -303,10 +432,13 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 object :
                     RecyclerItemClickListener.OnItemClickListener {
                     override fun onItemClick(view: View, position: Int, e: MotionEvent) {
+                        isLongClick = false
                         searchClick(position)
                     }
 
                     override fun onItemLongClick(view: View, position: Int, e: MotionEvent) {
+                        isLongClick = true
+                        searchClick(position)
                     }
 
                     override fun onItemDoubleClick(view: View, position: Int, e: MotionEvent) {

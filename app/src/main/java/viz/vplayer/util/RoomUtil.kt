@@ -13,4 +13,14 @@ object RoomUtil {
             }
         }
     }
+
+    fun migrationOneVersion(preVersion: Int,vararg sqlList:String): Migration {
+        return object : Migration(preVersion, preVersion + 1) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                sqlList.forEach { sql->
+                    database.execSQL(sql)
+                }
+            }
+        }
+    }
 }

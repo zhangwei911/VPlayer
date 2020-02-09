@@ -18,13 +18,14 @@ import com.viz.tools.Toast
 import kotlinx.android.synthetic.main.video_custom.view.*
 import viz.vplayer.R
 import viz.vplayer.adapter.SelectEpisodesAdapter
+import viz.vplayer.bean.EpisodeListBean
 
 class CustomVideoPlayer : StandardGSYVideoPlayer {
     constructor(context: Context) : super(context)
     constructor(context: Context, fullFlag: Boolean) : super(context, fullFlag)
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
-    var selectEpisodes: (() -> MutableList<String>)? = null
+    var selectEpisodes: (() -> MutableList<EpisodeListBean>)? = null
         set(value) {
             textView_select_episodes.visibility = if (value != null) {
                 View.VISIBLE
@@ -33,10 +34,12 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
             }
             field = value
         }
-    var episodesClick: ((recyclerView: RecyclerView) -> Unit)? = null
-    private var videoList = mutableListOf<String>()
+    var episodesClick: ((recyclerView: RecyclerView, adapter: RecyclerView.Adapter<*>) -> Unit)? =
+        null
+    private var videoList = mutableListOf<EpisodeListBean>()
     private var selectEpisodesAdapter: SelectEpisodesAdapter? = null
     private var speedIndex = 2
+    private var isInitEpisode = false
 
     override fun getLayoutId(): Int {
         return R.layout.video_custom
@@ -58,14 +61,18 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
                     recyclerView_select_episodes.visibility = View.GONE
                 } else {
                     recyclerView_select_episodes.visibility = View.VISIBLE
-                    videoList = selectEpisodes!!.invoke()
-                    selectEpisodesAdapter = SelectEpisodesAdapter(context!!)
-                    selectEpisodesAdapter!!.data = videoList
-                    val gridLayoutManager = GridLayoutManager(context, 6)
-                    recyclerView_select_episodes.layoutManager = gridLayoutManager
-                    recyclerView_select_episodes.adapter = selectEpisodesAdapter
-                    selectEpisodesAdapter?.notifyDataSetChanged()
-                    episodesClick?.invoke(recyclerView_select_episodes)
+                    if (!isInitEpisode) {
+                        videoList = selectEpisodes!!.invoke()
+                        selectEpisodesAdapter = SelectEpisodesAdapter(context!!)
+                        selectEpisodesAdapter!!.data = videoList
+                        val gridLayoutManager = GridLayoutManager(context, 6)
+                        recyclerView_select_episodes.layoutManager = gridLayoutManager
+                        recyclerView_select_episodes.adapter = selectEpisodesAdapter
+                        selectEpisodesAdapter?.notifyDataSetChanged()
+                        selectEpisodesAdapter?.select(0)
+                        episodesClick?.invoke(recyclerView_select_episodes, selectEpisodesAdapter!!)
+                        isInitEpisode = true
+                    }
                 }
             }
         }

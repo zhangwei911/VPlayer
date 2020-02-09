@@ -61,9 +61,9 @@ android {
     customVersion()
     autoName("VPlayer")
 
-    dataBinding {
-        enabled = true
-    }
+//    dataBinding {
+//        enabled = true
+//    }
 }
 
 dependencies {
@@ -192,4 +192,22 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:3.14.2'
     implementation 'com.squareup.retrofit2:retrofit:2.7.1'
     implementation 'com.squareup.retrofit2:converter-gson:2.7.1'
+
+    def okd = '1.0.7'
+    // core
+    implementation "com.liulishuo.okdownload:okdownload:$okd"
+// provide sqlite to store breakpoints
+    implementation "com.liulishuo.okdownload:sqlite:$okd"
+// provide okhttp to connect to backend
+// and then please import okhttp dependencies by yourself
+    implementation "com.liulishuo.okdownload:okhttp:$okd"
+// provide interface to match filedownloader
+    implementation "com.liulishuo.okdownload:filedownloader:$okd"
+// provide interface for kotlin extension
+    implementation "com.liulishuo.okdownload:ktx:$okd"
+
+    implementation 'com.github.Jay-Goo:M3U8Downloader:V1.0.8'
+    implementation 'org.apache.commons:commons-lang3:3.9'
+
+    implementation 'com.github.MFlisar:DragSelectRecyclerView:0.3'
 }

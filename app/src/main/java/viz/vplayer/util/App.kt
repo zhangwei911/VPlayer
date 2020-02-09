@@ -87,6 +87,16 @@ class App : Application(), Configuration.Provider {
                     11,
                     "ALTER TABLE download ADD COLUMN duration INTEGER NOT NULL DEFAULT 0",
                     "ALTER TABLE download ADD COLUMN search_url TEXT NOT NULL DEFAULT ''"
+                ),
+                RoomUtil.migration(
+                    11,
+                    12,
+                    "create table m3u8 (`status` INTEGER NOT NULL DEFAULT 1,`progress` INTEGER NOT NULL DEFAULT 1,`id` INTEGER NOT NULL,`url` TEXT NOT NULL, `path` TEXT NOT NULL, PRIMARY KEY(`id`))",
+                    "create table ts (`status` INTEGER NOT NULL DEFAULT 1,`m3u8_id` INTEGER NOT NULL DEFAULT 1,`index` INTEGER NOT NULL DEFAULT 1,`progress` INTEGER NOT NULL DEFAULT 1,`id` INTEGER NOT NULL,`url` TEXT NOT NULL, `path` TEXT NOT NULL, PRIMARY KEY(`id`))"
+                ),
+                RoomUtil.migrationOneVersion(
+                    12,
+                    "ALTER TABLE download ADD COLUMN work_id TEXT NOT NULL DEFAULT ''"
                 )
             )
             .build()

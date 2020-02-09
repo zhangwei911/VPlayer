@@ -9,5 +9,7 @@ data class VideoInfoBean(
     var title: String,
     var duration: Long,
     var img: String = "",
-    var videoList: MutableList<Pair<String, String>> = mutableListOf()
+    var videoList: MutableList<Pair<String, String>> = mutableListOf(),
+    var isDownload: Boolean = false,
+    var isLastDownload:Boolean = false
 ) : Parcelable

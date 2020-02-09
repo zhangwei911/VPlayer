@@ -1,11 +1,7 @@
 package viz.vplayer.util
 
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
+import android.view.View
 import bolts.Task
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
@@ -18,18 +14,42 @@ import com.lidroid.xutils.http.RequestParams
 import com.lidroid.xutils.http.ResponseInfo
 import com.lidroid.xutils.http.callback.RequestCallBack
 import com.lidroid.xutils.http.client.HttpRequest
-import com.viz.tools.MD5Util
-import com.viz.tools.TimeFormat
-import com.viz.tools.Toast
 import com.viz.tools.l
-import org.greenrobot.eventbus.EventBus
-import viz.vplayer.R
-import viz.vplayer.eventbus.DownloadProgressEvent
-import viz.vplayer.room.Download
-import viz.vplayer.ui.activity.MainActivity
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.actor
 import java.io.File
-import java.net.URLDecoder
-import kotlin.random.Random
+
+fun String.fileScheme(): String {
+    return "file://$this"
+}
+
+fun String.deleteFile() {
+    if (isFileExist()) {
+        File(this).delete()
+    }
+}
+
+fun String.isFileExist(): Boolean {
+    return File(this).exists()
+}
+
+fun String.createNewFile() {
+    val file = File(this)
+    if (!file.exists()) {
+        file.parentFile.mkdirs()
+        file.createNewFile()
+    }
+}
+
+//使用Channel 实现View 防止重复点击
+fun View.setOnceClick(block: suspend () -> Unit) {
+    val action = GlobalScope.actor<Unit> {
+        for (event in channel) block()
+    }
+    setOnClickListener {
+        action.offer(Unit)
+    }
+}
 
 fun kotlin.String.subString(
     startIndexStr: String,
@@ -110,19 +130,24 @@ fun kotlin.String.subString(
     }
 }
 
-fun <TResult> Task<TResult>.continueWithEnd(taskName: String): Task<TResult> {
+fun <TResult> Task<TResult>.continueWithEnd(
+    taskName: String,
+    isLog: Boolean = true
+): Task<TResult> {
     return continueWith { t ->
         when {
             t.isCancelled -> {
-                l.i("${taskName}任务取消")
+                l.d("${taskName}任务取消")
             }
             t.isFaulted -> {
                 val error = t.error
-                l.e("${taskName}任务失败 $error")
+                l.d("${taskName}任务失败 $error")
                 error.printStackTrace()
             }
             else -> {
-                l.i("${taskName}任务成功")
+                if (isLog) {
+                    l.d("${taskName}任务成功")
+                }
             }
         }
         return@continueWith null

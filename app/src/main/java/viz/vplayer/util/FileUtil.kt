@@ -8,7 +8,11 @@ import com.viz.tools.Toast
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
+import java.nio.ByteBuffer
+import java.nio.file.Files
+import java.nio.file.Paths
 
 object FileUtil {
     fun getPath(context: Context): String {
@@ -86,5 +90,41 @@ object FileUtil {
             }
         }.start()
         return length
+    }
+
+    fun write(content: String, filePath: String) {
+        filePath.createNewFile()
+        val fos = FileOutputStream(filePath)
+        val channel = fos.channel
+        val buf = ByteBuffer.wrap(content.toByteArray())
+        buf.put(content.toByteArray())
+        buf.flip()
+        channel.write(buf)
+        channel.close()
+        fos.close()
+    }
+
+    fun read(filePath: String): MutableList<String> {
+        val result = mutableListOf<String>()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Files.lines(Paths.get(URI.create(filePath.fileScheme()))).forEach {
+                result.add(it)
+            }
+        } else {
+            val reader = InputStreamReader(FileInputStream(filePath))
+            val br = BufferedReader(reader)
+            var line = br.readLine()
+            while (line != null) {
+                result.add(line)
+                line = br.readLine()
+            }
+            reader.close()
+            br.close()
+        }
+        return result
+    }
+
+    fun readStr(filePath: String): String {
+        return read(filePath).joinToString("\n")
     }
 }

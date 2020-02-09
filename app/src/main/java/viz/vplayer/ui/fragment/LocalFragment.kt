@@ -156,7 +156,7 @@ class LocalFragment : BaseFragment() {
                                 MaterialDialog(context).show {
                                     val items = arrayListOf<String>()
                                     if (status == 0 && !WorkerUtil.isWorking(
-                                            videoUrl,
+                                            workId,
                                             app.applicationContext
                                         )
                                     ) {
@@ -192,10 +192,6 @@ class LocalFragment : BaseFragment() {
                                                             localAdapter?.notifyItemRemoved(position)
                                                         })
                                                     negativeButton(R.string.cancel)
-                                                    val btnNeg = getActionButton(WhichButton.NEGATIVE)
-                                                    btnNeg.setTextColor(Color.LTGRAY)
-                                                    val btnPos = getActionButton(WhichButton.POSITIVE)
-                                                    btnPos.setTextColor(context.getColor(R.color.colorPrimary))
                                                 }
                                             }
                                             "下载" -> {

@@ -10,6 +10,7 @@ import org.greenrobot.eventbus.EventBus
 import viz.vplayer.BuildConfig
 import viz.vplayer.eventbus.DownloadStatusEvent
 import viz.vplayer.worker.DownloadWorker
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 object WorkerUtil {
@@ -82,7 +83,9 @@ object WorkerUtil {
                             WorkInfo.State.RUNNING -> {
                                 EventBus.getDefault().postSticky(DownloadStatusEvent(true))
                                 val progress = workInfo.progress.getFloat("progress", 0.00f)
-                                l.d("[${uniqueName}]下载进度:$progress")
+                                val videoUrl = workInfo.progress.getString("videoUrl") ?: "null"
+                                val key = workInfo.progress.getString("url") ?: "null"
+                                l.d("[${videoUrl}][$key]下载进度:$progress")
                             }
                             else -> {
                                 l.i(workInfo.state)
@@ -95,10 +98,8 @@ object WorkerUtil {
             })
     }
 
-    fun isWorking(videoUrl: String, appContext: Context): Boolean {
-        val uniqueName = MD5Util.MD5(videoUrl)
-        val wis = WorkManager.getInstance(appContext)
-            .getWorkInfosForUniqueWork(uniqueName).get()
-        return wis.isNotEmpty()
+    fun isWorking(workId: String, appContext: Context): Boolean {
+        val wi = WorkManager.getInstance(appContext).getWorkInfoById(UUID.fromString(workId)).get()
+        return wi != null && (wi.state == WorkInfo.State.RUNNING || wi.state == WorkInfo.State.ENQUEUED || wi.state == WorkInfo.State.BLOCKED)
     }
 }

@@ -8,6 +8,7 @@ import retrofit2.http.GET
 import retrofit2.http.QueryMap
 import retrofit2.http.Url
 import viz.commonlib.http.BaseHttp
+import viz.vplayer.util.DEFAULT_RULE_URL
 
 interface HttpApi {
     @GET
@@ -24,7 +25,7 @@ interface HttpApi {
             connectTimeout: Long = 60,
             readTimeout: Long = 60,
             writeTimeout: Long = 60,
-            excludeUrls: MutableList<String> = mutableListOf(),
+            excludeUrls: MutableList<String> = mutableListOf(DEFAULT_RULE_URL,"http://www.baidu.com/"),
             addGsonConverterFactory: Boolean = true
         ): HttpApi {
             return BaseHttp.createHttp(

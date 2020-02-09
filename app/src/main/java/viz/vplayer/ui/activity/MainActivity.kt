@@ -1,15 +1,10 @@
 package viz.vplayer.ui.activity
 
 import android.Manifest.permission.*
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
-import android.os.Parcelable
 import android.view.View
-import androidx.fragment.app.FragmentActivity
 import androidx.navigation.findNavController
+import androidx.navigation.get
 import androidx.navigation.ui.NavigationUI
 import androidx.work.ListenableWorker
 import androidx.work.workDataOf
@@ -18,14 +13,11 @@ import com.arialyy.aria.core.listener.ISchedulers
 import com.arialyy.aria.util.ALog
 import com.arialyy.aria.util.NetUtils
 import com.viz.tools.Toast
-import com.viz.tools.apk.NetWorkUtils
 import com.viz.tools.apk.NetWorkUtils.*
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import okhttp3.ResponseBody
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -35,8 +27,6 @@ import viz.vplayer.R
 import viz.vplayer.eventbus.CommonInfoEvent
 import viz.vplayer.eventbus.InfoType
 import viz.vplayer.eventbus.NetEvent
-import viz.vplayer.http.HttpApi
-import viz.vplayer.util.CoroutineUtil
 import viz.vplayer.util.NetUtil
 
 
@@ -109,10 +99,22 @@ class MainActivity : BaseActivity(), View.OnClickListener {
 
     fun changeBottomNavigationViewSelectItem(to: Int) {
         val sii = when (to) {
+            navController.graph[R.id.homeFragment].id -> {
+                R.id.action_search
+            }
+            navController.graph[R.id.localFragment].id -> {
+                R.id.action_download
+            }
             R.id.homeFragment -> {
                 R.id.action_search
             }
             R.id.localFragment -> {
+                R.id.action_download
+            }
+            0 -> {
+                R.id.action_search
+            }
+            1 -> {
                 R.id.action_download
             }
             else-> {

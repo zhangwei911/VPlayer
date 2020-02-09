@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class Download(
     @PrimaryKey(autoGenerate = true) var id: Int = 0,
+    @ColumnInfo(name = "work_id") var workId: String = "",
     @ColumnInfo(name = "video_url") var videoUrl: String = "",
     @ColumnInfo(name = "notification_id") var notificationId: Int = 0,
     @ColumnInfo(name = "video_title") var videoTitle: String = "",

@@ -30,8 +30,13 @@ object UrlUtil {
                 url
             }
         )
-        val fileName = MD5Util.MD5(url) + "." + uri.pathSegments.last() + ".mp4"
-        val target = FileUtil.getPath(context) + "/" + fileName
+        val isM3u8 = url.endsWith(".m3u8")
+        val fileName = MD5Util.MD5(url) + if (isM3u8) {
+            ".m3u8"
+        } else {
+            ""
+        }
+        val target = FileUtil.getPath(context) + "/VDownloader/" + fileName + "/" + fileName + ".mp4"
         l.d(target)
         return Pair(fileName, target)
     }

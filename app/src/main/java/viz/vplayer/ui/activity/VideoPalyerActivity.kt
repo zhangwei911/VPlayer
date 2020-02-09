@@ -1,6 +1,5 @@
 package viz.vplayer.ui.activity
 
-import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -17,16 +16,15 @@ import com.afollestad.materialdialogs.lifecycle.lifecycleOwner
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.utils.GSYVideoType
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoView
-import com.viz.tools.MD5Util
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_video.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import pub.devrel.easypermissions.AppSettingsDialog
 import viz.vplayer.R
 import viz.vplayer.adapter.SelectEpisodesAdapter
+import viz.vplayer.bean.EpisodeListBean
 import viz.vplayer.bean.HtmlBean
 import viz.vplayer.bean.VideoInfoBean
 import viz.vplayer.eventbus.NetEvent
@@ -42,7 +40,6 @@ import viz.vplayer.video.Screen
 import viz.vplayer.vm.MainVM
 import viz.vplayer.vm.VideoVM
 import java.io.File
-import java.net.URLDecoder
 
 
 class VideoPalyerActivity : BaseActivity() {
@@ -78,7 +75,7 @@ class VideoPalyerActivity : BaseActivity() {
                     url = if (exists()) {
                         Toast.show("已缓存,播放离线视频")
                         "file://$target"
-                    }else{
+                    } else {
                         urlUTF8
                     }
                 }
@@ -122,7 +119,14 @@ class VideoPalyerActivity : BaseActivity() {
         episodes = intent.getSerializableExtra("episodes") as MutableList<String>
         html = intent.getParcelableExtra("html")
         gsyVideoPLayer.selectEpisodes = {
-            episodes!!
+            val episodeListBeans = mutableListOf<EpisodeListBean>()
+            episodes?.forEachIndexed { index, s ->
+                val elb = EpisodeListBean()
+                elb.index = index
+                elb.url = s
+                episodeListBeans.add(elb)
+            }
+            episodeListBeans
         }
         if (url.isNullOrEmpty() || title.isNullOrEmpty()) {
             Toast.show(this, "参数错误")
@@ -147,11 +151,11 @@ class VideoPalyerActivity : BaseActivity() {
             setIsTouchWiget(true)
             isIfCurrentIsFullscreen = true
             isNeedLockFull = true
-            episodesClick = {
-                it.addOnItemTouchListener(
+            episodesClick = { rv, adapter ->
+                rv.addOnItemTouchListener(
                     RecyclerItemClickListener(
                         this@VideoPalyerActivity,
-                        it,
+                        rv,
                         object :
                             RecyclerItemClickListener.OnItemClickListener {
                             override fun onItemClick(view: View, position: Int, e: MotionEvent) {
@@ -159,24 +163,30 @@ class VideoPalyerActivity : BaseActivity() {
                                     Toast.show("非WIFI连接或没有网络")
                                     return
                                 }
-                                index = position
-                                if (episodes!![position].endsWith("m3u8")) {
-                                    videoVM.play.postValue(
-                                        VideoInfoBean(
-                                            episodes!![position],
-                                            title + "第${position + 1}集",
-                                            0
-                                        )
-                                    )
-                                } else {
-                                    loadingView_player.visibility = View.VISIBLE
-                                    mainVM.getVideoInfo(
-                                        episodes!![position],
-                                        html!!.videoHtmlResultBean,
-                                        img
-                                    )
+                                var canSelect = true
+                                if(adapter is SelectEpisodesAdapter){
+                                    canSelect = adapter.select(position)
                                 }
-                                it.visibility = View.GONE
+                                if(canSelect) {
+                                    index = position
+                                    if (episodes!![position].endsWith("m3u8")) {
+                                        videoVM.play.postValue(
+                                            VideoInfoBean(
+                                                episodes!![position],
+                                                title + "第${position + 1}集",
+                                                0
+                                            )
+                                        )
+                                    } else {
+                                        loadingView_player.visibility = View.VISIBLE
+                                        mainVM.getVideoInfo(
+                                            episodes!![position],
+                                            html!!.videoHtmlResultBean,
+                                            img
+                                        )
+                                    }
+                                }
+                                rv.visibility = View.GONE
                             }
 
                             override fun onItemLongClick(
@@ -326,7 +336,15 @@ class VideoPalyerActivity : BaseActivity() {
     }
 
     private fun download(videoUrl: String, videoTitle: String, videoImgUrl: String) {
-        WorkerUtil.startWorker(videoUrl, videoTitle, videoImgUrl, searchUrl, duration, applicationContext, this)
+        WorkerUtil.startWorker(
+            videoUrl,
+            videoTitle,
+            videoImgUrl,
+            searchUrl,
+            duration,
+            applicationContext,
+            this
+        )
     }
 
     override fun onNewIntent(intent: Intent?) {
