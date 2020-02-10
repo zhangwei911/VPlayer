@@ -9,7 +9,7 @@ import viz.vplayer.ui.activity.HistoryActivity
 ])
 interface HistoryActivitySubcomponent : AndroidInjector<HistoryActivity> {
     @Subcomponent.Builder
-    abstract class Builder : AndroidInjector.Factory<HistoryActivity> {
+    abstract class Builder : AndroidInjector.Builder<HistoryActivity>() {
         abstract fun myObserverModule(myObserverModule: MyObserverModule): Builder
     }
 }

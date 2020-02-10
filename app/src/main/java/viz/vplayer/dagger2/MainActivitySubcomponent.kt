@@ -9,7 +9,7 @@ import viz.vplayer.ui.activity.MainActivity
 ])
 interface MainActivitySubcomponent : AndroidInjector<MainActivity> {
     @Subcomponent.Builder
-    abstract class Builder : AndroidInjector.Factory<MainActivity> {
+    abstract class Builder : AndroidInjector.Builder<MainActivity>() {
         abstract fun myObserverModule(myObserverModule: MyObserverModule): Builder
     }
 }

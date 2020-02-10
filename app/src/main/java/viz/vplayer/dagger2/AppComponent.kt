@@ -7,13 +7,19 @@ import viz.vplayer.util.App
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [
-    AndroidInjectionModule::class,
-    MainActivityModules::class
-])
+@Component(
+    modules = [
+        AndroidInjectionModule::class,
+        MainActivityModules::class,
+        HistoryActivityModules::class,
+        RuleListActivityModules::class,
+        VideoPlayerActivityModules::class,
+        WebActivityModules::class
+    ]
+)
 interface AppComponent : AndroidInjector<App> {
     @Component.Builder
-    abstract class Builder : AndroidInjector.Factory<App>
+    abstract class Builder : AndroidInjector.Builder<App>()
 
     fun mainActivitySubcomponentBuilder(): MainActivitySubcomponent.Builder
     fun historyActivitySubcomponentBuilder(): HistoryActivitySubcomponent.Builder

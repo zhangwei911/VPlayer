@@ -9,7 +9,7 @@ import viz.vplayer.ui.activity.WebActivity
 ])
 interface WebActivitySubcomponent : AndroidInjector<WebActivity> {
     @Subcomponent.Builder
-    abstract class Builder : AndroidInjector.Factory<WebActivity> {
+    abstract class Builder : AndroidInjector.Builder<WebActivity>() {
         abstract fun myObserverModule(myObserverModule: MyObserverModule): Builder
     }
 }
