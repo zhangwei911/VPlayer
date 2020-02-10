@@ -6,7 +6,6 @@ import android.view.View
 import androidx.navigation.findNavController
 import androidx.navigation.get
 import androidx.navigation.ui.NavigationUI
-import bolts.Task
 import com.viz.tools.Toast
 import com.viz.tools.apk.NetWorkUtils.*
 import com.viz.tools.l
@@ -16,18 +15,20 @@ import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import viz.commonlib.download.VDownloader
-import viz.commonlib.js.JSUtil
+import viz.commonlib.util.MyObserver
 import viz.vplayer.BuildConfig
 import viz.vplayer.R
+import viz.vplayer.dagger2.MyObserverModule
 import viz.vplayer.eventbus.CommonInfoEvent
 import viz.vplayer.eventbus.InfoType
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.util.NetUtil
-import viz.vplayer.util.continueWithEnd
+import javax.inject.Inject
 
 
 class MainActivity : BaseActivity(), View.OnClickListener {
+    @Inject
+    lateinit var mo: MyObserver
     private val navController by lazy { findNavController(R.id.main_content) }
 
     override fun getContentViewId(): Int = R.layout.activity_main
@@ -49,6 +50,10 @@ class MainActivity : BaseActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        app.appComponent!!.mainActivitySubcomponentBuilder()
+            .myObserverModule(MyObserverModule(lifecycle, javaClass.name))
+            .create(this)
+            .inject(this)
         initViews()
         initListener()
 

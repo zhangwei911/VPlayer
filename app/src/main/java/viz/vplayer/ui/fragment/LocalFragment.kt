@@ -1,7 +1,6 @@
 package viz.vplayer.ui.fragment
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
@@ -13,8 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.WorkManager
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.WhichButton
-import com.afollestad.materialdialogs.actions.getActionButton
 import com.afollestad.materialdialogs.list.listItems
 import com.viz.tools.Toast
 import com.viz.tools.l
@@ -30,12 +27,13 @@ import viz.vplayer.eventbus.HtmlListEvent
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.room.Download
 import viz.vplayer.room.NotificationId
-import viz.vplayer.ui.activity.VideoPalyerActivity
+import viz.vplayer.ui.activity.VideoPlayerActivity
 import viz.vplayer.util.*
 import viz.vplayer.vm.MainVM
 import java.io.Serializable
 
 class LocalFragment : BaseFragment() {
+    override fun getFragmentClassName(): String = "LocalFragment"
     override fun getContentViewId(): Int = R.layout.fragment_local
     override fun useEventBus(): Boolean = true
     private var localAdapter: LocalAdapter? = null
@@ -122,7 +120,7 @@ class LocalFragment : BaseFragment() {
                         override fun onItemClick(view: View, position: Int, e: MotionEvent) {
                             localAdapter?.list?.get(position)?.apply {
                                 if (status == 1) {
-                                    val intent = Intent(context, VideoPalyerActivity::class.java)
+                                    val intent = Intent(context, VideoPlayerActivity::class.java)
                                     intent.putExtra("url", videoUrl)
                                     intent.putExtra("title", videoTitle)
                                     intent.putExtra("img", videoImgUrl)

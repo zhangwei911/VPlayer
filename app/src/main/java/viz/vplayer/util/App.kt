@@ -12,11 +12,20 @@ import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.QbSdk.PreInitCallback
 import com.viz.tools.Toast
 import com.viz.tools.l
+import dagger.android.AndroidInjector
+import dagger.android.DaggerApplication
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
+import viz.vplayer.dagger2.AppComponent
+import viz.vplayer.dagger2.DaggerAppComponent
 import viz.vplayer.room.AppDatabase
 
-class App : Application(), Configuration.Provider {
+class App : DaggerApplication(), Configuration.Provider {
     lateinit var db: AppDatabase
+    var appComponent: AppComponent? = null
+    override fun applicationInjector(): AndroidInjector<out DaggerApplication> {
+        appComponent = DaggerAppComponent.builder().create(this) as AppComponent?
+        return appComponent!!
+    }
 
     override fun onCreate() {
         super.onCreate()

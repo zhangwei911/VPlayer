@@ -19,15 +19,16 @@ import com.shuyu.gsyvideoplayer.video.base.GSYVideoView
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_video.*
-import kotlinx.android.synthetic.main.fragment_home.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import viz.commonlib.util.MyObserver
 import viz.vplayer.R
 import viz.vplayer.adapter.SelectEpisodesAdapter
 import viz.vplayer.bean.EpisodeListBean
 import viz.vplayer.bean.HtmlBean
 import viz.vplayer.bean.VideoInfoBean
+import viz.vplayer.dagger2.MyObserverModule
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.eventbus.VideoEvent
 import viz.vplayer.room.Episode
@@ -41,9 +42,12 @@ import viz.vplayer.video.Screen
 import viz.vplayer.vm.MainVM
 import viz.vplayer.vm.VideoVM
 import java.io.File
+import javax.inject.Inject
 
 
-class VideoPalyerActivity : BaseActivity() {
+class VideoPlayerActivity : BaseActivity() {
+    @Inject
+    lateinit var mo: MyObserver
     private val videoVM: VideoVM by lazy {
         ViewModelProvider(this).get(VideoVM::class.java)
     }
@@ -64,6 +68,10 @@ class VideoPalyerActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        app.appComponent!!.videoPlayerActivitySubcomponentBuilder()
+            .myObserverModule(MyObserverModule(lifecycle, javaClass.name))
+            .create(this)
+            .inject(this)
         EventBus.getDefault().register(this)
         videoVM.play.observe(this, Observer { videoInfoBean ->
             videoInfoBean?.let {
@@ -158,7 +166,7 @@ class VideoPalyerActivity : BaseActivity() {
             episodesClick = { rv, adapter ->
                 rv.addOnItemTouchListener(
                     RecyclerItemClickListener(
-                        this@VideoPalyerActivity,
+                        this@VideoPlayerActivity,
                         rv,
                         object :
                             RecyclerItemClickListener.OnItemClickListener {
@@ -251,7 +259,7 @@ class VideoPalyerActivity : BaseActivity() {
                             startActivityForResult(intent, OVERLAY_PERMISSION_REQ_CODE)
                         })
                         positiveButton(R.string.cancel)
-                        lifecycleOwner(this@VideoPalyerActivity)
+                        lifecycleOwner(this@VideoPlayerActivity)
                     }
                     return@setOnClickListener
                 }
@@ -303,7 +311,7 @@ class VideoPalyerActivity : BaseActivity() {
         floatPlayerView.url = url
         floatPlayerView.title = title
         floatPlayerView.videoPlayer!!.backToFull = {
-            val intent = Intent(this, VideoPalyerActivity::class.java)
+            val intent = Intent(this, VideoPlayerActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
             intent.putExtra(
                 "currentPos",

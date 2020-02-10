@@ -17,6 +17,7 @@
                 "isRegNeedDecoder": false,
                 "listCss": "li",
                 "isMultiList": false,
+                "listCssMulti": "",
                 "listItemAttr": "href",
                 "listItemCss": "a",
                 "listItemIndex": 0,

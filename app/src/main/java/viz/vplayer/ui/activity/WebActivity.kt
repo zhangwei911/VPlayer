@@ -14,14 +14,19 @@ import kotlinx.android.synthetic.main.activity_web.*
 import okhttp3.ResponseBody
 import org.json.JSONObject
 import viz.commonlib.http.VCallback
+import viz.commonlib.util.MyObserver
 import viz.vplayer.R
+import viz.vplayer.dagger2.MyObserverModule
 import viz.vplayer.http.HttpApi
 import viz.vplayer.util.WebViewJavaScriptFunction
 import viz.vplayer.util.getStringExtra
 import java.net.URL
+import javax.inject.Inject
 
 
 class WebActivity : BaseActivity(), View.OnClickListener {
+    @Inject
+    lateinit var mo: MyObserver
     override fun getContentViewId(): Int = R.layout.activity_web
     override fun getCommonTtile(): String = "网页"
 
@@ -37,6 +42,10 @@ class WebActivity : BaseActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        app.appComponent!!.webActivitySubcomponentBuilder()
+            .myObserverModule(MyObserverModule(lifecycle, javaClass.name))
+            .create(this)
+            .inject(this)
         initViews()
         val url = intent.getStringExtra("url", "")
         if (url.isNotEmpty()) {

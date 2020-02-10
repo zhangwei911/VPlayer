@@ -20,12 +20,14 @@ import com.viz.tools.l
 import org.greenrobot.eventbus.EventBus
 import pub.devrel.easypermissions.EasyPermissions
 import pub.devrel.easypermissions.PermissionRequest
+import viz.commonlib.util.MyObserver
 import viz.vplayer.R
 import viz.vplayer.util.App
 import java.io.File
 
 
 abstract class BaseFragment : Fragment(), EasyPermissions.PermissionCallbacks {
+    lateinit var mo: MyObserver
     lateinit var app: App
     var isWifi = true
     override fun onCreateView(
@@ -33,6 +35,7 @@ abstract class BaseFragment : Fragment(), EasyPermissions.PermissionCallbacks {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        mo = MyObserver(lifecycle, getFragmentClassName())
         val v = inflater.inflate(getContentViewId(), container, false)
         return v
     }
@@ -92,6 +95,8 @@ abstract class BaseFragment : Fragment(), EasyPermissions.PermissionCallbacks {
             }
         }
     }
+
+    protected abstract fun getFragmentClassName(): String
 
     open protected fun getCommonTtile(): String = ""
     /**

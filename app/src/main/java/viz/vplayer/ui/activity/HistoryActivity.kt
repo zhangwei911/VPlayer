@@ -14,18 +14,22 @@ import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_history.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import viz.commonlib.util.MyObserver
 import viz.vplayer.R
 import viz.vplayer.util.RecyclerItemClickListener
 import viz.vplayer.adapter.HistoryAdapter
-import viz.vplayer.bean.HtmlBean
 import viz.vplayer.bean.JsonBean
+import viz.vplayer.dagger2.MyObserverModule
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.util.continueWithEnd
 import viz.vplayer.util.imageListener
 import viz.vplayer.vm.MainVM
 import java.io.Serializable
+import javax.inject.Inject
 
 class HistoryActivity : BaseActivity() {
+    @Inject
+    lateinit var mo: MyObserver
     private val mainVM: MainVM by lazy {
         ViewModelProvider(this).get(MainVM::class.java)
     }
@@ -36,31 +40,14 @@ class HistoryActivity : BaseActivity() {
     private var isWifi = true
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        app.appComponent!!.historyActivitySubcomponentBuilder()
+            .myObserverModule(MyObserverModule(lifecycle, javaClass.name))
+            .create(this)
+            .inject(this)
         val htmlList = intent.getParcelableArrayExtra("htmlList").toMutableList()
         l.d(htmlList)
         recyclerView_history.imageListener(this)
         recyclerView_history.layoutManager = LinearLayoutManager(this)
-        Task.callInBackground {
-            val viList = app.db.videoInfoDao().getAll()
-            viList.forEach { vi ->
-                val episodeList = app.db.episodeDao().getByVid(vi.id)
-                if (episodeList.size > 0) {
-                    val filterEpisodeList =
-                        episodeList.filter { episode -> episode.url == vi.videoUrl }
-                    if (filterEpisodeList.isNotEmpty()) {
-                        vi.index = filterEpisodeList[0].urlIndex
-                    } else {
-                        vi.index = 0
-                    }
-                    vi.episodeList = episodeList
-                }
-            }
-            l.d(viList)
-            adapter = HistoryAdapter(this, viList)
-            runOnUiThread {
-                recyclerView_history.adapter = adapter
-            }
-        }.continueWithEnd("获取历史记录")
         recyclerView_history.addOnItemTouchListener(
             RecyclerItemClickListener(
                 this,
@@ -74,7 +61,7 @@ class HistoryActivity : BaseActivity() {
                         }
                         val data = adapter.list[position]
 //                        if (data.videoUrl.endsWith("m3u8")) {
-                        val intent = Intent(this@HistoryActivity, VideoPalyerActivity::class.java)
+                        val intent = Intent(this@HistoryActivity, VideoPlayerActivity::class.java)
                         intent.putExtra("url", data.videoUrl)
                         intent.putExtra("title", data.videoTitle)
                         intent.putExtra("duration", data.duration)
@@ -129,6 +116,35 @@ class HistoryActivity : BaseActivity() {
                     }
                 })
         )
+    }
+
+    private fun refresh() {
+        Task.callInBackground {
+            val viList = app.db.videoInfoDao().getAll()
+            viList.forEach { vi ->
+                val episodeList = app.db.episodeDao().getByVid(vi.id)
+                if (episodeList.size > 0) {
+                    val filterEpisodeList =
+                        episodeList.filter { episode -> episode.url == vi.videoUrl }
+                    if (filterEpisodeList.isNotEmpty()) {
+                        vi.index = filterEpisodeList[0].urlIndex
+                    } else {
+                        vi.index = 0
+                    }
+                    vi.episodeList = episodeList
+                }
+            }
+            l.d(viList)
+            adapter = HistoryAdapter(this, viList)
+            runOnUiThread {
+                recyclerView_history.adapter = adapter
+            }
+        }.continueWithEnd("获取历史记录")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        refresh()
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

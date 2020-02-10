@@ -12,16 +12,21 @@ import com.afollestad.materialdialogs.list.listItems
 import com.viz.tools.Toast
 import kotlinx.android.synthetic.main.activity_rule_list.*
 import org.greenrobot.eventbus.EventBus
+import viz.commonlib.util.MyObserver
 import viz.vplayer.util.DEFAULT_RULE_URL
 import viz.vplayer.R
 import viz.vplayer.util.RecyclerItemClickListener
 import viz.vplayer.adapter.RuleAdapter
+import viz.vplayer.dagger2.MyObserverModule
 import viz.vplayer.eventbus.RuleEvent
 import viz.vplayer.room.Rule
 import viz.vplayer.room.RuleUrl
 import viz.vplayer.util.continueWithEnd
+import javax.inject.Inject
 
 class RuleListActivity : BaseActivity() {
+    @Inject
+    lateinit var mo: MyObserver
     override fun getContentViewId(): Int =
         R.layout.activity_rule_list
     override fun getCommonTtile(): String = getString(R.string.list)
@@ -30,6 +35,10 @@ class RuleListActivity : BaseActivity() {
     private var ruleListRec = mutableListOf<Rule>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        app.appComponent!!.ruleListActivitySubcomponentBuilder()
+            .myObserverModule(MyObserverModule(lifecycle, javaClass.name))
+            .create(this)
+            .inject(this)
         recyclerView_rule.layoutManager = LinearLayoutManager(this)
         Task.callInBackground {
             val ruleList = app.db.ruleDao().getAll()

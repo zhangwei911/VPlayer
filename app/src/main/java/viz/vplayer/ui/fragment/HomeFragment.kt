@@ -38,7 +38,7 @@ import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.eventbus.RuleEvent
 import viz.vplayer.room.Rule
 import viz.vplayer.ui.activity.RuleListActivity
-import viz.vplayer.ui.activity.VideoPalyerActivity
+import viz.vplayer.ui.activity.VideoPlayerActivity
 import viz.vplayer.util.*
 import viz.vplayer.vm.MainVM
 import java.io.Serializable
@@ -46,9 +46,10 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 class HomeFragment : BaseFragment(), View.OnClickListener {
+    override fun getFragmentClassName(): String = "HomeFragment"
     override fun getContentViewId(): Int = R.layout.fragment_home
-    override fun useEventBus(): Boolean = true
 
+    override fun useEventBus(): Boolean = true
     private lateinit var mainVM: MainVM
     private val SERIAL_EXECUTOR: Executor = Executors.newSingleThreadExecutor()
     private lateinit var searchAdapter: SearchAdapter
@@ -96,7 +97,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                     Toast.show("添加${successAddCacheCount}个缓冲任务成功")
                     return@apply
                 }
-                val intent = Intent(context, VideoPalyerActivity::class.java)
+                val intent = Intent(context, VideoPlayerActivity::class.java)
                 intent.putExtra("url", url)
                 intent.putExtra("searchUrl", searchUrl)
                 intent.putExtra("title", title)

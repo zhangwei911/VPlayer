@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.android.synthetic.main.fragment_menu.*
+import viz.commonlib.util.MyObserver
 import viz.vplayer.R
 import viz.vplayer.util.RecyclerItemClickListener
 import viz.vplayer.adapter.MenuAdapter
@@ -18,6 +19,7 @@ import viz.vplayer.ui.activity.HistoryActivity
 
 
 class MenuFragment : BottomSheetDialogFragment() {
+    lateinit var mo: MyObserver
     private var adapter: MenuAdapter? = null
     var jsonBeanList = mutableListOf<JsonBean>()
     override fun onCreateView(
@@ -25,6 +27,7 @@ class MenuFragment : BottomSheetDialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        mo = MyObserver(lifecycle, "MenuFragment")
         val v = inflater.inflate(R.layout.fragment_menu, container, false)
         return v
     }
