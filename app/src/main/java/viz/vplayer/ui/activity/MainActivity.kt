@@ -6,12 +6,7 @@ import android.view.View
 import androidx.navigation.findNavController
 import androidx.navigation.get
 import androidx.navigation.ui.NavigationUI
-import androidx.work.ListenableWorker
-import androidx.work.workDataOf
-import com.arialyy.aria.core.download.DownloadEntity
-import com.arialyy.aria.core.listener.ISchedulers
-import com.arialyy.aria.util.ALog
-import com.arialyy.aria.util.NetUtils
+import bolts.Task
 import com.viz.tools.Toast
 import com.viz.tools.apk.NetWorkUtils.*
 import com.viz.tools.l
@@ -21,13 +16,15 @@ import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import viz.commonlib.http.VCallback
+import viz.commonlib.download.VDownloader
+import viz.commonlib.js.JSUtil
 import viz.vplayer.BuildConfig
 import viz.vplayer.R
 import viz.vplayer.eventbus.CommonInfoEvent
 import viz.vplayer.eventbus.InfoType
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.util.NetUtil
+import viz.vplayer.util.continueWithEnd
 
 
 class MainActivity : BaseActivity(), View.OnClickListener {
@@ -77,6 +74,18 @@ class MainActivity : BaseActivity(), View.OnClickListener {
             }
         }
         checkNet()
+//        Task.callInBackground {
+//            val vDownloader = VDownloader()
+//            vDownloader.init(applicationContext)
+//            vDownloader.apply {
+////                load("http://youku.cdn-iqiyi.com/20180523/11112_b1fb9d8b/index.m3u8")
+////                load("https://v8.yongjiu8.com/20180321/V8I5Tg8p/index.m3u8")
+////                load("http://192.168.1.7/index.m3u8")
+//                load("http://192.168.1.7/index1.m3u8")
+//                start()
+////                merge()
+//            }
+//        }.continueWithEnd("下载M3U8")
     }
 
     fun checkNet() {

@@ -35,6 +35,16 @@
         android:layout_height="wrap_content"
         android:text="@string/go"
         app:layout_constraintBottom_toBottomOf="@id/textInputLayout_url"
+        app:layout_constraintEnd_toStartOf="@+id/materialButton_url_parse"
+        app:layout_constraintTop_toTopOf="@id/textInputLayout_url" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/materialButton_url_parse"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/parse"
+        app:layout_constraintBottom_toBottomOf="@id/textInputLayout_url"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/textInputLayout_url" />
 

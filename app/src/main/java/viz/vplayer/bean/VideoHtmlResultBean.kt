@@ -35,5 +35,7 @@ data class VideoHtmlResultBean(
     var videoCss: String,
     var videoIndex: Int,
     var isVideoUrlAttr: Boolean,
-    var videoUrlAttr: String
+    var videoUrlAttr: String,
+    var isFromWebView: Boolean = false,
+    var js: String = ""
 ) : Parcelable

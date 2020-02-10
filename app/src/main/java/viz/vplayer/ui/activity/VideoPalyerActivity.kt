@@ -19,6 +19,7 @@ import com.shuyu.gsyvideoplayer.video.base.GSYVideoView
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_video.*
+import kotlinx.android.synthetic.main.fragment_home.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -110,6 +111,9 @@ class VideoPalyerActivity : BaseActivity() {
                 Toast.showLong(this, errorInfo.errMsg)
             }
         })
+        mainVM.webView.observe(this, Observer {
+            webView_for_get_url_player.loadUrl(it)
+        })
         initVideo()
         var url = intent.getStringExtra("url")
         title = intent.getStringExtra("title") ?: ""
@@ -164,10 +168,10 @@ class VideoPalyerActivity : BaseActivity() {
                                     return
                                 }
                                 var canSelect = true
-                                if(adapter is SelectEpisodesAdapter){
+                                if (adapter is SelectEpisodesAdapter) {
                                     canSelect = adapter.select(position)
                                 }
-                                if(canSelect) {
+                                if (canSelect) {
                                     index = position
                                     if (episodes!![position].endsWith("m3u8")) {
                                         videoVM.play.postValue(
@@ -257,6 +261,38 @@ class VideoPalyerActivity : BaseActivity() {
             intent.addCategory(Intent.CATEGORY_HOME)
             startActivity(intent)
         }
+        initWebView()
+    }
+
+    private fun initWebView() {
+        val webViewUtil = WebViewUtil()
+        webViewUtil.initWebView(
+            webView_for_get_url_player,
+            { html!!.videoHtmlResultBean }
+        ) { url ->
+            //https://data.nmbaojie.com/zhilian.php?auth_key=1581337202-0-0-337bf041aae5d3bb6b01ac8bd0fba2fe&url=https://data.nmbaojie.com/tuchuang/jingyinglvshi_19.m3u8?auth_key=1581337202-0-0-96a9d05fc2b73403d6fec06f800b37bd
+            val reg =
+                Regex("https://data.nmbaojie.com/zhilian.php\\?auth_key=[a-z0-9].*&url=https://data.nmbaojie.com/[a-z0-9_].*\\.m3u8\\?auth_key=[a-z0-9].*")
+            val urlSearchResult = reg.find(url)
+            if (urlSearchResult != null) {
+                val vhrb = html!!.videoHtmlResultBean.copy()
+                vhrb.isFrame = false
+                mainVM.getVideoInfo(
+                    url,
+                    vhrb,
+                    img
+                )
+            } else {
+                mainVM.play.postValue(
+                    VideoInfoBean(
+                        url,
+                        title,
+                        0,
+                        img
+                    )
+                )
+            }
+        }
     }
 
     private fun float(url: String, title: String) {
@@ -269,7 +305,10 @@ class VideoPalyerActivity : BaseActivity() {
         floatPlayerView.videoPlayer!!.backToFull = {
             val intent = Intent(this, VideoPalyerActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-            intent.putExtra("currentPos", floatPlayerView.videoPlayer!!.currentPositionWhenPlaying)
+            intent.putExtra(
+                "currentPos",
+                floatPlayerView.videoPlayer!!.currentPositionWhenPlaying
+            )
             EventBus.getDefault()
                 .postSticky(VideoEvent(floatPlayerView.videoPlayer!!.currentPositionWhenPlaying))
             startActivity(intent)

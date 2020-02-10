@@ -216,6 +216,9 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 )
             }
         })
+        mainVM.webView.observe(viewLifecycleOwner, Observer {
+            webView_for_get_url.loadUrl(it)
+        })
         mainVM.getSearchInfo().observe(viewLifecycleOwner, Observer {
             it?.let {
                 textInputEditText_search.setText(it)
@@ -359,7 +362,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
     private fun test() {
         if (BuildConfig.DEBUG) {
             textInputEditText_search.setText("精英律师")
-            spinner_website.setSelection(0)
+            spinner_website.setSelection(5)
 //            materialButton_search.performClick()
         }
     }
@@ -419,6 +422,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         materialButton_search.setOnClickListener(this)
         imageButton_add_website.setOnClickListener(this)
         imageButton_menu.setOnClickListener(this)
+        textView_label_website.setOnClickListener(this)
     }
 
     private fun initViews() {
@@ -472,6 +476,36 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 )
             }
 
+        }
+        initWebView()
+    }
+
+    private fun initWebView() {
+        val webViewUtil = WebViewUtil()
+        webViewUtil.initWebView(
+            webView_for_get_url,
+            { htmlList[searchAdapter.data[currentPos].from].videoHtmlResultBean }
+        ) { url ->val reg =
+            Regex("https://data.nmbaojie.com/zhilian.php\\?auth_key=[a-z0-9].*&url=https://data.nmbaojie.com/[a-z0-9_].*\\.m3u8\\?auth_key=[a-z0-9].*")
+            val urlSearchResult = reg.find(url)
+            if (urlSearchResult != null) {
+                val vhrb = htmlList[searchAdapter.data[currentPos].from].videoHtmlResultBean.copy()
+                vhrb.isFrame = false
+                mainVM.getVideoInfo(
+                    url,
+                    vhrb,
+                    searchAdapter.data[currentPos].img
+                )
+            } else {
+                mainVM.play.postValue(
+                    VideoInfoBean(
+                        url,
+                        searchAdapter.data[currentPos].name,
+                        0,
+                        searchAdapter.data[currentPos].img
+                    )
+                )
+            }
         }
     }
 
@@ -598,6 +632,14 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                     menuFragment.jsonBeanList = this
                     menuFragment.show(childFragmentManager, "menu")
                 }
+            }
+            R.id.textView_label_website -> {
+                val bundle = Bundle()
+                bundle.putString(
+                    "url",
+                    "https://www.iqiyi.com"
+                )
+                findNavController().navigate(R.id.webActivity, bundle)
             }
         }
     }

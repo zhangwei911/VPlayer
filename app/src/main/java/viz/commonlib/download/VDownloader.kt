@@ -306,7 +306,7 @@ class VDownloader {
                         "${uri.scheme}://${uri.authority}${uri.path!!.substringBeforeLast("/")}/"
                     } + it
                 )
-            } else if (it.endsWith(".ts")) {
+            } else if (it.endsWith(".ts") || it.endsWith(".jpg")) {
                 val urlPrefix = if (it.startsWith("/")) {
                     "${uri.scheme}://${uri.authority}"
                 } else if (it.startsWith("http://") || it.startsWith("https://")) {
@@ -314,7 +314,11 @@ class VDownloader {
                 } else {
                     "${uri.scheme}://${uri.authority}${uri.path!!.substringBeforeLast("/")}/"
                 }
-                val tsUrl = urlPrefix + it
+                val tsUrl = urlPrefix + if (it.endsWith(".jpg")) {
+                    it.replace(".jpg", ".ts")
+                } else {
+                    it
+                }
                 list.add(tsUrl)
                 taskList[tsUrl] = BigDecimal(0)
                 index++

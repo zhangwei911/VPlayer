@@ -29,6 +29,7 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
     val rules = MutableLiveData<Pair<String, String>>()
     val jsonBeanList = MutableLiveData<MutableList<JsonBean>>()
     val addCache = MutableLiveData<Int>()
+    val webView = MutableLiveData<String>()
     private val KEY_SEARCH_INFO = "searchInfo"
     private val KEY_SEARCH_URL = "searchUrl"
     private val KEY_SEARCH_RESULT = "searchResult"
@@ -339,9 +340,13 @@ class MainVM(private val state: SavedStateHandle) : ViewModel() {
                                     val iframes = doc.select("iframe")
                                     val iframe = iframes[videoHtmlResultBean.iframeIndex]
                                     val src = iframe.attr(videoHtmlResultBean.iframeAttr)
-                                    videoHtmlResultBean.isFrameProcess = true
-                                    videoHtmlResultBean.title = title
-                                    getVideoInfo(src!!, videoHtmlResultBean, img)
+                                    if(videoHtmlResultBean.isFromWebView) {
+                                        webView.postValue(src)
+                                    }else{
+                                        videoHtmlResultBean.isFrameProcess = true
+                                        videoHtmlResultBean.title = title
+                                        getVideoInfo(src!!, videoHtmlResultBean, img)
+                                    }
                                     return@VCallback
                                 }
                                 val divs = doc.select(videoHtmlResultBean.mainCss)

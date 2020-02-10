@@ -9,10 +9,16 @@ import android.view.View
 import android.webkit.JavascriptInterface
 import androidx.activity.addCallback
 import com.viz.tools.Toast
+import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_web.*
+import okhttp3.ResponseBody
+import org.json.JSONObject
+import viz.commonlib.http.VCallback
 import viz.vplayer.R
+import viz.vplayer.http.HttpApi
 import viz.vplayer.util.WebViewJavaScriptFunction
 import viz.vplayer.util.getStringExtra
+import java.net.URL
 
 
 class WebActivity : BaseActivity(), View.OnClickListener {
@@ -49,6 +55,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
 
     private fun initViews() {
         materialButton_url.setOnClickListener(this)
+        materialButton_url_parse.setOnClickListener(this)
         initWebView()
     }
 
@@ -59,6 +66,37 @@ class WebActivity : BaseActivity(), View.OnClickListener {
         }
         webView.onPageFinished = { url ->
             setWebInfo(url)
+//            webView.loadUrl(
+//                "javascript:var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';" +
+//                        "var api = html.match('\\.post\\\\(\"(.*)\", \\{')[1];" +
+//                        "var wap = html.match('\"wap\": \"(.*)\",')[1];" +
+//                        "var ip = html.match('\"ip\": \"([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\"')[1];" +
+//                        " \$.post(api, {\n" +
+//                        "                    \"wap\": wap,\n" +
+//                        "                    \"time\": m3,\n" +
+//                        "                    \"ip\": ip,\n" +
+//                        "                    \"key\": m1,\n" +
+//                        "                    \"key2\": m2,\n" +
+//                        "                    \"key3\": ഈഇആഅ,\n" +
+//                        "                    \"url\": h2_url\n" +
+//                        "                }, function(data) {window.htmlGet.showSource(ഈഇആഅ,data['url'],window.location.href,m1,m2,m3,h2_url,html);},'json')"
+//            )
+//            webView.loadUrl(
+//                "javascript:var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';" +
+//                        "var api = html.match('\\.post\\\\(\"(.*)\", \\{')[1];" +
+//                        "var wap = html.match('\"wap\": \"(.*)\",')[1];" +
+//                        "var ip = html.match('\"ip\": \"([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\"')[1];" +
+//                        " \$.post(api, {\n" +
+//                        "                    \"wap\": wap,\n" +
+//                        "                    \"time\": m3,\n" +
+//                        "                    \"ip\": ip,\n" +
+//                        "                    \"key\": m1,\n" +
+//                        "                    \"key2\": m2,\n" +
+//                        "                    \"key3\": ഈഇആഅ,\n" +
+//                        "                    \"url\": h2_url\n" +
+//                        "                }, function(data) {window.htmlGet.getUrl(data['url']);},'json')"
+//            )
+//            webView.loadUrl("javascript:window.htmlGet.showSource(window.sessionStorage);")
         }
         webView.view.overScrollMode = View.OVER_SCROLL_ALWAYS
         webView.addJavascriptInterface(object : WebViewJavaScriptFunction {
@@ -85,6 +123,67 @@ class WebActivity : BaseActivity(), View.OnClickListener {
                 enablePageVideoFunc()
             }
         }, "Android")
+        webView.addJavascriptInterface(object : WebViewJavaScriptFunction {
+            override fun onJsFunctionCalled(tag: String?) {
+            }
+
+            @JavascriptInterface
+            fun getUrl(url: String) {
+                l.d(url)
+            }
+
+            @JavascriptInterface
+            fun showSource(
+                test: String,
+                videoUrl: String,
+                currentUrl: String,
+                m1: String,
+                m2: String,
+                m3: String,
+                h2_url: String,
+                html: String
+            ) {
+//                l.d(test)
+//                l.df(videoUrl, m1, m2, m3, h2_url)
+//                val ipReg = Regex("\"ip\": \"([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\"")
+//                val ip = ipReg.find(html)!!.groupValues[1]
+//                val key3Reg = Regex("\"key3\": (.*),\n")
+//                val key3 = key3Reg.find(html)!!.groupValues[1]
+//                val wapReg = Regex("\"wap\": \"(.*)\",")
+//                val wap = wapReg.find(html)!!.groupValues[1]
+//                val urlReg = Regex("\\$\\.post\\(\"(.*)\", \\{")
+//                val postUrl = urlReg.find(html)!!.groupValues[1]
+//                val aUrl = URL(currentUrl)
+//                val parseUrl = URL(aUrl, postUrl)
+//                val params = mutableMapOf<String, String>()
+//                params["ip"] = ip
+//                params["key"] = m1
+//                params["key2"] = m2
+//                params["key3"] = test
+//                params["time"] = m3
+//                params["wap"] = wap
+//                params["url"] = h2_url
+//                HttpApi.createHttp().anyPostUrl(parseUrl.toString(),params).enqueue(VCallback<ResponseBody>(onResult = {call, response, resultResponseBody ->
+//                    val result = resultResponseBody.string()
+//                    l.d(result)
+//                    val jsonObject = JSONObject(result)
+//                    val code = jsonObject.get("success")
+//                    if(code.toString() == "1") {
+//                        val url = jsonObject.get("url")
+//                        l.d(url)
+//                    }
+//                },onError = {errorEntity, call, t, response ->
+//                    l.e(errorEntity)
+//                    t?.printStackTrace()
+//                }))
+            }
+        }, "htmlGet")
+        webView.setOnLongClickListener {
+            val hitTestResult = webView.getHitTestResult()
+            l.d(hitTestResult.extra)
+            l.d(hitTestResult.type)
+            return@setOnLongClickListener true
+        }
     }
 
     override fun getCommonBack() {
@@ -102,9 +201,25 @@ class WebActivity : BaseActivity(), View.OnClickListener {
             R.id.materialButton_url -> {
                 val url = textInputEditText_url.text.toString()
                 if (url.isNotEmpty()) {
-                    webView.loadUrl(url)
+                    if (url.startsWith("http")
+                        || url.startsWith("https")
+                        || url.startsWith("file")
+                        || url.startsWith("javascript")
+                    ) {
+                        webView.loadUrl(url)
+                    } else {
+                        webView.loadUrl("https://www.baidu.com/s?ie=UTF-8&wd=$url")
+                    }
                 } else {
                     Toast.show(this, R.string.url_hint)
+                }
+            }
+            R.id.materialButton_url_parse -> {
+                val parseUrl = "https://vip.yingxiangbao.cn/mingri/vip.php?url="
+                if (webView.url.startsWith(parseUrl)) {
+                    webView.loadUrl(webView.url)
+                } else {
+                    webView.loadUrl("parseUrl${webView.url}")
                 }
             }
         }

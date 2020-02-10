@@ -16,7 +16,7 @@ class VCallback<T>(
     /**
      * code == 200时调用
      */
-    private val onResult: (call: Call<T>, response: Response<T>, result: T) -> Unit,
+    private val onResult: (call: Call<T>, response: Response<T>, resultResponseBody: T) -> Unit,
     /**
      * code != 200/异常时调用
      */

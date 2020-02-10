@@ -30,4 +30,5 @@
     <string name="start_all">全部开始</string>
     <string name="stop_all">暂停所有</string>
     <string name="cache">缓存</string>
+    <string name="parse">解析</string>
 </resources>

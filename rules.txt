@@ -84,10 +84,12 @@
                 "urlAttr": "href",
                 "urlCss": "a",
                 "urlIndex": 0,
-"videoCss": "",
-"videoIndex": 1,
-"isVideoUrlAttr": true,
-"videoUrlAttr": ""
+                "videoCss": "",
+                "videoIndex": 1,
+                "isVideoUrlAttr": true,
+                "videoUrlAttr": "",
+                "isFromWebView": false,
+                "js": ""
             }
         }
     },
@@ -182,7 +184,9 @@
                 "videoCss": "",
                 "videoIndex": 1,
                 "isVideoUrlAttr": true,
-                "videoUrlAttr": ""
+                "videoUrlAttr": "",
+                "isFromWebView": false,
+                "js": ""
             }
         }
     },
@@ -274,7 +278,9 @@
                 "videoCss": "",
                 "videoIndex": 1,
                 "isVideoUrlAttr": true,
-                "videoUrlAttr": ""
+                "videoUrlAttr": "",
+                "isFromWebView": false,
+                "js": ""
             }
         }
     },
@@ -366,7 +372,9 @@
                 "videoCss": "td#playleft > iframe",
                 "videoIndex": 1,
                 "isVideoUrlAttr": true,
-                "videoUrlAttr": "src"
+                "videoUrlAttr": "src",
+                "isFromWebView": false,
+                "js": ""
             }
         }
     },
@@ -458,7 +466,117 @@
                 "videoCss": "td#playleft > iframe",
                 "videoIndex": 1,
                 "isVideoUrlAttr": true,
-                "videoUrlAttr": "src"
+                "videoUrlAttr": "src",
+                "isFromWebView": false,
+                "js": ""
+            }
+        }
+    },
+    {
+        "search_url": "https://www.50s.wang/?c=search",
+        "web_name": "尘落影视",
+        "kw": "wd",
+        "params": [
+            {
+                "key": "key",
+                "value": "value"
+            }
+        ],
+        "html": {
+            "episodes": {
+                "hasUrlPrefix": false,
+                "isListItemAttr": true,
+                "isReg": false,
+                "isRegNeedDecoder": false,
+                "listCss": "div > div",
+                "listItemAttr": "href",
+                "listItemCss": "a",
+                "listItemIndex": 0,
+                "mainCss": "div.tab-pane:eq(7)",
+                "mainIndex": 0,
+                "regIndexList": [
+                    0
+                ],
+                "regItemIndex": 0,
+                "regItemStr": "",
+                "regSplitList": [
+                    ""
+                ],
+                "regStrList": [
+                    ""
+                ]
+            },
+            "search": {
+                "isWebPlay":false,
+                "descAttr": "",
+                "descCss": "div > div",
+                "descIndex": 0,
+                "hasUrlPrefix": false,
+                "imgAttr": "src",
+                "imgCss": "div > a > img",
+                "imgIndex": 0,
+                "isDescAttr": false,
+                "isImgAttr": true,
+                "isNameAttr": true,
+                "isUrlAttr": true,
+                "mainCss": "div.col-xs-12",
+                "mainListIndex": 0,
+                "nameAttr": "title",
+                "nameCss": "div > a",
+                "nameIndex": 0,
+                "searchListCss": "div.col-xs-1-5",
+                "urlAttr": "href",
+                "urlCss": "div > a",
+                "urlIndex": 0
+            },
+            "video": {
+                "episodesListCss": "",
+                "episodesMainCss": "",
+                "episodesMainIndex": 0,
+                "hasEpisodes": false,
+                "hasUrlPrefix": false,
+                "iframeAttr": "src",
+                "iframeIndex": 0,
+                "isFrame": true,
+                "isFrameProcess": false,
+                "isItemAttr": false,
+                "isNameAttr": false,
+                "isReg": true,
+                "isUrlAttr": false,
+                "itemAttr": "",
+                "itemCss": "script",
+                "itemIndex": 2,
+                "mainCss": "body",
+                "mainIndex": 0,
+                "nameAttr": "",
+                "nameCss": "",
+                "nameIndex": 0,
+                "regIndex": 0,
+                "regStr": "(?<=<video src=\")(.*)(?=\" controls=)",
+                "title": "",
+                "urlAttr": "",
+                "urlCss": "",
+                "urlIndex": 0,
+                "videoCss": "td#playleft > iframe",
+                "videoIndex": 1,
+                "isVideoUrlAttr": true,
+                "videoUrlAttr": "src",
+                "isFromWebView": true,
+                "js": "var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';
+                window.htmlGet.showSource(html);
+                    var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';
+                    var api = html.match('\\.post\\\\(\"(.*)\", \\{')[1];
+                    var wap = html.match('\"wap\": \"(.*)\",')[1];
+                    var ip = html.match('\"ip\": \"([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\"')[1];
+                    $.post(api, {
+                    \"wap\": wap,
+                    \"time\": m3,
+                    \"ip\": ip,
+                    \"key\": m1,
+                    \"key2\": m2,
+                    \"key3\": ഈഇആഅ,
+                    \"url\": h2_url
+                    }, function(data) {window.htmlGet.getUrl(data['url']);},'json')"
             }
         }
     }

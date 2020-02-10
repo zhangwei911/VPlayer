@@ -4,15 +4,17 @@ import okhttp3.Interceptor
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.QueryMap
-import retrofit2.http.Url
+import retrofit2.http.*
 import viz.commonlib.http.BaseHttp
 import viz.vplayer.util.DEFAULT_RULE_URL
 
 interface HttpApi {
     @GET
     fun anyUrl(@Url url: String, @QueryMap param: MutableMap<String, String> = mutableMapOf()): Call<ResponseBody>
+
+    @FormUrlEncoded
+    @POST
+    fun anyPostUrl(@Url url: String, @FieldMap param: MutableMap<String, String> = mutableMapOf()): Call<ResponseBody>
 
     @GET
     suspend fun anyUrlS(@Url url: String): Response<ResponseBody>

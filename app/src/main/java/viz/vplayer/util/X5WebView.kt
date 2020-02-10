@@ -8,12 +8,12 @@ import android.os.Build
 import android.os.Process
 import android.util.AttributeSet
 import android.view.View
+import android.view.View.OnLongClickListener
 import android.widget.TextView
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.WebSettings
 import com.tencent.smtt.sdk.WebView
 import com.tencent.smtt.sdk.WebViewClient
-import java.net.URLEncoder
 
 class X5WebView : WebView {
     var title: TextView? = null
@@ -29,21 +29,27 @@ class X5WebView : WebView {
                 url: String
             ): Boolean {
                 com.viz.tools.l.d(url)
-                view.loadUrl(
+                if (url.startsWith("http")
+                    || url.startsWith("https")
+                    || url.startsWith("file")
+                    || url.startsWith("javascript")
+                ) {
+                    view.loadUrl(
 //                    if (url.startsWith("https://v.qq.com/x/cover")||url.startsWith("https://m.v.qq.com/x")) {
 //                        "http://vip.jlsprh.com/index.php?url=" + URLEncoder.encode(url, "UTF-8")
 //                    } else {
                         url
 //                    }
-                )
-                shouldOverrideUrlLoading?.invoke(url)
+                    )
+                    shouldOverrideUrlLoading?.invoke(url)
+                }
                 return true
             }
 
             override fun onPageFinished(webView: WebView, url: String) {
-                super.onPageFinished(webView, url)
                 addImageClickListner()
                 onPageFinished?.invoke(url)
+                super.onPageFinished(webView, url)
             }
         }
 
