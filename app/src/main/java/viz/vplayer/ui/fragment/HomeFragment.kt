@@ -328,7 +328,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 data.filter { it.isSelect }.apply { totalSelectSize = size }
                     .forEachIndexed { index, episodeListBean ->
                         episodeListBean.apply {
-                            if (url.endsWith(".html")) {
+                            if (url.contains(".html")) {
                                 mainVM.getVideoInfo(
                                     url,
                                     htmlList[searchAdapter.data[currentPos].from].videoHtmlResultBean,
@@ -361,8 +361,8 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
 
     private fun test() {
         if (BuildConfig.DEBUG) {
-            textInputEditText_search.setText("精英律师")
-            spinner_website.setSelection(5)
+            textInputEditText_search.setText("爱情公寓5")
+            spinner_website.setSelection(6)
 //            materialButton_search.performClick()
         }
     }
@@ -449,6 +449,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                     }
                 })
         )
+        recyclerView_search.imageListener(context)
         textInputEditText_search.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 materialButton_search.performClick()
@@ -485,8 +486,9 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         webViewUtil.initWebView(
             webView_for_get_url,
             { htmlList[searchAdapter.data[currentPos].from].videoHtmlResultBean }
-        ) { url ->val reg =
-            Regex("https://data.nmbaojie.com/zhilian.php\\?auth_key=[a-z0-9].*&url=https://data.nmbaojie.com/[a-z0-9_].*\\.m3u8\\?auth_key=[a-z0-9].*")
+        ) { url ->
+            val reg =
+                Regex("https://data.nmbaojie.com/zhilian.php\\?auth_key=[a-z0-9].*&url=https://data.nmbaojie.com/[a-z0-9_].*\\.m3u8\\?auth_key=[a-z0-9].*")
             val urlSearchResult = reg.find(url)
             if (urlSearchResult != null) {
                 val vhrb = htmlList[searchAdapter.data[currentPos].from].videoHtmlResultBean.copy()
@@ -559,7 +561,11 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                             mainVM.searchVideos(
                                 from,
                                 htmlParamsList[from],
-                                spinnerItems[from],
+                                if (htmlList[index].searchHtmlResultBean.isKWInUrl) {
+                                    String.format(spinnerItems[from], kw)
+                                } else {
+                                    spinnerItems[from]
+                                },
                                 htmlList[from].searchHtmlResultBean,
                                 uriIdlingResource
                             )
@@ -569,7 +575,11 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                         mainVM.searchVideos(
                             index,
                             htmlParamsList[index],
-                            spinnerItems[index],
+                            if (htmlList[index].searchHtmlResultBean.isKWInUrl) {
+                                String.format(spinnerItems[index], kw)
+                            } else {
+                                spinnerItems[index]
+                            },
                             htmlList[index].searchHtmlResultBean,
                             uriIdlingResource
                         )

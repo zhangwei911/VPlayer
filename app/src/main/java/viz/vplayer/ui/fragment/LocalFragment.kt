@@ -31,10 +31,7 @@ import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.room.Download
 import viz.vplayer.room.NotificationId
 import viz.vplayer.ui.activity.VideoPalyerActivity
-import viz.vplayer.util.App
-import viz.vplayer.util.RecyclerItemClickListener
-import viz.vplayer.util.WorkerUtil
-import viz.vplayer.util.continueWithEnd
+import viz.vplayer.util.*
 import viz.vplayer.vm.MainVM
 import java.io.Serializable
 
@@ -114,6 +111,7 @@ class LocalFragment : BaseFragment() {
     }
 
     private fun initViews() {
+        recyclerView_download.imageListener(context)
         recyclerView_download.apply {
             layoutManager = LinearLayoutManager(context)
             addOnItemTouchListener(

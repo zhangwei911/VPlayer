@@ -16,6 +16,7 @@
                 "isReg": false,
                 "isRegNeedDecoder": false,
                 "listCss": "li",
+                "isMultiList": false,
                 "listItemAttr": "href",
                 "listItemCss": "a",
                 "listItemIndex": 0,
@@ -34,6 +35,7 @@
                 ]
             },
             "search": {
+                "isKWInUrl":false,
                 "isWebPlay":false,
                 "descAttr": "",
                 "descCss": "div.detail",
@@ -110,6 +112,8 @@
                 "isReg": true,
                 "isRegNeedDecoder": true,
                 "listCss": "",
+                "isMultiList": false,
+                "listCssMulti": "",
                 "listItemAttr": "",
                 "listItemCss": "",
                 "listItemIndex": 0,
@@ -131,6 +135,7 @@
                 ]
             },
             "search": {
+                "isKWInUrl":false,
                 "isWebPlay":false,
                 "descAttr": "",
                 "descCss": "a > span.lzbz",
@@ -207,6 +212,8 @@
                 "isReg": false,
                 "isRegNeedDecoder": false,
                 "listCss": "ul > li",
+                "isMultiList": false,
+                "listCssMulti": "",
                 "listItemAttr": "href",
                 "listItemCss": "a",
                 "listItemIndex": 0,
@@ -225,6 +232,7 @@
                 ]
             },
             "search": {
+                "isKWInUrl":false,
                 "isWebPlay":false,
                 "descAttr": "",
                 "descCss": "div.detail",
@@ -301,6 +309,8 @@
                 "isReg": false,
                 "isRegNeedDecoder": false,
                 "listCss": "ul:eq(7) > a",
+                "isMultiList": false,
+                "listCssMulti": "",
                 "listItemAttr": "href",
                 "listItemCss": "a",
                 "listItemIndex": 0,
@@ -319,6 +329,7 @@
                 ]
             },
             "search": {
+                "isKWInUrl":false,
                 "isWebPlay":false,
                 "descAttr": "",
                 "descCss": "div.txt",
@@ -395,6 +406,8 @@
                 "isReg": false,
                 "isRegNeedDecoder": false,
                 "listCss": "ul > li",
+                "isMultiList": false,
+                "listCssMulti": "",
                 "listItemAttr": "href",
                 "listItemCss": "a",
                 "listItemIndex": 0,
@@ -413,6 +426,7 @@
                 ]
             },
             "search": {
+                "isKWInUrl":false,
                 "isWebPlay":true,
                 "descAttr": "",
                 "descCss": "div.detail",
@@ -473,111 +487,225 @@
         }
     },
     {
-        "search_url": "https://www.50s.wang/?c=search",
-        "web_name": "尘落影视",
-        "kw": "wd",
-        "params": [
-            {
-                "key": "key",
-                "value": "value"
-            }
-        ],
-        "html": {
-            "episodes": {
-                "hasUrlPrefix": false,
-                "isListItemAttr": true,
-                "isReg": false,
-                "isRegNeedDecoder": false,
-                "listCss": "div > div",
-                "listItemAttr": "href",
-                "listItemCss": "a",
-                "listItemIndex": 0,
-                "mainCss": "div.tab-pane:eq(7)",
-                "mainIndex": 0,
-                "regIndexList": [
-                    0
-                ],
-                "regItemIndex": 0,
-                "regItemStr": "",
-                "regSplitList": [
-                    ""
-                ],
-                "regStrList": [
-                    ""
-                ]
-            },
-            "search": {
-                "isWebPlay":false,
-                "descAttr": "",
-                "descCss": "div > div",
-                "descIndex": 0,
-                "hasUrlPrefix": false,
-                "imgAttr": "src",
-                "imgCss": "div > a > img",
-                "imgIndex": 0,
-                "isDescAttr": false,
-                "isImgAttr": true,
-                "isNameAttr": true,
-                "isUrlAttr": true,
-                "mainCss": "div.col-xs-12",
-                "mainListIndex": 0,
-                "nameAttr": "title",
-                "nameCss": "div > a",
-                "nameIndex": 0,
-                "searchListCss": "div.col-xs-1-5",
-                "urlAttr": "href",
-                "urlCss": "div > a",
-                "urlIndex": 0
-            },
-            "video": {
-                "episodesListCss": "",
-                "episodesMainCss": "",
-                "episodesMainIndex": 0,
-                "hasEpisodes": false,
-                "hasUrlPrefix": false,
-                "iframeAttr": "src",
-                "iframeIndex": 0,
-                "isFrame": true,
-                "isFrameProcess": false,
-                "isItemAttr": false,
-                "isNameAttr": false,
-                "isReg": true,
-                "isUrlAttr": false,
-                "itemAttr": "",
-                "itemCss": "script",
-                "itemIndex": 2,
-                "mainCss": "body",
-                "mainIndex": 0,
-                "nameAttr": "",
-                "nameCss": "",
-                "nameIndex": 0,
-                "regIndex": 0,
-                "regStr": "(?<=<video src=\")(.*)(?=\" controls=)",
-                "title": "",
-                "urlAttr": "",
-                "urlCss": "",
-                "urlIndex": 0,
-                "videoCss": "td#playleft > iframe",
-                "videoIndex": 1,
-                "isVideoUrlAttr": true,
-                "videoUrlAttr": "src",
-                "isFromWebView": true,
-                "js": "var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';
-                window.htmlGet.showSource(html);
-                    var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';
-                    var api = html.match('\\.post\\\\(\"(.*)\", \\{')[1];
-                    var wap = html.match('\"wap\": \"(.*)\",')[1];
-                    var ip = html.match('\"ip\": \"([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\"')[1];
-                    $.post(api, {
-                    \"wap\": wap,
-                    \"time\": m3,
-                    \"ip\": ip,
-                    \"key\": m1,
-                    \"key2\": m2,
-                    \"key3\": ഈഇആഅ,
-                    \"url\": h2_url
-                    }, function(data) {window.htmlGet.getUrl(data['url']);},'json')"
-            }
-        }
-    }
+         "search_url": "https://www.50s.wang/?c=search",
+         "web_name": "尘落影视",
+         "kw": "wd",
+         "params": [
+             {
+                 "key": "key",
+                 "value": "value"
+             }
+         ],
+         "html": {
+             "episodes": {
+                 "hasUrlPrefix": false,
+                 "isListItemAttr": true,
+                 "isReg": false,
+                 "isRegNeedDecoder": false,
+                 "listCss": "div > div",
+                 "isMultiList": false,
+                 "listCssMulti": "",
+                 "listItemAttr": "href",
+                 "listItemCss": "a",
+                 "listItemIndex": 0,
+                 "mainCss": "div.tab-pane:eq(7)",
+                 "mainIndex": 0,
+                 "regIndexList": [
+                     0
+                 ],
+                 "regItemIndex": 0,
+                 "regItemStr": "",
+                 "regSplitList": [
+                     ""
+                 ],
+                 "regStrList": [
+                     ""
+                 ]
+             },
+             "search": {
+                 "isKWInUrl":false,
+                 "isWebPlay":false,
+                 "descAttr": "",
+                 "descCss": "div > div",
+                 "descIndex": 0,
+                 "hasUrlPrefix": false,
+                 "imgAttr": "src",
+                 "imgCss": "div > a > img",
+                 "imgIndex": 0,
+                 "isDescAttr": false,
+                 "isImgAttr": true,
+                 "isNameAttr": true,
+                 "isUrlAttr": true,
+                 "mainCss": "div.col-xs-12",
+                 "mainListIndex": 0,
+                 "nameAttr": "title",
+                 "nameCss": "div > a",
+                 "nameIndex": 0,
+                 "searchListCss": "div.col-xs-1-5",
+                 "urlAttr": "href",
+                 "urlCss": "div > a",
+                 "urlIndex": 0
+             },
+             "video": {
+                 "episodesListCss": "",
+                 "episodesMainCss": "",
+                 "episodesMainIndex": 0,
+                 "hasEpisodes": false,
+                 "hasUrlPrefix": false,
+                 "iframeAttr": "src",
+                 "iframeIndex": 0,
+                 "isFrame": true,
+                 "isFrameProcess": false,
+                 "isItemAttr": false,
+                 "isNameAttr": false,
+                 "isReg": true,
+                 "isUrlAttr": false,
+                 "itemAttr": "",
+                 "itemCss": "script",
+                 "itemIndex": 2,
+                 "mainCss": "body",
+                 "mainIndex": 0,
+                 "nameAttr": "",
+                 "nameCss": "",
+                 "nameIndex": 0,
+                 "regIndex": 0,
+                 "regStr": "(?<=<video src=\")(.*)(?=\" controls=)",
+                 "title": "",
+                 "urlAttr": "",
+                 "urlCss": "",
+                 "urlIndex": 0,
+                 "videoCss": "td#playleft > iframe",
+                 "videoIndex": 1,
+                 "isVideoUrlAttr": true,
+                 "videoUrlAttr": "src",
+                 "isFromWebView": true,
+                 "js": "var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';
+                 window.htmlGet.showSource(html);
+                     var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';
+                     var api = html.match('\\.post\\\\(\"(.*)\", \\{')[1];
+                     var wap = html.match('\"wap\": \"(.*)\",')[1];
+                     var ip = html.match('\"ip\": \"([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\"')[1];
+                     $.post(api, {
+                     \"wap\": wap,
+                     \"time\": m3,
+                     \"ip\": ip,
+                     \"key\": m1,
+                     \"key2\": m2,
+                     \"key3\": ഈഇആഅ,
+                     \"url\": h2_url
+                     }, function(data) {window.htmlGet.getUrl(data['url']);},'json')"
+             }
+         }
+    },
+    {
+         "search_url": "https://so.iqiyi.com/so/q_%s",
+         "web_name": "爱奇艺",
+         "kw": "wd",
+         "params": [
+             {
+                 "key": "key",
+                 "value": "value"
+             }
+         ],
+         "html": {
+             "episodes": {
+                 "hasUrlPrefix": true,
+                 "isListItemAttr": true,
+                 "isReg": false,
+                 "isRegNeedDecoder": false,
+                 "listCss": "ul > li",
+                 "isMultiList": false,
+                 "listCssMulti": "ul > li",
+                 "listItemAttr": "href",
+                 "listItemCss": "a",
+                 "listItemIndex": 0,
+                 "mainCss": "div.numlist-wrapper",
+                 "mainIndex": 0,
+                 "regIndexList": [
+                     0
+                 ],
+                 "regItemIndex": 0,
+                 "regItemStr": "",
+                 "regSplitList": [
+                     ""
+                 ],
+                 "regStrList": [
+                     ""
+                 ]
+             },
+             "search": {
+                 "isKWInUrl":true,
+                 "isWebPlay":true,
+                 "descAttr": "",
+                 "descCss": "span.info-des",
+                 "descIndex": 0,
+                 "hasUrlPrefix": true,
+                 "imgAttr": "src",
+                 "imgCss": "img.qy-mod-cover",
+                 "imgIndex": 0,
+                 "isDescAttr": false,
+                 "isImgAttr": true,
+                 "isNameAttr": false,
+                 "isUrlAttr": true,
+                 "mainCss": "div.layout-main",
+                 "mainListIndex": 0,
+                 "nameAttr": "",
+                 "nameCss": "div.result-right > h3 > a",
+                 "nameIndex": 0,
+                 "searchListCss": "div.qy-search-result-item",
+                 "urlAttr": "href",
+                 "urlCss": "div.result-right > h3 > a",
+                 "urlIndex": 0
+             },
+             "video": {
+                 "episodesListCss": "",
+                 "episodesMainCss": "",
+                 "episodesMainIndex": 0,
+                 "hasEpisodes": false,
+                 "hasUrlPrefix": false,
+                 "iframeAttr": "src",
+                 "iframeIndex": 0,
+                 "isFrame": true,
+                 "isFrameProcess": false,
+                 "isItemAttr": false,
+                 "isNameAttr": false,
+                 "isReg": true,
+                 "isUrlAttr": false,
+                 "itemAttr": "",
+                 "itemCss": "script",
+                 "itemIndex": 2,
+                 "mainCss": "body",
+                 "mainIndex": 0,
+                 "nameAttr": "",
+                 "nameCss": "",
+                 "nameIndex": 0,
+                 "regIndex": 0,
+                 "regStr": "(?<=<video src=\")(.*)(?=\" controls=)",
+                 "title": "",
+                 "urlAttr": "",
+                 "urlCss": "",
+                 "urlIndex": 0,
+                 "videoCss": "td#playleft > iframe",
+                 "videoIndex": 1,
+                 "isVideoUrlAttr": true,
+                 "videoUrlAttr": "src",
+                 "isFromWebView": true,
+                 "js": "var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';
+                 window.htmlGet.showSource(html);
+                     var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';
+                     var api = html.match('\\.post\\\\(\"(.*)\", \\{')[1];
+                     var wap = html.match('\"wap\": \"(.*)\",')[1];
+                     var ip = html.match('\"ip\": \"([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\"')[1];
+                     $.post(api, {
+                     \"wap\": wap,
+                     \"time\": m3,
+                     \"ip\": ip,
+                     \"key\": m1,
+                     \"key2\": m2,
+                     \"key3\": ഈഇആഅ,
+                     \"url\": h2_url
+                     }, function(data) {window.htmlGet.getUrl(data['url']);},'json')"
+             }
+         }
+     }
 ]

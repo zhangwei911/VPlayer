@@ -2,7 +2,9 @@ package viz.vplayer.util
 
 import android.content.Context
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 import bolts.Task
+import com.bumptech.glide.Glide
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
@@ -253,6 +255,46 @@ fun HttpUtils.download(
             }
         })
     return handlerDownload
+}
+
+fun RecyclerView.imageListener(context: Context?) {
+    addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+            super.onScrollStateChanged(recyclerView, newState)
+            when (newState) {
+                RecyclerView.SCROLL_STATE_IDLE -> {
+                    //当屏幕停止滚动，加载图片
+                    try {
+                        context?.let {
+                            Glide.with(it).resumeRequests()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                RecyclerView.SCROLL_STATE_DRAGGING -> {
+                    //当屏幕滚动且用户使用的触碰或手指还在屏幕上，停止加载图片
+                    try {
+                        context?.let {
+                            Glide.with(it).pauseRequests()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+                RecyclerView.SCROLL_STATE_SETTLING -> {
+                    //由于用户的操作，屏幕产生惯性滑动，停止加载图片
+                    try {
+                        context?.let {
+                            Glide.with(it).pauseRequests()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
+    })
 }
 //自定义CoroutineExceptionHandler示例
 //    val handler = CoroutineExceptionHandler { coroutineContext, throwable ->

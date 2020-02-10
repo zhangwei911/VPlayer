@@ -219,7 +219,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
                 if (webView.url.startsWith(parseUrl)) {
                     webView.loadUrl(webView.url)
                 } else {
-                    webView.loadUrl("parseUrl${webView.url}")
+                    webView.loadUrl("$parseUrl${webView.url}")
                 }
             }
         }

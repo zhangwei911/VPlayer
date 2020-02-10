@@ -21,6 +21,7 @@ import viz.vplayer.bean.HtmlBean
 import viz.vplayer.bean.JsonBean
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.util.continueWithEnd
+import viz.vplayer.util.imageListener
 import viz.vplayer.vm.MainVM
 import java.io.Serializable
 
@@ -37,6 +38,7 @@ class HistoryActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         val htmlList = intent.getParcelableArrayExtra("htmlList").toMutableList()
         l.d(htmlList)
+        recyclerView_history.imageListener(this)
         recyclerView_history.layoutManager = LinearLayoutManager(this)
         Task.callInBackground {
             val viList = app.db.videoInfoDao().getAll()

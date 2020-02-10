@@ -35,7 +35,11 @@ class SearchAdapter(private val context: Context) :
         data[position].apply {
             holder.itemView.apply {
                 if (fromNameList.size > 0) {
-                    textView_name.text = name + "(${fromNameList[from]})"
+                    textView_name.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        Html.fromHtml(name + "(${fromNameList[from]})", Html.FROM_HTML_MODE_LEGACY)
+                    } else {
+                        Html.fromHtml(name + "(${fromNameList[from]})")
+                    }
                     textView_desc.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         Html.fromHtml(desc, Html.FROM_HTML_MODE_LEGACY)
                     } else {

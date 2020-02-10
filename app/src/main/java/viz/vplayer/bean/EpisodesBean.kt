@@ -9,6 +9,8 @@ data class EpisodesBean(
     var mainIndex: Int,
     var regStrList: MutableList<String>,
     var listCss: String,
+    var isMultiList:Boolean,
+    var listCssMulti: String,
     var listItemCss: String,
     var listItemIndex: Int,
     var isListItemAttr: Boolean,

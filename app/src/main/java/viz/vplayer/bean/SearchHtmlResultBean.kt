@@ -25,5 +25,6 @@ data class SearchHtmlResultBean(
     var isUrlAttr: Boolean,
     var urlAttr: String,
     var hasUrlPrefix: Boolean,
-    var isWebPlay: Boolean
+    var isWebPlay: Boolean,
+    var isKWInUrl: Boolean
 ) : Parcelable
