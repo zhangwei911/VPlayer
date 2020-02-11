@@ -16,26 +16,27 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView_search"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editText_search" />
+
     <TextView
         android:id="@+id/textView_label_website"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="10dp"
-        android:text="@string/website"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/app_name"
+        android:textSize="20sp"
+        android:textStyle="italic"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.appcompat.widget.AppCompatSpinner
-        android:id="@+id/spinner_website"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
-        app:layout_constraintBottom_toBottomOf="@id/textView_label_website"
-        app:layout_constraintEnd_toStartOf="@id/imageButton_add_website"
-        app:layout_constraintStart_toEndOf="@id/textView_label_website"
-        app:layout_constraintTop_toTopOf="@id/textView_label_website" />
 
     <androidx.appcompat.widget.AppCompatImageButton
         android:id="@+id/imageButton_add_website"
@@ -57,62 +58,87 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/textView_label_website" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayout_search"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:hint="@string/search_hint"
-        app:hintTextColor="@color/colorAccent"
-        app:layout_constraintEnd_toStartOf="@id/materialButton_search"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textView_label_website">
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/textInputEditText_search"
-            android:layout_width="match_parent"
-            android:background="@android:color/transparent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:imeOptions="actionDone"
-            android:lines="1"
-            android:textCursorDrawable="@null"
-            android:singleLine="true"
-            android:maxLines="1"
-            android:hint="@string/search_hint"
-            android:textColorHint="@android:color/transparent" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/materialButton_search"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        android:text="@string/search"
-        android:textColor="@android:color/holo_purple"
-        app:layout_constraintBottom_toBottomOf="@id/textInputLayout_search"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/textInputLayout_search" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView_search"
+    <View
+        android:id="@+id/view_search_modal"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="10dp"
+        android:background="#85424242"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textInputLayout_search" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible" />
+
+    <EditText
+        android:id="@+id/editText_search"
+        android:layout_width="0dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginEnd="32dp"
+        android:autofillHints="@string/search_hint"
+        android:background="@drawable/search_bg"
+        android:drawableStart="@drawable/ic_search_edit"
+        android:drawablePadding="8dp"
+        android:hint="@string/search_hint"
+        android:inputType="text"
+        android:lines="1"
+        android:maxLines="1"
+        android:minLines="1"
+        android:paddingStart="16dp"
+        android:paddingEnd="56dp"
+        android:textColorHint="#cccccc"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/materialButton_search"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="@string/search"
+        android:textColor="@android:color/holo_purple"
+        app:layout_constraintBottom_toBottomOf="@id/editText_search"
+        app:layout_constraintEnd_toEndOf="@id/editText_search"
+        app:layout_constraintTop_toTopOf="@id/editText_search" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView_web"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/editText_search"
+        app:layout_constraintStart_toStartOf="@id/editText_search"
+        app:layout_constraintTop_toBottomOf="@id/editText_search"
+        tools:visibility="visible" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/group_web"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="view_search_modal,recyclerView_web"
+        tools:visibility="visible" />
 
     <app.dinus.com.loadingdrawable.LoadingView
         android:id="@+id/loadingView"
         android:layout_width="0dp"
-        android:visibility="gone"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:background="#2A77736A"
-        app:loading_renderer="SwapLoadingRenderer"/>
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:loading_renderer="SwapLoadingRenderer" />
 </androidx.constraintlayout.widget.ConstraintLayout>

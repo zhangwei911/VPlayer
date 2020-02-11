@@ -4,4 +4,5 @@
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
     <color name="selectBG">#00BCD4</color>
+    <color name="selectWebBG">#ff7a43</color>
 </resources>

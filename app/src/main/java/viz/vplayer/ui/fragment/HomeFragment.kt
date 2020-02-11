@@ -1,12 +1,13 @@
 package viz.vplayer.ui.fragment
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.addCallback
 import androidx.annotation.NonNull
 import androidx.annotation.VisibleForTesting
@@ -15,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.test.espresso.idling.net.UriIdlingResource
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
@@ -33,6 +35,7 @@ import viz.vplayer.BuildConfig
 import viz.vplayer.R
 import viz.vplayer.adapter.SearchAdapter
 import viz.vplayer.adapter.SelectEpisodesAdapter
+import viz.vplayer.adapter.WebAdapter
 import viz.vplayer.bean.*
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.eventbus.RuleEvent
@@ -58,7 +61,6 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
     private val htmlParamsKWList = mutableListOf<String>()
     private var currentPos = 0
     private var isAll = false
-    private val spinnerItems = mutableListOf<String>()
     private val spinnerNameItems = mutableListOf<String>()
     private val gson = Gson()
     private var searchUrl = ""
@@ -66,6 +68,9 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
     private var isLongClick = false
     private var totalSelectSize = 0
     private var successAddCacheCount = 0
+    private var webAdapter: WebAdapter? = null
+    private val webList = mutableListOf<WebBean>()
+    private var currentPosWeb = 0
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -134,6 +139,8 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         })
         mainVM.episodes.observe(viewLifecycleOwner, Observer { episodeList ->
             l.i(episodeList)
+            group_web.visibility = View.GONE
+            editText_search.clearFocus()
             if (episodeList == null) {
                 loadingView.visibility = View.GONE
                 return@Observer
@@ -185,25 +192,31 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 if (spinnerNameItems.size > 0) {
                     spinnerNameItems.remove("所有")
                 }
+                if (webList.size > 0) {
+                    webList.remove(WebBean("所有"))
+                }
                 jsonBeanList.forEach { jsonBean: JsonBean ->
-                    val map = mutableMapOf<String, String>()
-                    jsonBean.params.forEach { paramBean: ParamBean ->
-                        map[paramBean.key] = paramBean.value
+                    jsonBean.apply {
+                        val map = mutableMapOf<String, String>()
+                        params.forEach { paramBean: ParamBean ->
+                            map[paramBean.key] = paramBean.value
+                        }
+                        spinnerNameItems.add(webName)
+                        htmlParamsList.add(map)
+                        htmlParamsKWList.add(kwKey)
+                        htmlList.add(html)
+                        val webBean = WebBean()
+                        webBean.name = webName
+                        webBean.searchUrl = searchUrl
+                        webList.add(webBean)
                     }
-                    spinnerItems.add(jsonBean.searchUrl)
-                    spinnerNameItems.add(jsonBean.webName)
-                    htmlParamsList.add(map)
-                    htmlParamsKWList.add(jsonBean.kwKey)
-                    htmlList.add(jsonBean.html)
                 }
                 searchAdapter.fromNameList = spinnerNameItems
                 spinnerNameItems.add("所有")
-                val spinnerAdapter =
-                    ArrayAdapter(
-                        context!!,
-                        R.layout.simple_spinner_item, spinnerNameItems
-                    )
-                spinner_website.adapter = spinnerAdapter
+                webList.add(WebBean("所有"))
+                webAdapter = WebAdapter(context!!, webList)
+                recyclerView_web.adapter = webAdapter
+                updateWebSelect(currentPosWeb)
                 mainVM.rules.postValue(null)
                 test()
             } catch (e: Exception) {
@@ -222,20 +235,19 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         })
         mainVM.getSearchInfo().observe(viewLifecycleOwner, Observer {
             it?.let {
-                textInputEditText_search.setText(it)
+                editText_search.setText(it)
             }
         })
         mainVM.getSearchUrl().observe(viewLifecycleOwner, Observer {
             it?.let {
-                if (spinner_website.count == 0) {
-                    return@Observer
-                }
-                if (it == "all") {
-                    spinner_website.setSelection(spinner_website.count - 1)
-                } else {
-                    spinnerItems.forEachIndexed { index, s ->
-                        if (s == it) {
-                            spinner_website.setSelection(index)
+                webAdapter?.list?.apply {
+                    if (it == "all") {
+                        updateWebSelect(size - 1)
+                    } else {
+                        forEachIndexed { index, webBean ->
+                            if (webBean.searchUrl == it) {
+                                updateWebSelect(index)
+                            }
                         }
                     }
                 }
@@ -342,7 +354,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                                     url,
                                     searchAdapter.data[currentPos].name,
                                     searchAdapter.data[currentPos].img,
-                                    spinnerItems[spinner_website.selectedItemPosition],
+                                    webAdapter!!.list!![currentPosWeb].searchUrl,
                                     0,
                                     app.applicationContext,
                                     this@HomeFragment
@@ -362,8 +374,8 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
 
     private fun test() {
         if (BuildConfig.DEBUG) {
-            textInputEditText_search.setText("爱情公寓5")
-            spinner_website.setSelection(6)
+            editText_search.setText("爱情公寓5")
+            updateWebSelect(6)
 //            materialButton_search.performClick()
         }
     }
@@ -411,7 +423,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
     }
 
     private fun clearRules() {
-        spinnerItems.clear()
+        webList.clear()
         spinnerNameItems.clear()
         htmlParamsList.clear()
         htmlParamsKWList.clear()
@@ -419,11 +431,27 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         mainVM.rules.postValue(null)
     }
 
+    private fun updateWebSelect(position: Int) {
+        currentPosWeb = position
+        webAdapter?.list?.forEachIndexed { index, webBean ->
+            webBean.isSelected = position == index
+        }
+        webAdapter?.notifyDataSetChanged()
+    }
+
     private fun initListener() {
         materialButton_search.setOnClickListener(this)
         imageButton_add_website.setOnClickListener(this)
         imageButton_menu.setOnClickListener(this)
         textView_label_website.setOnClickListener(this)
+        view_search_modal.setOnClickListener(this)
+        recyclerView_web.setOnClickListener(this)
+        editText_search.onFocusChangeListener =
+            View.OnFocusChangeListener { v, hasFocus ->
+                if (hasFocus) {
+                    group_web.visibility = View.VISIBLE
+                }
+            }
     }
 
     private fun initViews() {
@@ -451,33 +479,32 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 })
         )
         recyclerView_search.imageListener(context)
-        textInputEditText_search.setOnEditorActionListener { v, actionId, event ->
+        recyclerView_web.layoutManager =
+            StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL)
+        recyclerView_web.addOnItemTouchListener(
+            RecyclerItemClickListener(
+                context!!,
+                recyclerView_web,
+                object :
+                    RecyclerItemClickListener.OnItemClickListener {
+                    override fun onItemClick(view: View, position: Int, e: MotionEvent) {
+                        currentPosWeb = position
+                        updateWebSelect(currentPosWeb)
+                    }
+
+                    override fun onItemLongClick(view: View, position: Int, e: MotionEvent) {
+                    }
+
+                    override fun onItemDoubleClick(view: View, position: Int, e: MotionEvent) {
+                    }
+                })
+        )
+        editText_search.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 materialButton_search.performClick()
                 true
             }
             false
-        }
-        spinner_website.onItemSelectedListener = object :
-            AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-            }
-
-            override fun onItemSelected(
-                parent: AdapterView<*>?,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                mainVM.saveSearchUrl(
-                    if (position == spinnerItems.size) {
-                        "all"
-                    } else {
-                        spinnerItems[position]
-                    }
-                )
-            }
-
         }
         initWebView()
     }
@@ -522,20 +549,22 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 this[position]
             }
         }?.apply {
-            if (spinnerItems.isEmpty() || htmlList.isEmpty()) {
-                return@apply
-            }
-            val isWebPlay = htmlList[from].searchHtmlResultBean.isWebPlay
-            if (isWebPlay) {
-                val bundle = Bundle()
-                bundle.putString("url", url)
-                findNavController().navigate(R.id.webActivity, bundle)
-            } else {
-                searchUrl = spinnerItems[from]
-                mainVM.getVideoEpisodesInfo(
-                    url,
-                    htmlList[from].episodesBean
-                )
+            webAdapter?.list?.apply {
+                if (htmlList.isEmpty()) {
+                    return
+                }
+                val isWebPlay = htmlList[from].searchHtmlResultBean.isWebPlay
+                if (isWebPlay) {
+                    val bundle = Bundle()
+                    bundle.putString("url", url)
+                    findNavController().navigate(R.id.webActivity, bundle)
+                } else {
+                    searchUrl = this[from].searchUrl
+                    mainVM.getVideoEpisodesInfo(
+                        url,
+                        htmlList[from].episodesBean
+                    )
+                }
             }
         }
     }
@@ -548,42 +577,48 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                     Toast.show("非WIFI连接或没有网络")
                     return
                 }
-                val kw = textInputEditText_search.text.toString()
+                val kw = editText_search.text.toString()
                 if (!kw.isNullOrEmpty()) {
                     mainVM.saveSearchInfo(kw)
+                    hideSoftKeyboard(context!!, mutableListOf(editText_search))
+                    group_web.visibility = View.GONE
+                    editText_search.clearFocus()
                     loadingView.visibility = View.VISIBLE
-                    textInputLayout_search.clearFocus()
-                    val index = spinner_website.selectedItemPosition
-                    isAll = index == spinner_website.count - 1
+                    val index = currentPosWeb
+                    isAll = index == webAdapter!!.list!!.size - 1
                     if (isAll) {
                         searchAdapter.data.clear()
-                        for (from in 0 until spinner_website.count - 1) {
-                            htmlParamsList[from][htmlParamsKWList[from]] = kw
-                            mainVM.searchVideos(
-                                from,
-                                htmlParamsList[from],
-                                if (htmlList[index].searchHtmlResultBean.isKWInUrl) {
-                                    String.format(spinnerItems[from], kw)
-                                } else {
-                                    spinnerItems[from]
-                                },
-                                htmlList[from].searchHtmlResultBean,
-                                uriIdlingResource
-                            )
+                        webAdapter?.list?.apply {
+                            for (from in 0 until size - 1) {
+                                htmlParamsList[from][htmlParamsKWList[from]] = kw
+                                mainVM.searchVideos(
+                                    from,
+                                    htmlParamsList[from],
+                                    if (htmlList[index].searchHtmlResultBean.isKWInUrl) {
+                                        String.format(this[from].searchUrl, kw)
+                                    } else {
+                                        this[from].searchUrl
+                                    },
+                                    htmlList[from].searchHtmlResultBean,
+                                    uriIdlingResource
+                                )
+                            }
                         }
                     } else {
                         htmlParamsList[index][htmlParamsKWList[index]] = kw
-                        mainVM.searchVideos(
-                            index,
-                            htmlParamsList[index],
-                            if (htmlList[index].searchHtmlResultBean.isKWInUrl) {
-                                String.format(spinnerItems[index], kw)
-                            } else {
-                                spinnerItems[index]
-                            },
-                            htmlList[index].searchHtmlResultBean,
-                            uriIdlingResource
-                        )
+                        webAdapter?.list?.apply {
+                            mainVM.searchVideos(
+                                index,
+                                htmlParamsList[index],
+                                if (htmlList[index].searchHtmlResultBean.isKWInUrl) {
+                                    String.format(this[index].searchUrl, kw)
+                                } else {
+                                    this[index].searchUrl
+                                },
+                                htmlList[index].searchHtmlResultBean,
+                                uriIdlingResource
+                            )
+                        }
                     }
                 } else {
                     Toast.show(context, "请输入电影/电视剧名称")
@@ -652,6 +687,31 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 )
                 findNavController().navigate(R.id.webActivity, bundle)
             }
+            R.id.view_search_modal -> {
+                hideSoftKeyboard(context!!, mutableListOf(editText_search))
+                group_web.visibility = View.GONE
+                editText_search.clearFocus()
+            }
+            R.id.recyclerView_web -> {
+                hideSoftKeyboard(context!!, mutableListOf(editText_search))
+                group_web.visibility = View.GONE
+                editText_search.clearFocus()
+            }
+        }
+    }
+
+    /**
+     * 隐藏软键盘(可用于Activity，Fragment)
+     */
+    private fun hideSoftKeyboard(context: Context, viewList: MutableList<View>) {
+        val inputMethodManager =
+            context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+
+        viewList.forEach {
+            inputMethodManager.hideSoftInputFromWindow(
+                it.windowToken,
+                InputMethodManager.HIDE_NOT_ALWAYS
+            );
         }
     }
 
