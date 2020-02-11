@@ -588,16 +588,16 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                     isAll = index == webAdapter!!.list!!.size - 1
                     if (isAll) {
                         searchAdapter.data.clear()
-                        webAdapter?.list?.apply {
-                            for (from in 0 until size - 1) {
+                        webAdapter?.list?.let {
+                            for (from in 0 until it.size - 2) {
                                 htmlParamsList[from][htmlParamsKWList[from]] = kw
                                 mainVM.searchVideos(
                                     from,
                                     htmlParamsList[from],
-                                    if (htmlList[index].searchHtmlResultBean.isKWInUrl) {
-                                        String.format(this[from].searchUrl, kw)
+                                    if (htmlList[from].searchHtmlResultBean.isKWInUrl) {
+                                        String.format(it[from].searchUrl, kw)
                                     } else {
-                                        this[from].searchUrl
+                                        it[from].searchUrl
                                     },
                                     htmlList[from].searchHtmlResultBean,
                                     uriIdlingResource
