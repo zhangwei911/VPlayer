@@ -44,7 +44,8 @@ class HistoryActivity : BaseActivity() {
             .myObserverModule(MyObserverModule(lifecycle, javaClass.name))
             .create(this)
             .inject(this)
-        val htmlList = intent.getParcelableArrayExtra("htmlList").toMutableList()
+        val htmlParcelableArray = intent.getParcelableArrayExtra("htmlList") ?: return
+        val htmlList = htmlParcelableArray.toMutableList()
         l.d(htmlList)
         recyclerView_history.imageListener(this)
         recyclerView_history.layoutManager = LinearLayoutManager(this)
