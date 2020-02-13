@@ -8,10 +8,13 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.shuyu.gsyvideoplayer.utils.CommonUtil
 import com.viz.tools.Toast
 import com.viz.tools.l
 import org.greenrobot.eventbus.EventBus
@@ -26,6 +29,9 @@ import java.io.File
 abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     lateinit var app: App
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        }
         super.onCreate(savedInstanceState)
         if (useEventBus()) {
             if (!EventBus.getDefault().isRegistered(this)) {
@@ -39,7 +45,15 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
             )
         }
-        setContentView(getContentViewId())
+        window.setBackgroundDrawableResource(R.drawable.main_bg)
+//        window.decorView.fitsSystemWindows = true
+        val vlp = ViewGroup.MarginLayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        val view = LayoutInflater.from(this).inflate(getContentViewId(), null, false)
+        view.setPadding(0, CommonUtil.getStatusBarHeight(this), 0, 0)
+        setContentView(view, vlp)
         if (isNoTitle()) {
             supportActionBar?.hide()
         }

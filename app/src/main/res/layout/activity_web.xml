@@ -4,10 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include layout="@layout/common_top"
+    <include
         android:id="@+id/include_top_web"
-        />
-
+        layout="@layout/common_top" />
 
 
     <EditText
@@ -21,6 +20,7 @@
         android:background="@drawable/search_bg"
         android:drawableStart="@drawable/ic_search_edit"
         android:drawablePadding="8dp"
+        android:fontFamily="monospace"
         android:hint="@string/url_hint"
         android:inputType="text"
         android:lines="1"
@@ -37,8 +37,9 @@
         android:id="@+id/materialButton_url"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/go"
+        android:fontFamily="monospace"
         android:padding="8dp"
+        android:text="@string/go"
         app:layout_constraintBottom_toBottomOf="@id/textInputEditText_url"
         app:layout_constraintEnd_toStartOf="@+id/materialButton_url_parse"
         app:layout_constraintTop_toTopOf="@id/textInputEditText_url" />
@@ -47,8 +48,9 @@
         android:id="@+id/materialButton_url_parse"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/parse"
+        android:fontFamily="monospace"
         android:padding="8dp"
+        android:text="@string/parse"
         app:layout_constraintBottom_toBottomOf="@id/textInputEditText_url"
         app:layout_constraintEnd_toEndOf="@id/textInputEditText_url"
         app:layout_constraintTop_toTopOf="@id/textInputEditText_url" />

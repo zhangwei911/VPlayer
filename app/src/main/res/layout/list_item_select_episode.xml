@@ -9,6 +9,7 @@
         android:id="@+id/textView_select_episodes_label"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:fontFamily="monospace"
         android:gravity="center"
         android:padding="10dp"
         android:textColor="@android:color/holo_blue_light"

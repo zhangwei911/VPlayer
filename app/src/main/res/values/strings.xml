@@ -31,4 +31,5 @@
     <string name="stop_all">暂停所有</string>
     <string name="cache">缓存</string>
     <string name="parse">解析</string>
+    <string name="back">back</string>
 </resources>

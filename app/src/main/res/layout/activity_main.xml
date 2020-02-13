@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:layout_height="match_parent">
 
     <fragment
         android:id="@+id/main_content"
@@ -21,32 +21,33 @@
         android:id="@+id/textView_common_info"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="8dp"
+        android:fontFamily="monospace"
         android:gravity="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:padding="8dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/textView_version"
-        android:visibility="gone"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
+        android:id="@+id/textView_version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textView_version"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView_main"
+        android:fontFamily="monospace"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        tools:text="版本号:1.4"
-        />
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView_main"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="版本号:1.4" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView_main"
         android:layout_width="0dp"
         android:layout_height="@dimen/bottomNavHeight"
         android:background="#FF5722"
-        app:itemTextColor="@color/main_bottom_navigation"
         app:itemIconTint="@color/main_bottom_navigation"
+        app:itemTextColor="@color/main_bottom_navigation"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

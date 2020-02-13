@@ -9,6 +9,7 @@
     android:layout_margin="8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout_web"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -27,6 +28,7 @@
             android:layout_height="0dp"
             android:gravity="center"
             android:textSize="16sp"
+            android:fontFamily="monospace"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/imageView_web"

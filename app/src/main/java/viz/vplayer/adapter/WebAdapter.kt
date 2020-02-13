@@ -27,6 +27,8 @@ class WebAdapter : RecyclerView.Adapter<WebAdapter.ViewHolder> {
     var colors = mutableListOf(
         Color.argb(255, 240, 240, 240),
         Color.argb(255, 255, 122, 67),
+        Color.argb(255, 0, 176, 255),
+        Color.argb(255, 255, 255, 255),
         Color.argb(255, 156, 92, 252),
         Color.argb(255, 95, 83, 254),
         Color.argb(255, 0, 144, 255),
@@ -62,14 +64,21 @@ class WebAdapter : RecyclerView.Adapter<WebAdapter.ViewHolder> {
             )
             lp.setMargins(ScreenUtils.dpToPx(context, 8f).toInt())
             cardView_web.layoutParams = lp
-            val color = colors[if (data.isSelected) {
-                1
-            } else {
-                0
-            }]
-            cardView_web.background.colorFilter = LightingColorFilter(
-                color,
-                color
+//            val color = colors[if (data.isSelected) {
+//                1
+//            } else {
+//                0
+//            }]
+//            cardView_web.background.colorFilter = LightingColorFilter(
+//                color,
+//                color
+//            )
+            constraintLayout_web.background = ContextCompat.getDrawable(
+                context, if (data.isSelected) {
+                    R.drawable.web_bg
+                } else {
+                    R.drawable.web_bg_unselected
+                }
             )
             textView_web.text = data.name
             imageView_web.visibility = if (data.resId != -1) {
