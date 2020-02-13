@@ -45,7 +45,7 @@
         android:id="@+id/bottomNavigationView_main"
         android:layout_width="0dp"
         android:layout_height="@dimen/bottomNavHeight"
-        android:background="#FF5722"
+        android:background="@color/ColorMain"
         app:itemIconTint="@color/main_bottom_navigation"
         app:itemTextColor="@color/main_bottom_navigation"
         app:layout_constraintBottom_toBottomOf="parent"

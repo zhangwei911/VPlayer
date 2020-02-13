@@ -5,18 +5,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include layout="@layout/common_top"
+    <include
         android:id="@+id/include_top_history"
-        />
+        layout="@layout/common_top" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView_history"
+    <com.lcodecore.tkrefreshlayout.TwinklingRefreshLayout
+        android:id="@+id/twinklingRefreshLayout_search"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/include_top_history" />
+        app:layout_constraintTop_toBottomOf="@id/include_top_history"
+        app:tr_enable_loadmore="false"
+        app:tr_enable_refresh="false">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView_history"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never" />
+    </com.lcodecore.tkrefreshlayout.TwinklingRefreshLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

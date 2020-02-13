@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/constraintLayout_home"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,27 +19,58 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView_search"
+    <ImageView
+        android:id="@+id/imageView_video"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_marginTop="100dp"
+        android:alpha="0.13"
+        android:src="@drawable/video"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/imageView_logo" />
+
+    <com.lcodecore.tkrefreshlayout.TwinklingRefreshLayout
+        android:id="@+id/twinklingRefreshLayout_search"
+        app:tr_enable_refresh="false"
+        app:tr_enable_loadmore="false"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editText_search" />
-
+        app:layout_constraintTop_toBottomOf="@id/editText_search">
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView_search"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:overScrollMode="never" />
+    </com.lcodecore.tkrefreshlayout.TwinklingRefreshLayout>
     <TextView
         android:id="@+id/textView_label_website"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="60dp"
         android:fontFamily="monospace"
         android:text="@string/app_name"
-        android:textColor="@android:color/black"
+        android:textColor="@android:color/white"
         android:textSize="30sp"
         android:textStyle="bold"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageView_logo"
+        android:layout_width="110dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="36dp"
+        android:layout_marginTop="60dp"
+        android:alpha="0.9"
+        android:src="@drawable/logo_main"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -56,7 +88,7 @@
         android:id="@+id/imageButton_menu"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="36dp"
         android:background="@drawable/ic_menu"
         app:layout_constraintBottom_toBottomOf="@id/textView_label_website"
         app:layout_constraintEnd_toEndOf="parent"
@@ -66,7 +98,7 @@
         android:id="@+id/view_search_modal"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#85424242"
+        android:background="#1A000000"
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone"
@@ -80,12 +112,14 @@
         android:id="@+id/editText_search"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="48dp"
+        android:layout_marginTop="48dp"
         android:autofillHints="@string/search_hint"
         android:background="@drawable/search_bg"
         android:drawableStart="@drawable/ic_search_edit"
+        android:imeOptions="actionDone"
+        android:textCursorDrawable="@null"
         android:drawablePadding="8dp"
         android:fontFamily="monospace"
         android:hint="@string/search_hint"
@@ -95,10 +129,12 @@
         android:minLines="1"
         android:paddingStart="16dp"
         android:paddingEnd="56dp"
+        android:textAlignment="center"
         android:textColorHint="#cccccc"
+        app:layout_constraintBottom_toTopOf="@+id/imageView_video"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/imageView_logo" />
 
     <TextView
         android:id="@+id/materialButton_search"
@@ -107,7 +143,7 @@
         android:fontFamily="monospace"
         android:padding="16dp"
         android:text="@string/search"
-        android:textColor="@android:color/holo_purple"
+        android:textColor="@android:color/black"
         app:layout_constraintBottom_toBottomOf="@id/editText_search"
         app:layout_constraintEnd_toEndOf="@id/editText_search"
         app:layout_constraintTop_toTopOf="@id/editText_search" />

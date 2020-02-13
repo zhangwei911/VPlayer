@@ -1,6 +1,7 @@
 package viz.vplayer.ui.fragment
 
 import android.app.Activity
+import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -11,6 +12,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.activity.addCallback
 import androidx.annotation.NonNull
 import androidx.annotation.VisibleForTesting
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -18,6 +20,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.test.espresso.idling.net.UriIdlingResource
+import androidx.transition.TransitionManager
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.input.input
@@ -27,6 +30,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.michaelflisar.dragselectrecyclerview.DragSelectTouchListener
 import com.viz.tools.Toast
+import com.viz.tools.apk.ScreenUtils
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.fragment_home.*
 import org.greenrobot.eventbus.Subscribe
@@ -118,6 +122,9 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             l.i(searchList)
             if (searchList.isNullOrEmpty()) {
                 loadingView.visibility = View.GONE
+                if (searchAdapter.data.isEmpty()) {
+                    showSearch(false)
+                }
                 return@Observer
             }
             if (isAll) {
@@ -126,6 +133,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 recyclerView_search.smoothScrollToPosition(0)
                 searchAdapter.data = searchList
             }
+            showSearch(true)
             mainVM.saveSearchResult(searchAdapter.data)
             mainVM.search.postValue(null)
             searchAdapter.notifyDataSetChanged()
@@ -449,16 +457,56 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         imageButton_add_website.setOnClickListener(this)
         imageButton_menu.setOnClickListener(this)
         textView_label_website.setOnClickListener(this)
+        imageView_logo.setOnClickListener(this)
         view_search_modal.setOnClickListener(this)
         recyclerView_web.setOnClickListener(this)
         editText_search.onFocusChangeListener =
             View.OnFocusChangeListener { v, hasFocus ->
                 if (hasFocus) {
                     group_web.visibility = View.VISIBLE
+                    showSearch(true)
 //                    findNavController().navigate(R.id.motionEventFragment)
 //                    findNavController().navigate(R.id.coordinateFragment)
                 }
             }
+    }
+
+    private fun showSearch(show: Boolean) {
+        val set = ConstraintSet()
+        set.clone(constraintLayout_home)
+        TransitionManager.beginDelayedTransition(constraintLayout_home)
+        if (show) {
+            set.clear(R.id.editText_search, ConstraintSet.BOTTOM)
+            set.connect(
+                R.id.editText_search,
+                ConstraintSet.TOP,
+                R.id.imageView_logo,
+                ConstraintSet.BOTTOM,
+                ScreenUtils.dpToPx(context!!, 32f).toInt()
+            )
+            set.connect(
+                R.id.editText_search,
+                ConstraintSet.START,
+                R.id.constraintLayout_home,
+                ConstraintSet.START,
+                ScreenUtils.dpToPx(context!!, 32f).toInt()
+            )
+            set.connect(
+                R.id.editText_search,
+                ConstraintSet.END,
+                R.id.constraintLayout_home,
+                ConstraintSet.END,
+                ScreenUtils.dpToPx(context!!, 32f).toInt()
+            )
+        } else {
+            set.connect(
+                R.id.editText_search,
+                ConstraintSet.BOTTOM,
+                R.id.imageView_video,
+                ConstraintSet.BOTTOM
+            )
+        }
+        set.applyTo(constraintLayout_home)
     }
 
     private fun initViews() {
@@ -694,10 +742,19 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 )
                 findNavController().navigate(R.id.webActivity, bundle)
             }
+            R.id.imageView_logo -> {
+                val bundle = Bundle()
+                bundle.putString(
+                    "url",
+                    "https://www.iqiyi.com"
+                )
+                findNavController().navigate(R.id.webActivity, bundle)
+            }
             R.id.view_search_modal -> {
                 hideSoftKeyboard(context!!, mutableListOf(editText_search))
                 group_web.visibility = View.GONE
                 editText_search.clearFocus()
+                showSearch(searchAdapter.data.isNotEmpty())
             }
             R.id.recyclerView_web -> {
                 hideSoftKeyboard(context!!, mutableListOf(editText_search))

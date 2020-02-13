@@ -60,7 +60,7 @@ class WebAdapter : RecyclerView.Adapter<WebAdapter.ViewHolder> {
         val data = list[pos]
         holder.itemView.apply {
             val lp = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, ScreenUtils.dpToPx(context, 80f).toInt()
+                FrameLayout.LayoutParams.MATCH_PARENT, ScreenUtils.dpToPx(context, 60f).toInt()
             )
             lp.setMargins(ScreenUtils.dpToPx(context, 8f).toInt())
             cardView_web.layoutParams = lp
@@ -87,7 +87,13 @@ class WebAdapter : RecyclerView.Adapter<WebAdapter.ViewHolder> {
             } else {
                 View.GONE
             }
-            textView_web.setTextColor(data.menuColor)
+            textView_web.setTextColor(
+                if (data.isSelected) {
+                    Color.WHITE
+                } else {
+                    data.menuColor
+                }
+            )
         }
     }
 

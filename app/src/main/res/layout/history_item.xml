@@ -1,57 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:fresco="http://schemas.android.com/fresco"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    android:padding="10dp"
-    app:cardCornerRadius="10dp"
-    app:cardElevation="5dp">
+    android:padding="10dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/imageView_history"
+        android:layout_width="0dp"
+        android:layout_height="80dp"
+        android:scaleType="fitXY"
+        app:layout_constraintDimensionRatio="3:4"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        fresco:failureImage="@drawable/ic_fail"
+        fresco:failureImageScaleType="centerInside"
+        tools:src="@tools:sample/avatars" />
 
-        <com.facebook.drawee.view.SimpleDraweeView
-            android:id="@+id/imageView_history"
-            android:layout_width="0dp"
-            android:layout_height="80dp"
-            android:scaleType="fitXY"
-            app:layout_constraintDimensionRatio="3:4"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            fresco:failureImage="@drawable/ic_fail"
-            fresco:failureImageScaleType="centerInside"
-            tools:src="@tools:sample/avatars" />
+    <TextView
+        android:id="@+id/textView_history_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:fontFamily="monospace"
+        android:lines="1"
+        android:maxLines="1"
+        android:padding="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/imageView_history"
+        app:layout_constraintTop_toTopOf="@id/imageView_history"
+        tools:text="庆余年第1集" />
 
-        <TextView
-            android:id="@+id/textView_history_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:fontFamily="monospace"
-            android:lines="1"
-            android:maxLines="1"
-            android:padding="10dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/imageView_history"
-            app:layout_constraintTop_toTopOf="@id/imageView_history"
-            tools:text="庆余年第1集" />
-
-        <TextView
-            android:id="@+id/textView_history_time_left"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:fontFamily="monospace"
-            android:padding="10dp"
-            android:textColor="@android:color/darker_gray"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/imageView_history"
-            app:layout_constraintTop_toBottomOf="@id/textView_history_name"
-            tools:text="剩余10:10未看" />
+    <TextView
+        android:id="@+id/textView_history_time_left"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="monospace"
+        android:padding="10dp"
+        android:textColor="@android:color/darker_gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/imageView_history"
+        app:layout_constraintTop_toBottomOf="@id/textView_history_name"
+        tools:text="剩余10:10未看" />
 
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

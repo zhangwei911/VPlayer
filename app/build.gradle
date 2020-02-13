@@ -225,4 +225,7 @@ dependencies {
     // 支持 WebP （静态图+动图），需要添加
     implementation 'com.facebook.fresco:animated-webp:2.1.0'
     implementation 'com.facebook.fresco:webpsupport:2.1.0'
+
+    implementation "com.lcodecorex:tkrefreshlayout:1.0.7"
+    implementation "com.readystatesoftware.systembartint:systembartint:1.0.3"
 }

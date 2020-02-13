@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <gradient android:startColor="#00B0FF"
-        android:centerColor="#58CBFD"
-        android:endColor="#00B0FF"
-        android:angle="270"/>
+<!--    <gradient android:startColor="@color/selectWebText"-->
+<!--        android:centerColor="@color/selectWebBGL"-->
+<!--        android:endColor="@color/selectWebText"-->
+<!--        android:angle="270"/>-->
+    <solid android:color="@color/selectWebText"/>
 </shape>
