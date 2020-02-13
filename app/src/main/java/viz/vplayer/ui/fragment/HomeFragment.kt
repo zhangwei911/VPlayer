@@ -123,6 +123,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             if (isAll) {
                 searchAdapter.data.addAll(searchList)
             } else {
+                recyclerView_search.smoothScrollToPosition(0)
                 searchAdapter.data = searchList
             }
             mainVM.saveSearchResult(searchAdapter.data)
@@ -273,7 +274,11 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         initListener()
         getRules()
         val callback = requireActivity().onBackPressedDispatcher.addCallback(this) {
-            requireActivity().finish()
+            if (group_web.visibility == View.VISIBLE) {
+                group_web.visibility = View.GONE
+            } else {
+                requireActivity().finish()
+            }
         }
     }
 
@@ -450,6 +455,8 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             View.OnFocusChangeListener { v, hasFocus ->
                 if (hasFocus) {
                     group_web.visibility = View.VISIBLE
+//                    findNavController().navigate(R.id.motionEventFragment)
+//                    findNavController().navigate(R.id.coordinateFragment)
                 }
             }
     }

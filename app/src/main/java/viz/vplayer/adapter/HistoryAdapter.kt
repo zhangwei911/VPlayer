@@ -48,9 +48,10 @@ class HistoryAdapter : RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
                 textView_history_time_left.text =
                     "剩余" + CommonUtil.stringForTime(leftTime) + "未看" + "第${index + 1}集"
                 if (videoImgUrl.trim().isNotEmpty()) {
-                    glide.load(videoImgUrl)
-                        .override(60, 80)
-                        .into(imageView_history)
+//                    glide.load(videoImgUrl)
+//                        .override(60, 80)
+//                        .into(imageView_history)
+                    imageView_history.setImageURI(videoImgUrl)
                 }
             }
         }

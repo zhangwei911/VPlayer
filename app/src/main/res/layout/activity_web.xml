@@ -8,53 +8,59 @@
         android:id="@+id/include_top_web"
         />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayout_url"
+
+
+    <EditText
+        android:id="@+id/textInputEditText_url"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginEnd="32dp"
+        android:autofillHints="@string/search_hint"
+        android:background="@drawable/search_bg"
+        android:drawableStart="@drawable/ic_search_edit"
+        android:drawablePadding="8dp"
         android:hint="@string/url_hint"
-        app:layout_constraintEnd_toStartOf="@id/materialButton_url"
+        android:inputType="text"
+        android:lines="1"
+        android:maxLines="1"
+        android:minLines="1"
+        android:paddingStart="16dp"
+        android:paddingEnd="80dp"
+        android:textColorHint="#cccccc"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/include_top_web">
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/textInputEditText_url"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:maxLines="3"
-            android:backgroundTint="@android:color/transparent"
-            android:hint="@string/url_hint"
-            android:textColorHint="@android:color/transparent" />
-
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.button.MaterialButton
+    <TextView
         android:id="@+id/materialButton_url"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/go"
-        app:layout_constraintBottom_toBottomOf="@id/textInputLayout_url"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="@id/textInputEditText_url"
         app:layout_constraintEnd_toStartOf="@+id/materialButton_url_parse"
-        app:layout_constraintTop_toTopOf="@id/textInputLayout_url" />
+        app:layout_constraintTop_toTopOf="@id/textInputEditText_url" />
 
-    <com.google.android.material.button.MaterialButton
+    <TextView
         android:id="@+id/materialButton_url_parse"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/parse"
-        app:layout_constraintBottom_toBottomOf="@id/textInputLayout_url"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/textInputLayout_url" />
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="@id/textInputEditText_url"
+        app:layout_constraintEnd_toEndOf="@id/textInputEditText_url"
+        app:layout_constraintTop_toTopOf="@id/textInputEditText_url" />
 
     <viz.vplayer.util.X5WebView
         android:id="@+id/webView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textInputLayout_url" />
+        app:layout_constraintTop_toBottomOf="@id/textInputEditText_url" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

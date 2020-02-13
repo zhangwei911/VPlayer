@@ -46,10 +46,11 @@ class SearchAdapter(private val context: Context) :
                         Html.fromHtml(desc)
                     }
                     if (!img.isNullOrEmpty()) {
-                        glide!!.load(img)
-                            .error(R.drawable.ic_fail)
-                            .skipMemoryCache(true)
-                            .into(imageView_thumb)
+//                        glide!!.load(img)
+//                            .error(R.drawable.ic_fail)
+//                            .skipMemoryCache(true)
+//                            .into(imageView_thumb)
+                        imageView_thumb.setImageURI(img)
                     }
                 }
             }

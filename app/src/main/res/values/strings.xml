@@ -5,7 +5,7 @@
     <string name="search_hint">请输入电影/电视剧名称</string>
     <string name="lxw_label">乐享网</string>
     <string name="search">搜索</string>
-    <string name="url_hint">请输入网址</string>
+    <string name="url_hint">请输入网址或文字</string>
     <string name="go">Go</string>
     <string name="delete">删除</string>
     <string name="cancel">取消</string>

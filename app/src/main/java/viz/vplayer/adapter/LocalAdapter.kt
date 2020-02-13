@@ -45,9 +45,10 @@ class LocalAdapter : RecyclerView.Adapter<LocalAdapter.ViewHolder> {
                 numberProgressBar.max = 100
                 numberProgressBar.progress = progress
                 if (videoImgUrl.trim().isNotEmpty()) {
-                    glide.load(videoImgUrl)
-                        .override(60, 80)
-                        .into(imageView_local)
+//                    glide.load(videoImgUrl)
+//                        .override(60, 80)
+//                        .into(imageView_local)
+                    imageView_local.setImageURI(videoImgUrl)
                 }
             }
         }

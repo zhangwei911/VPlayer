@@ -7,6 +7,11 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import bolts.Task
+import com.facebook.drawee.backends.pipeline.Fresco
+import com.facebook.imagepipeline.core.ImagePipelineConfig
+import com.facebook.imagepipeline.decoder.ProgressiveJpegConfig
+import com.facebook.imagepipeline.decoder.SimpleProgressiveJpegConfig
 import com.shuyu.gsyvideoplayer.player.IjkPlayerManager
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.QbSdk.PreInitCallback
@@ -18,6 +23,7 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import viz.vplayer.dagger2.AppComponent
 import viz.vplayer.dagger2.DaggerAppComponent
 import viz.vplayer.room.AppDatabase
+import viz.vplayer.util.FileUtil.copyBigDataToSD
 
 class App : DaggerApplication(), Configuration.Provider {
     lateinit var db: AppDatabase
@@ -125,6 +131,30 @@ class App : DaggerApplication(), Configuration.Provider {
         //x5内核初始化接口
         QbSdk.initX5Environment(applicationContext, cb)
         com.baidu.mobstat.StatService.autoTrace(this)
+//        Task.callInBackground {
+//            l.start("copyAssetX5")
+//            copyBigDataToSD(this, FileUtil.getPath(this)+"/backup/x5.tbs.org", "x5/x5.tbs.org", "", "")
+//            l.end("copyAssetX5")
+//        }.continueWithEnd("复制内核")
+
+        val progressiveJpegConfig = SimpleProgressiveJpegConfig()
+        val config = ImagePipelineConfig.newBuilder(this)
+//            .setBitmapMemoryCacheParamsSupplier(bitmapCacheParamsSupplier)
+//            .setCacheKeyFactory(cacheKeyFactory)
+            .setDownsampleEnabled(true)
+//            .setWebpSupportEnabled(true)
+//            .setEncodedMemoryCacheParamsSupplier(encodedCacheParamsSupplier)
+//            .setExecutorSupplier(executorSupplier)
+//            .setImageCacheStatsTracker(imageCacheStatsTracker)
+//            .setMainDiskCacheConfig(mainDiskCacheConfig)
+//            .setMemoryTrimmableRegistry(memoryTrimmableRegistry)
+//            .setNetworkFetchProducer(networkFetchProducer)
+//            .setPoolFactory(poolFactory)
+            .setProgressiveJpegConfig(progressiveJpegConfig)
+//            .setRequestListeners(requestListeners)
+//            .setSmallImageDiskCacheConfig(smallImageDiskCacheConfig)
+            .build();
+        Fresco.initialize(this, config)
     }
 
     override fun getWorkManagerConfiguration(): Configuration =

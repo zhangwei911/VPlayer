@@ -10,6 +10,8 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.View.OnLongClickListener
 import android.widget.TextView
+import com.tencent.smtt.export.external.interfaces.IX5WebSettings
+import com.tencent.smtt.export.external.interfaces.WebResourceResponse
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.WebSettings
 import com.tencent.smtt.sdk.WebView
@@ -45,6 +47,15 @@ class X5WebView : WebView {
                 }
                 return true
             }
+
+//            override fun shouldInterceptRequest(webView: WebView, url: String): WebResourceResponse {
+//                //做广告拦截，ADFIlterTool 为广告拦截工具类
+//                return if (!ADFilterTool.hasAd(webView.context,url)){
+//                    super.shouldInterceptRequest(webView, url)
+//                }else {
+//                    WebResourceResponse(null,null,null)
+//                }
+//            }
 
             override fun onPageFinished(webView: WebView, url: String) {
                 addImageClickListner()
@@ -99,49 +110,49 @@ class X5WebView : WebView {
         webSetting.setSupportMultipleWindows(true)
         // webSetting.setLoadWithOverviewMode(true);
         webSetting.setAppCacheEnabled(true)
-        // webSetting.setDatabaseEnabled(true);
+         webSetting.setDatabaseEnabled(true);
         webSetting.domStorageEnabled = true
         webSetting.setGeolocationEnabled(true)
         webSetting.setAppCacheMaxSize(Long.MAX_VALUE)
-        // webSetting.setPageCacheCapacity(IX5WebSettings.DEFAULT_CACHE_CAPACITY);
+//         webSetting.setPageCacheCapacity(IX5WebSettings.DEFAULT_CACHE_CAPACITY);
         webSetting.pluginState = WebSettings.PluginState.ON_DEMAND
-        // webSetting.setRenderPriority(WebSettings.RenderPriority.HIGH);
+         webSetting.setRenderPriority(WebSettings.RenderPriority.HIGH);
         webSetting.cacheMode = WebSettings.LOAD_NO_CACHE
-        // this.getSettingsExtension().setPageCacheCapacity(IX5WebSettings.DEFAULT_CACHE_CAPACITY);//extension
+         settingsExtension?.setPageCacheCapacity(IX5WebSettings.DEFAULT_CACHE_CAPACITY);//extension
 // settings 的设计
     }
 
-    override fun drawChild(
-        canvas: Canvas,
-        child: View,
-        drawingTime: Long
-    ): Boolean {
-        val ret = super.drawChild(canvas, child, drawingTime)
-        canvas.save()
-        val paint = Paint()
-        paint.color = 0x7fff0000
-        paint.textSize = 24f
-        paint.isAntiAlias = true
-        if (x5WebViewExtension != null) {
-            canvas.drawText(
-                this.context.packageName + "-pid:"
-                        + Process.myPid(), 10f, 50f, paint
-            )
-            canvas.drawText(
-                "X5  Core:" + QbSdk.getTbsVersion(this.context), 10f, 100f, paint
-            )
-        } else {
-            canvas.drawText(
-                this.context.packageName + "-pid:"
-                        + Process.myPid(), 10f, 50f, paint
-            )
-            canvas.drawText("Sys Core", 10f, 100f, paint)
-        }
-        canvas.drawText(Build.MANUFACTURER, 10f, 150f, paint)
-        canvas.drawText(Build.MODEL, 10f, 200f, paint)
-        canvas.restore()
-        return ret
-    }
+//    override fun drawChild(
+//        canvas: Canvas,
+//        child: View,
+//        drawingTime: Long
+//    ): Boolean {
+//        val ret = super.drawChild(canvas, child, drawingTime)
+//        canvas.save()
+//        val paint = Paint()
+//        paint.color = 0x7fff0000
+//        paint.textSize = 24f
+//        paint.isAntiAlias = true
+//        if (x5WebViewExtension != null) {
+//            canvas.drawText(
+//                this.context.packageName + "-pid:"
+//                        + Process.myPid(), 10f, 50f, paint
+//            )
+//            canvas.drawText(
+//                "X5  Core:" + QbSdk.getTbsVersion(this.context), 10f, 100f, paint
+//            )
+//        } else {
+//            canvas.drawText(
+//                this.context.packageName + "-pid:"
+//                        + Process.myPid(), 10f, 50f, paint
+//            )
+//            canvas.drawText("Sys Core", 10f, 100f, paint)
+//        }
+//        canvas.drawText(Build.MANUFACTURER, 10f, 150f, paint)
+//        canvas.drawText(Build.MODEL, 10f, 200f, paint)
+//        canvas.restore()
+//        return ret
+//    }
 
     constructor(arg0: Context?) : super(arg0) {
         setBackgroundColor(85621)
