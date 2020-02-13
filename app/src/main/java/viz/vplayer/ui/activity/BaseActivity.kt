@@ -79,6 +79,44 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
             getCommonBack()
         }
         setCommonTitle(getCommonTtile())
+        hasNotchInScreen(this)
+        l.d(getNotchSize(this).toString())
+    }
+
+    private fun hasNotchInScreen(context: Context): Boolean {
+        var ret = false
+        try {
+            val cl = context.classLoader
+            val HwNotchSizeUtil = cl.loadClass("com.huawei.android.util.HwNotchSizeUtil")
+            val get = HwNotchSizeUtil.getMethod("hasNotchInScreen")
+            ret = get.invoke(HwNotchSizeUtil) as Boolean
+        } catch (e: ClassNotFoundException) {
+            l.e("hasNotchInScreen ClassNotFoundException");
+        } catch (e: NoSuchMethodException) {
+            l.e("hasNotchInScreen NoSuchMethodException");
+        } catch (e: Exception) {
+            l.e("hasNotchInScreen Exception")
+        } finally {
+            return ret
+        }
+    }
+
+    private fun getNotchSize(context: Context): Array<Int> {
+        var ret = arrayOf(0, 0)
+        try {
+            val cl = context.getClassLoader()
+            val HwNotchSizeUtil = cl.loadClass("com.huawei.android.util.HwNotchSizeUtil")
+            val get = HwNotchSizeUtil.getMethod("getNotchSize")
+            ret = get.invoke(HwNotchSizeUtil) as Array<Int>
+        } catch (e: ClassNotFoundException) {
+            l.e("getNotchSize ClassNotFoundException");
+        } catch (e: NoSuchMethodException) {
+            l.e("getNotchSize NoSuchMethodException");
+        } catch (e: Exception) {
+            l.e("getNotchSize Exception")
+        } finally {
+            return ret
+        }
     }
 
     private fun makeStatusBarTransparent(activity: Activity) {

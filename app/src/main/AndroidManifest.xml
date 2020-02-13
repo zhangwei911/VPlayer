@@ -24,6 +24,10 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <meta-data android:name="android.notch_support" android:value="true"/>
+        <meta-data
+            android:name="android.max_aspect"
+            android:value="2.4" />
         <!-- 您从百度网站获取的APP KEY，根据实际您的APP申请的APP_KEY进行修改 -->
         <meta-data
             android:name="BaiduMobAd_STAT_ID"
@@ -80,6 +84,8 @@
             </intent-filter>
         </activity>
         <activity
+            android:maxAspectRatio="2.4"
+            android:resizeableActivity="true"
             android:name=".ui.activity.VideoPlayerActivity"
             android:screenOrientation="sensorLandscape"
             tools:ignore="LockedOrientationActivity" />
