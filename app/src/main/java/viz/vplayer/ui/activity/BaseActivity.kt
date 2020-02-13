@@ -11,10 +11,9 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.*
-import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
 import com.shuyu.gsyvideoplayer.utils.CommonUtil
 import com.viz.tools.Toast
 import com.viz.tools.l
@@ -75,7 +74,7 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
                 )
             }
         }
-        findViewById<ImageButton>(R.id.imageButton_back)?.setOnClickListener {
+        findViewById<ImageView>(R.id.imageButton_back)?.setOnClickListener {
             getCommonBack()
         }
         setCommonTitle(getCommonTtile())
