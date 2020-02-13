@@ -524,7 +524,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 R.id.editText_search,
                 ConstraintSet.BOTTOM,
                 R.id.imageView_video,
-                ConstraintSet.BOTTOM
+                ConstraintSet.TOP
             )
         }
         set.applyTo(constraintLayout_home)
