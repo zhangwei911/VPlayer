@@ -1,7 +1,6 @@
 package viz.vplayer.ui.activity
 
 import android.Manifest
-import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -55,7 +54,9 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
             ViewGroup.LayoutParams.MATCH_PARENT
         )
         val view = LayoutInflater.from(this).inflate(getContentViewId(), null, false)
-        view.setPadding(0, CommonUtil.getStatusBarHeight(this), 0, 0)
+        if (isSetPaddingTop()) {
+            view.setPadding(0, CommonUtil.getStatusBarHeight(this), 0, 0)
+        }
         setContentView(view, vlp)
         if (isNoTitle()) {
             supportActionBar?.hide()
@@ -128,6 +129,7 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
         findViewById<TextView>(R.id.textView_title)?.text = title
     }
 
+    protected open fun isSetPaddingTop(): Boolean = false
     protected open fun isFullScreen(): Boolean = false
     protected open fun isNoTitle(): Boolean = true
 

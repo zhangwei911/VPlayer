@@ -27,6 +27,7 @@ import javax.inject.Inject
 class RuleListActivity : BaseActivity() {
     @Inject
     lateinit var mo: MyObserver
+    override fun isSetPaddingTop(): Boolean = true
     override fun getContentViewId(): Int =
         R.layout.activity_rule_list
     override fun getCommonTtile(): String = getString(R.string.list)

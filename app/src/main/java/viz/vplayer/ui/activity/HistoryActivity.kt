@@ -30,6 +30,7 @@ import javax.inject.Inject
 class HistoryActivity : BaseActivity() {
     @Inject
     lateinit var mo: MyObserver
+    override fun isSetPaddingTop(): Boolean = true
     private val mainVM: MainVM by lazy {
         ViewModelProvider(this).get(MainVM::class.java)
     }

@@ -33,6 +33,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
 
     override fun getContentViewId(): Int = R.layout.activity_main
     override fun useEventBus(): Boolean = true
+    override fun isSetPaddingTop(): Boolean = true
 
     override fun getPermissions(): Array<String> = arrayOf(
         WRITE_EXTERNAL_STORAGE,

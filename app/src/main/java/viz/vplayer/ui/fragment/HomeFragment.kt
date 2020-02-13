@@ -501,6 +501,27 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         } else {
             set.connect(
                 R.id.editText_search,
+                ConstraintSet.START,
+                R.id.constraintLayout_home,
+                ConstraintSet.START,
+                ScreenUtils.dpToPx(context!!, 48f).toInt()
+            )
+            set.connect(
+                R.id.editText_search,
+                ConstraintSet.END,
+                R.id.constraintLayout_home,
+                ConstraintSet.END,
+                ScreenUtils.dpToPx(context!!, 48f).toInt()
+            )
+            set.connect(
+                R.id.editText_search,
+                ConstraintSet.TOP,
+                R.id.imageView_logo,
+                ConstraintSet.BOTTOM,
+                ScreenUtils.dpToPx(context!!, 48f).toInt()
+            )
+            set.connect(
+                R.id.editText_search,
                 ConstraintSet.BOTTOM,
                 R.id.imageView_video,
                 ConstraintSet.BOTTOM

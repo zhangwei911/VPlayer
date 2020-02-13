@@ -14,7 +14,6 @@
         android:layout_width="0dp"
         android:layout_height="40dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="80dp"
         android:layout_marginEnd="32dp"
         android:autofillHints="@string/search_hint"
         android:background="@drawable/search_bg"
@@ -31,7 +30,7 @@
         android:textColorHint="#cccccc"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/include_top_web" />
 
     <TextView
         android:id="@+id/materialButton_url"
