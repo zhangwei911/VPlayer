@@ -38,7 +38,7 @@
         android:id="@+id/imageButton_float"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="60dp"
         android:background="@drawable/button_float_style"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

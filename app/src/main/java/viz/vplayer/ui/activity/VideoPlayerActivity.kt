@@ -127,7 +127,7 @@ class VideoPlayerActivity : BaseActivity() {
         title = intent.getStringExtra("title") ?: ""
         img = intent.getStringExtra("img") ?: ""
         searchUrl = intent.getStringExtra("searchUrl") ?: ""
-        duration = intent.getLongExtra("duration", 0)
+        duration = intent.getIntExtra("duration", 0).toLong()
         episodes = intent.getSerializableExtra("episodes") as MutableList<String>
         html = intent.getParcelableExtra("html")
         gsyVideoPLayer.selectEpisodes = {
@@ -246,7 +246,7 @@ class VideoPlayerActivity : BaseActivity() {
         imageButton_float.setOnClickListener {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (!Settings.canDrawOverlays(this)) {
-                    MaterialDialog(applicationContext).show {
+                    MaterialDialog(this@VideoPlayerActivity).show {
                         title(R.string.float_play)
                         message(
                             text = getString(R.string.float_tips)
