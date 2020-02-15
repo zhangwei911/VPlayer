@@ -32,4 +32,6 @@
     <string name="cache">缓存</string>
     <string name="parse">解析</string>
     <string name="back">back</string>
+    <string name="info">详情</string>
+    <string name="copy">复制地址</string>
 </resources>

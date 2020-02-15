@@ -1,7 +1,10 @@
 package viz.commonlib.download
 
+import bolts.Task
 import com.viz.tools.l
 import org.apache.commons.lang3.concurrent.BasicThreadFactory
+import viz.vplayer.util.App
+import viz.vplayer.util.continueWithEnd
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -56,33 +59,42 @@ object SpiltAndMerge {
     }
 
     @Throws(IOException::class)
-    suspend fun merge(from: String?, to: String?) {
-        val t = File(to)
-        var `in`: FileInputStream? = null
-        var inChannel: FileChannel? = null
-        val out = FileOutputStream(t, true)
-        val outChannel = out.channel
-        val f = File(from)
-        // 获取目录下的每一个文件名，再将每个文件一次写入目标文件
-        if (f.isDirectory) {
-            val files = f.listFiles().filter { it.isFile && it.extension == "ts" }
-            // 记录新文件最后一个数据的位置
-            var start: Long = 0
-            l.d("文件数:${files.size}")
-            l.start("mergeAll")
-            for (file in files) {
-                `in` = FileInputStream(file)
-                inChannel = `in`.channel
-                // 从inChannel中读取file.length()长度的数据，写入outChannel的start处
-                outChannel.transferFrom(inChannel, start, file.length())
-                start += file.length()
-                `in`.close()
-                inChannel.close()
+    suspend fun merge(from: String?, to: String?, id: Int) {
+        Task.callInBackground {
+            val t = File(to)
+            var `in`: FileInputStream? = null
+            var inChannel: FileChannel? = null
+            val out = FileOutputStream(t, true)
+            val outChannel = out.channel
+            val f = File(from)
+            // 获取目录下的每一个文件名，再将每个文件一次写入目标文件
+            if (f.isDirectory) {
+                val tsList = App.instance.db.tsDao().getAllByM3U8Id(id)
+                tsList.sortBy { it.index }
+                // 记录新文件最后一个数据的位置
+                var start: Long = 0
+                l.d("文件数:${tsList.size}")
+                l.start("mergeAll")
+                var mergeCount = 0
+                tsList.forEachIndexed { index, ts ->
+                    val file = File(ts.path)
+                    if(file.exists()) {
+                        `in` = FileInputStream(File(ts.path))
+                        inChannel = `in`!!.channel
+                        // 从inChannel中读取file.length()长度的数据，写入outChannel的start处
+                        outChannel.transferFrom(inChannel, start, file.length())
+                        start += file.length()
+                        `in`?.close()
+                        inChannel?.close()
+                        mergeCount++
+                    }
+                }
+                l.d("合成数量:$mergeCount")
+                l.end("mergeAll")
             }
-            l.end("mergeAll")
-        }
-        out.close()
-        outChannel.close()
+            out.close()
+            outChannel.close()
+        }.continueWithEnd("merge")
     }
 
     private var finishCount = 0

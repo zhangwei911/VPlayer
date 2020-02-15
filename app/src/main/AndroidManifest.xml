@@ -69,6 +69,7 @@
             android:required="false" />
 
         <activity android:name=".ui.activity.MainActivity"
+            android:screenOrientation="sensorPortrait"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -90,6 +91,7 @@
             android:screenOrientation="sensorLandscape"
             tools:ignore="LockedOrientationActivity" />
         <activity android:name=".ui.activity.WebActivity"
+            android:screenOrientation="sensorPortrait"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="stateHidden|adjustResize"
             android:configChanges="orientation|screenSize|keyboardHidden"/>
@@ -104,7 +106,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.activity.HistoryActivity" />
+        <activity android:name=".ui.activity.HistoryActivity"
+            android:screenOrientation="sensorPortrait" />
         <activity android:name=".video.FloatActivity" />
         <provider
             android:name="androidx.work.impl.WorkManagerInitializer"

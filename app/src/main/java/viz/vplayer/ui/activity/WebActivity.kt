@@ -1,36 +1,49 @@
 package viz.vplayer.ui.activity
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.PixelFormat
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.webkit.JavascriptInterface
 import androidx.activity.addCallback
+import androidx.core.content.edit
+import bolts.Task
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.list.listItems
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_web.*
 import okhttp3.ResponseBody
-import org.json.JSONObject
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+import org.json.JSONArray
+import viz.commonlib.event.X5Event
 import viz.commonlib.http.VCallback
 import viz.commonlib.util.MyObserver
 import viz.vplayer.R
 import viz.vplayer.dagger2.MyObserverModule
 import viz.vplayer.http.HttpApi
-import viz.vplayer.util.WebViewJavaScriptFunction
-import viz.vplayer.util.getStringExtra
-import java.net.URL
+import viz.vplayer.util.*
+import java.nio.charset.Charset
+import java.nio.charset.UnsupportedCharsetException
 import javax.inject.Inject
 
 
 class WebActivity : BaseActivity(), View.OnClickListener {
     @Inject
     lateinit var mo: MyObserver
+
     override fun getContentViewId(): Int = R.layout.activity_web
     override fun getCommonTtile(): String = "网页"
     override fun useEventBus(): Boolean = true
     override fun isSetPaddingTop(): Boolean = true
+
+    private val parseUrlList = mutableListOf<String>()
+    private var parseUrl = ""
 
     override fun getPermissions(): Array<String> = arrayOf(
         Manifest.permission.GET_TASKS,
@@ -49,6 +62,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
             .create(this)
             .inject(this)
         initViews()
+        getParseUrl()
         val url = intent.getStringExtra("url", "")
         if (url.isNotEmpty()) {
             webView.loadUrl(url)
@@ -67,7 +81,70 @@ class WebActivity : BaseActivity(), View.OnClickListener {
     private fun initViews() {
         materialButton_url.setOnClickListener(this)
         materialButton_url_parse.setOnClickListener(this)
+        materialButton_url_parse.setOnLongClickListener {
+            MaterialDialog(this@WebActivity).show {
+                listItems(items = parseUrlList) { dialog, index, text ->
+                    parseUrl = text.toString()
+                    val sp = getSharedPreferences(WEB_SP, Context.MODE_PRIVATE)
+                    sp.edit(commit = true) {
+                        putString(PARSE_URL_SP, parseUrl)
+                    }
+                }
+            }
+            return@setOnLongClickListener true
+        }
         initWebView()
+    }
+
+    private fun getParseUrl() {
+        Task.callInBackground {
+            try {
+                HttpApi.createHttp().anyUrl(DEFAULT_PARSE_URL)
+                    .enqueue(VCallback<ResponseBody>(onResult = { call, response, result ->
+                        var rBody: String? = null
+                        val responseBody = response.body()
+                        val UTF8 = Charset.forName("UTF-8")
+                        if (responseBody != null) {
+                            val source = responseBody!!.source()
+                            source.request(java.lang.Long.MAX_VALUE) // Buffer the entire body.
+                            val buffer = source.buffer()
+
+                            var charset = UTF8
+                            val contentType = responseBody.contentType()
+                            if (contentType != null) {
+                                try {
+                                    charset = contentType.charset(UTF8)
+                                } catch (e: UnsupportedCharsetException) {
+                                    e.printStackTrace()
+                                }
+
+                            }
+                            rBody = buffer.clone().readString(charset)
+                        } else {
+                            Toast.show("获取parseUrl数据为空")
+                            return@VCallback
+                        }
+                        if (rBody.isJson()) {
+                            val jsonArr = JSONArray(rBody)
+                            parseUrlList.clear()
+                            val sp = getSharedPreferences(WEB_SP, Context.MODE_PRIVATE)
+                            parseUrl = sp.getString(PARSE_URL_SP, "") ?: ""
+                            for (index in 0 until jsonArr.length()) {
+                                parseUrlList.add(jsonArr[index].toString())
+                            }
+                            if (!parseUrlList.contains(parseUrl)) {
+                                parseUrl = parseUrlList[0]
+                            }
+                        } else {
+                            Toast.show("解析parseUrl数据异常")
+                        }
+                    }, onError = { errorEntity, call, t, response ->
+                        Toast.show("解析parseUrl(${errorEntity.error}-${errorEntity.message})")
+                    }))
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }.continueWithEnd("抓取网页")
     }
 
     private fun initWebView() {
@@ -77,6 +154,18 @@ class WebActivity : BaseActivity(), View.OnClickListener {
         }
         webView.onPageFinished = { url ->
             setWebInfo(url)
+            try {
+                val videoManagerClass =
+                    Class.forName("com.tencent.mtt.video.internal.engine.VideoManager")
+                val videoManagerNewInstance = videoManagerClass.newInstance()
+                val ins = videoManagerClass.getMethod("getInstance")
+                val videoManagerInstance = ins.invoke(videoManagerNewInstance)
+                val urlMethod = videoManagerClass.getMethod("getCurrentVideoUrl")
+                val currentUrl = urlMethod.invoke(videoManagerInstance) ?: "null"
+                l.d(currentUrl.toString())
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
 //            webView.loadUrl(
 //                "javascript:var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';" +
 //                        "var api = html.match('\\.post\\\\(\"(.*)\", \\{')[1];" +
@@ -226,11 +315,14 @@ class WebActivity : BaseActivity(), View.OnClickListener {
                 }
             }
             R.id.materialButton_url_parse -> {
-                val parseUrl = "https://vip.yingxiangbao.cn/mingri/vip.php?url="
-                if (webView.url.startsWith(parseUrl)) {
+                if (parseUrl.isEmpty()) {
+                    Toast.show("解析地址为空,无法解析")
+                }
+                val finalUrl = String.format(parseUrl, webView.url)
+                if (Uri.parse(webView.url).host == Uri.parse(finalUrl).host) {
                     webView.loadUrl(webView.url)
                 } else {
-                    webView.loadUrl("$parseUrl${webView.url}")
+                    webView.loadUrl(finalUrl)
                 }
             }
         }
@@ -314,4 +406,10 @@ class WebActivity : BaseActivity(), View.OnClickListener {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun x5Event(x5Event: X5Event) {
+        if (x5Event.intent != null) {
+            l.i(intent.toString())
+        }
+    }
 }

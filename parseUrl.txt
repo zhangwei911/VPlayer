@@ -1,0 +1,4 @@
+[
+    "https://vip.yingxiangbao.cn/mingri/vip.php?url=%s",
+    "https://jx.yingxiangbao.cn/vip.php?url=%s"
+]

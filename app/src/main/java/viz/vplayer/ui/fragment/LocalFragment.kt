@@ -30,6 +30,7 @@ import viz.vplayer.room.NotificationId
 import viz.vplayer.ui.activity.VideoPlayerActivity
 import viz.vplayer.util.*
 import viz.vplayer.vm.MainVM
+import java.io.File
 import java.io.Serializable
 
 class LocalFragment : BaseFragment() {
@@ -186,6 +187,17 @@ class LocalFragment : BaseFragment() {
                                                             }.continueWithEnd("删除下载记录")
                                                             localAdapter?.list?.removeAt(position)
                                                             localAdapter?.notifyItemRemoved(position)
+                                                            Task.callInBackground {
+                                                                val ft =
+                                                                    UrlUtil.generatLocalFileNameAndPath(
+                                                                        context,
+                                                                        videoUrl,
+                                                                        true
+                                                                    )
+                                                                val fileName = ft.first
+                                                                val target = ft.second
+                                                                File(target)?.parentFile?.deleteRecursively()
+                                                            }.continueWithEnd("删除源文件")
                                                         })
                                                     negativeButton(R.string.cancel)
                                                 }

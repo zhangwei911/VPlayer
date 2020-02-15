@@ -387,8 +387,8 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
 
     private fun test() {
         if (BuildConfig.DEBUG) {
-            editText_search.setText("爱情公寓5")
-            updateWebSelect(6)
+            editText_search.setText("寄生虫")
+            updateWebSelect(2)
 //            materialButton_search.performClick()
         }
     }

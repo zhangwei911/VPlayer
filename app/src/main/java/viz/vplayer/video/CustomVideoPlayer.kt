@@ -5,9 +5,12 @@ import android.graphics.Point
 import android.util.AttributeSet
 import android.view.*
 import android.view.GestureDetector.SimpleOnGestureListener
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import android.widget.SeekBar
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.afollestad.materialdialogs.MaterialDialog
 import com.shuyu.gsyvideoplayer.utils.CommonUtil
 import com.shuyu.gsyvideoplayer.utils.Debuger
 import com.shuyu.gsyvideoplayer.utils.GSYVideoType
@@ -15,6 +18,7 @@ import com.shuyu.gsyvideoplayer.video.StandardGSYVideoPlayer
 import com.shuyu.gsyvideoplayer.video.base.GSYBaseVideoPlayer
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoView
 import com.viz.tools.Toast
+import com.viz.tools.apk.ScreenUtils
 import kotlinx.android.synthetic.main.video_custom.view.*
 import viz.vplayer.R
 import viz.vplayer.adapter.SelectEpisodesAdapter
@@ -36,6 +40,7 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         }
     var episodesClick: ((recyclerView: RecyclerView, adapter: RecyclerView.Adapter<*>) -> Unit)? =
         null
+    var infoFunc: (() -> Unit)? = null
     private var videoList = mutableListOf<EpisodeListBean>()
     private var selectEpisodesAdapter: SelectEpisodesAdapter? = null
     private var speedIndex = 2
@@ -75,6 +80,9 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
                     }
                 }
             }
+        }
+        textView_info.setOnClickListener {
+            infoFunc?.invoke()
         }
         val speedArr = mutableListOf(0.1f, 0.5f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f, 32.0f)
         textView_speed_play.text = "${speedArr[2]}x"
@@ -220,6 +228,7 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
                     visibility
                 }
         }
+        setViewShowState(textView_info, visibility)
         setViewShowState(textView_speed, visibility)
         customVisibility?.invoke(visibility)
         byStartedClick = true
@@ -234,11 +243,13 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         super.hideAllWidget()
         setViewShowState(textView_select_episodes, View.GONE)
         setViewShowState(textView_speed, View.GONE)
+        setViewShowState(textView_info, View.GONE)
         customVisibility?.invoke(View.GONE)
         if (currentState == GSYVideoView.CURRENT_STATE_PREPAREING || currentState == GSYVideoView.CURRENT_STATE_ERROR) {
             setViewShowState(mTopContainer, View.VISIBLE)
             setViewShowState(textView_select_episodes, View.VISIBLE)
             setViewShowState(textView_speed, View.VISIBLE)
+            setViewShowState(textView_info, View.VISIBLE)
         }
         if (recyclerView_select_episodes.visibility == View.VISIBLE) {
             setViewShowState(textView_select_episodes, View.VISIBLE)
@@ -249,6 +260,7 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         super.changeUiToNormal()
         setViewShowState(textView_select_episodes, View.VISIBLE)
         setViewShowState(textView_speed, View.VISIBLE)
+        setViewShowState(textView_info, View.VISIBLE)
         customVisibility?.invoke(View.VISIBLE)
         byStartedClick = false
     }
@@ -259,12 +271,14 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         setViewShowState(mBottomContainer, View.INVISIBLE)
         setViewShowState(mStartButton, View.INVISIBLE)
         setViewShowState(textView_speed, View.VISIBLE)
+        setViewShowState(textView_info, View.VISIBLE)
     }
 
     override fun changeUiToPlayingBufferingShow() {
         super.changeUiToPlayingBufferingShow()
         Debuger.printfLog("Sample changeUiToPlayingBufferingShow")
         setViewShowState(textView_speed, View.VISIBLE)
+        setViewShowState(textView_info, View.VISIBLE)
         if (!byStartedClick) {
             setViewShowState(mBottomContainer, View.INVISIBLE)
             setViewShowState(mStartButton, View.INVISIBLE)
@@ -284,6 +298,7 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         setViewShowState(mTopContainer, View.VISIBLE)
         setViewShowState(textView_select_episodes, View.VISIBLE)
         setViewShowState(textView_speed, View.VISIBLE)
+        setViewShowState(textView_info, View.VISIBLE)
         super.onPrepared()
     }
 
@@ -330,6 +345,7 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         setViewShowState(mStartButton, View.INVISIBLE)
         setViewShowState(mBottomProgressBar, View.VISIBLE)
         setViewShowState(textView_speed, View.VISIBLE)
+        setViewShowState(textView_info, View.VISIBLE)
     }
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -351,5 +367,28 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
     override fun onAutoCompletion() {
         super.onAutoCompletion()
         onAutoCompletion?.invoke(recyclerView_select_episodes)
+    }
+
+    fun setLeftMargin(left: Int) {
+        val lpTop = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            ScreenUtils.dpToPx(context, 40f).toInt()
+        )
+        lpTop.leftMargin = left
+        val lpBottom = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            ScreenUtils.dpToPx(context, 40f).toInt()
+        )
+        lpBottom.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+        lpBottom.leftMargin = left
+        mBottomContainer.layoutParams = lpBottom
+        mTopContainer.layoutParams = lpTop
+        val lpPVG = RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            ScreenUtils.dpToPx(context, 1.5f).toInt()
+        )
+        lpPVG.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+        lpPVG.leftMargin = left
+        mBottomProgressBar.layoutParams = lpPVG
     }
 }

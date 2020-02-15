@@ -1,5 +1,8 @@
 package viz.vplayer.ui.activity
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -159,6 +162,42 @@ class VideoPlayerActivity : BaseActivity() {
         //全屏
         GSYVideoType.setShowType(GSYVideoType.SCREEN_MATCH_FULL)
         gsyVideoPLayer.run {
+            getSharedPreferences(COMMON_INFO_SP, Context.MODE_PRIVATE).getInt(STATUS_BAR_HEIGHT, 0)
+                ?.apply {
+                    if (this > 0) {
+                        setLeftMargin(this)
+                    }
+                }
+            infoFunc = {
+                MaterialDialog(this@VideoPlayerActivity).show {
+                    title(R.string.history_detail)
+                    message(
+                        text = String.format(
+                            "名称\n%s\n视频地址\n%s",
+                            title,
+                            getOriginalUrl()
+                        )
+                    )
+                    negativeButton(R.string.copy, click = {
+                        //获取剪贴板管理器：
+                        val cm =
+                            this@VideoPlayerActivity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        // 创建普通字符型ClipData
+                        val mClipData = ClipData.newPlainText(
+                            "Label",
+                            String.format(
+                                "%s",
+                                getOriginalUrl()
+                            )
+                        )
+                        // 将ClipData内容放到系统剪贴板里。
+                        cm?.setPrimaryClip(mClipData?:return@negativeButton)
+                        Toast.show("已复制到剪贴板")
+                    })
+                    positiveButton(R.string.close)
+                    lifecycleOwner(this@VideoPlayerActivity)
+                }
+            }
             titleTextView.visibility = View.VISIBLE
             setIsTouchWiget(true)
             isIfCurrentIsFullscreen = true

@@ -1,6 +1,7 @@
 package viz.vplayer.ui.activity
 
 import android.Manifest.permission.*
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.navigation.findNavController
@@ -35,17 +36,30 @@ class MainActivity : BaseActivity(), View.OnClickListener {
     override fun useEventBus(): Boolean = true
     override fun isSetPaddingTop(): Boolean = true
 
-    override fun getPermissions(): Array<String> = arrayOf(
-        WRITE_EXTERNAL_STORAGE,
-        ACCESS_NETWORK_STATE,
-        ACCESS_WIFI_STATE,
-        READ_PHONE_STATE,
-        GET_TASKS,
-        ACCESS_COARSE_LOCATION,
-        ACCESS_FINE_LOCATION,
-        ACCESS_LOCATION_EXTRA_COMMANDS,
-        ACCESS_MEDIA_LOCATION
-    )
+    override fun getPermissions(): Array<String> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        arrayOf(
+            WRITE_EXTERNAL_STORAGE,
+            ACCESS_NETWORK_STATE,
+            ACCESS_WIFI_STATE,
+            READ_PHONE_STATE,
+            GET_TASKS,
+            ACCESS_COARSE_LOCATION,
+            ACCESS_FINE_LOCATION,
+            ACCESS_LOCATION_EXTRA_COMMANDS,
+            ACCESS_MEDIA_LOCATION
+        )
+    } else {
+        arrayOf(
+            WRITE_EXTERNAL_STORAGE,
+            ACCESS_NETWORK_STATE,
+            ACCESS_WIFI_STATE,
+            READ_PHONE_STATE,
+            GET_TASKS,
+            ACCESS_COARSE_LOCATION,
+            ACCESS_FINE_LOCATION,
+            ACCESS_LOCATION_EXTRA_COMMANDS
+        )
+    }
 
     override fun getPermissionsTips(): String = "需要存储,网络,手机信息,悬浮窗,位置等权限"
 

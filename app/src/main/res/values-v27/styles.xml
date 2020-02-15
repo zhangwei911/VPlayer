@@ -6,8 +6,8 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="md_color_button_text">@color/colorPrimary</item>
-<!--        <item name="android:windowLayoutInDisplayCutoutMode">-->
-<!--            shortEdges &lt;!&ndash; default, shortEdges, never &ndash;&gt;-->
-<!--        </item>-->
+        <item name="android:windowLayoutInDisplayCutoutMode">
+            shortEdges <!-- default, shortEdges, never -->
+        </item>
     </style>
 </resources>

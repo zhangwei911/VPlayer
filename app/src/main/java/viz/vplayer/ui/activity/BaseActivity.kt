@@ -13,6 +13,7 @@ import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import com.shuyu.gsyvideoplayer.utils.CommonUtil
 import com.viz.tools.Toast
 import com.viz.tools.l
@@ -23,6 +24,8 @@ import pub.devrel.easypermissions.PermissionRequest
 import viz.commonlib.util.StatusBarUtil
 import viz.vplayer.R
 import viz.vplayer.util.App
+import viz.vplayer.util.COMMON_INFO_SP
+import viz.vplayer.util.STATUS_BAR_HEIGHT
 import java.io.File
 
 
@@ -54,8 +57,12 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
             ViewGroup.LayoutParams.MATCH_PARENT
         )
         val view = LayoutInflater.from(this).inflate(getContentViewId(), null, false)
+        val statusBarHeight = CommonUtil.getStatusBarHeight(this)
+        getSharedPreferences(COMMON_INFO_SP, Context.MODE_PRIVATE).edit(commit = true) {
+            putInt(STATUS_BAR_HEIGHT, statusBarHeight)
+        }
         if (isSetPaddingTop()) {
-            view.setPadding(0, CommonUtil.getStatusBarHeight(this), 0, 0)
+            view.setPadding(0, statusBarHeight, 0, 0)
         }
         setContentView(view, vlp)
         if (isNoTitle()) {

@@ -26,7 +26,6 @@ import java.io.File
 import java.math.BigDecimal
 import java.nio.charset.Charset
 import java.nio.charset.UnsupportedCharsetException
-import java.util.*
 
 
 class VDownloader {
@@ -87,7 +86,8 @@ class VDownloader {
             taskList[task.url] = percent1
             Task.callInBackground {
                 var ts = App.instance.db.tsDao().getByUrl(task.url)
-                if (ts == null) {
+                val isInsert = ts == null
+                if (isInsert) {
                     ts = TS()
                     ts.url = task.url
                     ts.index = task.getTag(INDEX_TAG) as Int
@@ -96,7 +96,11 @@ class VDownloader {
                 ts.path = task.file!!.absolutePath
                 ts.progress = 100
                 ts.status = 2
-                App.instance.db.tsDao().updateAll(ts)
+                if(isInsert){
+                    App.instance.db.tsDao().insertAll(ts)
+                }else {
+                    App.instance.db.tsDao().updateAll(ts)
+                }
             }.continueWithEnd("任务[${task.url}]完成", isTaskLog)
             if (System.currentTimeMillis() - lastSendTime > 1000) {
                 lastSendTime = System.currentTimeMillis()
@@ -138,7 +142,8 @@ class VDownloader {
                     //直接合并速度最快
                     SpiltAndMerge.merge(
                         getParentFile().absolutePath,
-                        filePath
+                        filePath,
+                        m3u8.id
                     )
 //                    SpiltAndMerge.mergePM(
 //                        getParentFile().absolutePath,
@@ -363,6 +368,7 @@ class VDownloader {
             }
                 .commit()
             var downloadCount = 0
+            val tsAddList = arrayOf<TS>()
             urls.forEachIndexed { index, url ->
                 val tsExist = tsMapList[url]
                 if (tsList.isEmpty() || tsExist == null) {

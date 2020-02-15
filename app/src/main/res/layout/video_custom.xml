@@ -124,6 +124,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:background="@drawable/video_title_bg"
+        android:layout_toStartOf="@id/textView_select_episodes"
         android:gravity="center_vertical">
 
         <ImageView
@@ -136,7 +137,9 @@
 
         <TextView
             android:id="@+id/title"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:ellipsize="marquee"
             android:layout_height="wrap_content"
             android:fontFamily="monospace"
             android:paddingLeft="10dp"
@@ -186,7 +189,7 @@
         android:id="@+id/textView_select_episodes"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
-        android:layout_alignParentEnd="true"
+        android:layout_toStartOf="@id/textView_info"
         android:clickable="true"
         android:focusable="true"
         android:fontFamily="monospace"
@@ -194,6 +197,21 @@
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
         android:text="@string/select_episodes"
+        android:textAlignment="center"
+        android:textColor="@android:color/white" />
+
+    <TextView
+        android:id="@+id/textView_info"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:text="@string/info"
         android:textAlignment="center"
         android:textColor="@android:color/white" />
 
@@ -212,7 +230,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/layout_bottom"
-        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginStart="8dp"
         android:layout_marginBottom="8dp"
         android:fontFamily="monospace"
