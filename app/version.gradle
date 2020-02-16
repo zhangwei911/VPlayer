@@ -38,17 +38,9 @@ def setVersionCN(versionMap, versionCodeMap, versionNameMap, apkMap, String name
     versionNameMap.put(name, vname)
 }
 
-def addPF(apkMap,name,pf){
-    if (apkMap.get(name)) {
-        pf
-    } else {
-        printMSG(name)
-    }
-}
-
 ext.customVersion = {
     android.productFlavors {
-        addPF(apkMap,"VI",VI{})
+        VI {}
     }
     android.productFlavors.all {
         flavor ->
@@ -63,6 +55,23 @@ ext.customVersion = {
 //    def pf = project.extensions.getByName("android")["productFlavors"]
 //    def mapProperties = pf.getProperties()
 //    println(mapProperties)
+
+    android.variantFilter { variant ->
+        def names = variant.flavors*.name
+        apkMap.each { entry ->
+            if (!entry.value) {
+                if (names.contains(entry.key)) {
+                    println(entry.key)
+                    setIgnore(true)
+                }
+            }
+        }
+    }
+    android.buildTypes{
+        release{
+            crunchPngs false
+        }
+    }
 }
 
 ext.printMSG = { msg ->
