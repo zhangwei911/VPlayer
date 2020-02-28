@@ -113,6 +113,14 @@
             android:name="androidx.work.impl.WorkManagerInitializer"
             android:authorities="${applicationId}.workmanager-init"
             tools:node="remove" />
+
+        <service
+            android:name="viz.commonlib.huawei.push.VHmsMessageService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.huawei.push.action.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

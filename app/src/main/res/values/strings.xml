@@ -34,4 +34,7 @@
     <string name="back">back</string>
     <string name="info">详情</string>
     <string name="copy">复制地址</string>
+    <string name="re_login">登录失败,请重新登录</string>
+    <string name="data_err">数据异常</string>
+    <string name="logout_success">退出成功</string>
 </resources>

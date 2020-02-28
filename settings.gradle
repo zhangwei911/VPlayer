@@ -1,3 +1,4 @@
+include ':android-jwt'
 include ':app'
 include ':xutil_http',':LoadingDrawable'
 rootProject.name = "VPlayer"

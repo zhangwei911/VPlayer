@@ -1,12 +1,19 @@
 package viz.vplayer.ui.activity
 
 import android.Manifest.permission.*
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.View
 import androidx.navigation.findNavController
 import androidx.navigation.get
 import androidx.navigation.ui.NavigationUI
+import com.huawei.hms.aaid.HmsInstanceId
+import com.huawei.hms.analytics.HiAnalytics
+import com.huawei.hms.analytics.HiAnalyticsTools
+import com.huawei.hms.common.ApiException
+import com.huawei.hms.support.hwid.HuaweiIdAuthManager
 import com.viz.tools.Toast
 import com.viz.tools.apk.NetWorkUtils.*
 import com.viz.tools.l
@@ -16,6 +23,10 @@ import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import viz.commonlib.event.SignEvent
+import viz.commonlib.huawei.account.ICallBack
+import viz.commonlib.huawei.account.IDTokenParser
+import viz.commonlib.huawei.account.LoginUtil
 import viz.commonlib.util.MyObserver
 import viz.vplayer.BuildConfig
 import viz.vplayer.R
@@ -23,6 +34,7 @@ import viz.vplayer.dagger2.MyObserverModule
 import viz.vplayer.eventbus.CommonInfoEvent
 import viz.vplayer.eventbus.InfoType
 import viz.vplayer.eventbus.NetEvent
+import viz.vplayer.ui.fragment.BaseFragment
 import viz.vplayer.util.NetUtil
 import javax.inject.Inject
 
@@ -31,40 +43,45 @@ class MainActivity : BaseActivity(), View.OnClickListener {
     @Inject
     lateinit var mo: MyObserver
     private val navController by lazy { findNavController(R.id.main_content) }
+    private var loginUtil: LoginUtil? = null
 
     override fun getContentViewId(): Int = R.layout.activity_main
     override fun useEventBus(): Boolean = true
     override fun isSetPaddingTop(): Boolean = true
 
-    override fun getPermissions(): Array<String> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        arrayOf(
-            WRITE_EXTERNAL_STORAGE,
-            ACCESS_NETWORK_STATE,
-            ACCESS_WIFI_STATE,
-            READ_PHONE_STATE,
-            GET_TASKS,
-            ACCESS_COARSE_LOCATION,
-            ACCESS_FINE_LOCATION,
-            ACCESS_LOCATION_EXTRA_COMMANDS,
-            ACCESS_MEDIA_LOCATION
-        )
-    } else {
-        arrayOf(
-            WRITE_EXTERNAL_STORAGE,
-            ACCESS_NETWORK_STATE,
-            ACCESS_WIFI_STATE,
-            READ_PHONE_STATE,
-            GET_TASKS,
-            ACCESS_COARSE_LOCATION,
-            ACCESS_FINE_LOCATION,
-            ACCESS_LOCATION_EXTRA_COMMANDS
-        )
-    }
+    override fun getPermissions(): Array<String> =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            arrayOf(
+                WRITE_EXTERNAL_STORAGE,
+                ACCESS_NETWORK_STATE,
+                ACCESS_WIFI_STATE,
+                READ_PHONE_STATE,
+                GET_TASKS,
+                ACCESS_COARSE_LOCATION,
+                ACCESS_FINE_LOCATION,
+                ACCESS_LOCATION_EXTRA_COMMANDS,
+                ACCESS_MEDIA_LOCATION
+            )
+        } else {
+            arrayOf(
+                WRITE_EXTERNAL_STORAGE,
+                ACCESS_NETWORK_STATE,
+                ACCESS_WIFI_STATE,
+                READ_PHONE_STATE,
+                GET_TASKS,
+                ACCESS_COARSE_LOCATION,
+                ACCESS_FINE_LOCATION,
+                ACCESS_LOCATION_EXTRA_COMMANDS
+            )
+        }
 
     override fun getPermissionsTips(): String = "需要存储,网络,手机信息,悬浮窗,位置等权限"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        HiAnalyticsTools.enableLog()
+        val hiAnalyticsInstance = HiAnalytics.getInstance(this)
+        hiAnalyticsInstance.setAutoCollectionEnabled(true)
         app.appComponent!!.mainActivitySubcomponentBuilder()
             .myObserverModule(MyObserverModule(lifecycle, javaClass.name))
             .create(this)
@@ -106,6 +123,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
 ////                merge()
 //            }
 //        }.continueWithEnd("下载M3U8")
+        loginUtil = LoginUtil(this)
     }
 
     fun checkNet() {
@@ -146,11 +164,11 @@ class MainActivity : BaseActivity(), View.OnClickListener {
             1 -> {
                 R.id.action_download
             }
-            else-> {
+            else -> {
                 -1
             }
         }
-        if(sii != -1) {
+        if (sii != -1) {
             bottomNavigationView_main.selectedItemId = sii
         }
     }
@@ -223,5 +241,36 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 textView_common_info.setOnClickListener(null)
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun signEvent(signEvent: SignEvent) {
+        signEvent?.apply {
+            when (type) {
+                0 -> {
+                    loginUtil?.signIn()
+                }
+                1 -> {
+                    loginUtil?.signInCode()
+                }
+                2 -> {
+                    loginUtil?.silentSignIn()
+                }
+                3 -> {
+                    loginUtil?.silentSignInCode()
+                }
+                4 -> {
+                    loginUtil?.signOut()
+                }
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        supportFragmentManager.fragments.forEachIndexed { index, fragment ->
+            fragment.onActivityResult(requestCode, resultCode, data)
+        }
+        loginUtil?.handleOnActivityResult(requestCode, resultCode, data)
     }
 }

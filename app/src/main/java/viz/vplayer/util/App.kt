@@ -1,17 +1,18 @@
 package viz.vplayer.util
 
-import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.work.Configuration
 import androidx.work.WorkManager
-import bolts.Task
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.imagepipeline.core.ImagePipelineConfig
-import com.facebook.imagepipeline.decoder.ProgressiveJpegConfig
 import com.facebook.imagepipeline.decoder.SimpleProgressiveJpegConfig
+import com.huawei.agconnect.config.AGConnectServicesConfig
+import com.huawei.agconnect.config.LazyInputStream
+import com.huawei.hms.push.HmsMessaging
 import com.shuyu.gsyvideoplayer.player.IjkPlayerManager
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.QbSdk.PreInitCallback
@@ -23,7 +24,9 @@ import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import viz.vplayer.dagger2.AppComponent
 import viz.vplayer.dagger2.DaggerAppComponent
 import viz.vplayer.room.AppDatabase
-import viz.vplayer.util.FileUtil.copyBigDataToSD
+import java.io.IOException
+import java.io.InputStream
+
 
 class App : DaggerApplication(), Configuration.Provider {
     lateinit var db: AppDatabase
@@ -155,6 +158,21 @@ class App : DaggerApplication(), Configuration.Provider {
 //            .setSmallImageDiskCacheConfig(smallImageDiskCacheConfig)
             .build();
         Fresco.initialize(this, config)
+        HmsMessaging.getInstance(this).isAutoInitEnabled = true
+    }
+
+    override fun attachBaseContext(base: Context?) {
+        super.attachBaseContext(base)
+        val agConnectServicesConfig: AGConnectServicesConfig = AGConnectServicesConfig.fromContext(base)
+        agConnectServicesConfig.overlayWith(object : LazyInputStream(base) {
+            override operator fun get(context: Context): InputStream? {
+                return try {
+                    context.assets.open("agconnect-services.json")
+                } catch (e: IOException) {
+                    null
+                }
+            }
+        })
     }
 
     override fun getWorkManagerConfiguration(): Configuration =

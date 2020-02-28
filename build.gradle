@@ -11,7 +11,7 @@ buildscript {
 
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.0-alpha09'
+        classpath 'com.android.tools.build:gradle:4.0.0-beta01'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
 
@@ -22,7 +22,8 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+        maven {url 'https://developer.huawei.com/repo/'}
+        maven { url "https://maven.aliyun.com/nexus/content/groups/public/" }
         maven{url getRepositoryDir()}
         google()
         jcenter()

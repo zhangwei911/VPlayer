@@ -200,6 +200,16 @@ abstract class BaseFragment : Fragment(), EasyPermissions.PermissionCallbacks {
 
     open protected fun useEventBus():Boolean = false
 
+    fun handleOnActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ) {
+        childFragmentManager.fragments.forEachIndexed { index, fragment ->
+            fragment.onActivityResult(requestCode, resultCode, data)
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         if(useEventBus()) {
