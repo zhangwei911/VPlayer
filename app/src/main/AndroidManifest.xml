@@ -24,6 +24,9 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-2409784170808286~8299617415"/>
         <meta-data android:name="android.notch_support" android:value="true"/>
         <meta-data
             android:name="android.max_aspect"

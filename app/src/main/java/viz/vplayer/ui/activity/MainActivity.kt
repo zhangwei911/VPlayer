@@ -9,6 +9,9 @@ import android.view.View
 import androidx.navigation.findNavController
 import androidx.navigation.get
 import androidx.navigation.ui.NavigationUI
+import bolts.Task
+import com.google.android.gms.ads.AdRequest
+import com.google.android.gms.ads.MobileAds
 import com.huawei.hms.aaid.HmsInstanceId
 import com.huawei.hms.analytics.HiAnalytics
 import com.huawei.hms.analytics.HiAnalyticsTools
@@ -36,6 +39,7 @@ import viz.vplayer.eventbus.InfoType
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.ui.fragment.BaseFragment
 import viz.vplayer.util.NetUtil
+import viz.vplayer.util.continueWithEnd
 import javax.inject.Inject
 
 
@@ -79,9 +83,14 @@ class MainActivity : BaseActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        HiAnalyticsTools.enableLog()
-        val hiAnalyticsInstance = HiAnalytics.getInstance(this)
-        hiAnalyticsInstance.setAutoCollectionEnabled(true)
+        Task.callInBackground {
+            l.start("华为分析")
+            //        HiAnalyticsTools.enableLog()
+            val hiAnalyticsInstance = HiAnalytics.getInstance(this)
+            hiAnalyticsInstance.setAutoCollectionEnabled(true)
+            l.end("华为分析")
+        }.continueWithEnd("初始化华为分析")
+        l.start("mainactivity")
         app.appComponent!!.mainActivitySubcomponentBuilder()
             .myObserverModule(MyObserverModule(lifecycle, javaClass.name))
             .create(this)
@@ -124,6 +133,14 @@ class MainActivity : BaseActivity(), View.OnClickListener {
 //            }
 //        }.continueWithEnd("下载M3U8")
         loginUtil = LoginUtil(this)
+        l.end("mainactivity")
+        Task.callInBackground {
+            MobileAds.initialize(this) {}
+            val adRequest = AdRequest.Builder().build()
+            runOnUiThread {
+                adView.loadAd(adRequest)
+            }
+        }.continueWithEnd("初始化google ads")
     }
 
     fun checkNet() {
