@@ -35,12 +35,13 @@ fun String.isFileExist(): Boolean {
     return File(this).exists()
 }
 
-fun String.createNewFile() {
+fun String.createNewFile(): File {
     val file = File(this)
     if (!file.exists()) {
         file.parentFile.mkdirs()
         file.createNewFile()
     }
+    return file
 }
 
 //使用Channel 实现View 防止重复点击

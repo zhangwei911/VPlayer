@@ -7,9 +7,11 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import bolts.Task
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.imagepipeline.core.ImagePipelineConfig
 import com.facebook.imagepipeline.decoder.SimpleProgressiveJpegConfig
+import com.huawei.agconnect.AGConnectInstance
 import com.huawei.agconnect.config.AGConnectServicesConfig
 import com.huawei.agconnect.config.LazyInputStream
 import com.huawei.hms.push.HmsMessaging
@@ -27,7 +29,9 @@ import viz.vplayer.room.AppDatabase
 import java.io.IOException
 import java.io.InputStream
 
-
+/**
+ * google id:ca-app-pub-2409784170808286~8299617415
+ */
 class App : DaggerApplication(), Configuration.Provider {
     lateinit var db: AppDatabase
     var appComponent: AppComponent? = null
@@ -43,6 +47,7 @@ class App : DaggerApplication(), Configuration.Provider {
         Toast.init(applicationContext)
         IjkPlayerManager.setLogLevel(IjkMediaPlayer.IJK_LOG_SILENT)
         instance = this
+        l.start("room")
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE videoinfo ADD COLUMN video_title TEXT NOT NULL DEFAULT ''")
@@ -118,8 +123,9 @@ class App : DaggerApplication(), Configuration.Provider {
                 )
             )
             .build()
-        //搜集本地tbs内核信息并上报服务器，服务器返回结果决定使用哪个内核。
+        l.end("room")
 
+        l.start("tbs")
         //搜集本地tbs内核信息并上报服务器，服务器返回结果决定使用哪个内核。
         val cb: PreInitCallback = object : PreInitCallback {
             override fun onViewInitFinished(arg0: Boolean) { // TODO Auto-generated method stub
@@ -131,15 +137,19 @@ class App : DaggerApplication(), Configuration.Provider {
             }
         }
         //x5内核初始化接口
-        //x5内核初始化接口
         QbSdk.initX5Environment(applicationContext, cb)
+        l.end("tbs")
+
+        l.start("baidu mtj")
         com.baidu.mobstat.StatService.autoTrace(this)
+        l.end("baidu mtj")
 //        Task.callInBackground {
 //            l.start("copyAssetX5")
 //            copyBigDataToSD(this, FileUtil.getPath(this)+"/backup/x5.tbs.org", "x5/x5.tbs.org", "", "")
 //            l.end("copyAssetX5")
 //        }.continueWithEnd("复制内核")
 
+        l.start("fresco")
         val progressiveJpegConfig = SimpleProgressiveJpegConfig()
         val config = ImagePipelineConfig.newBuilder(this)
 //            .setBitmapMemoryCacheParamsSupplier(bitmapCacheParamsSupplier)
@@ -156,14 +166,19 @@ class App : DaggerApplication(), Configuration.Provider {
             .setProgressiveJpegConfig(progressiveJpegConfig)
 //            .setRequestListeners(requestListeners)
 //            .setSmallImageDiskCacheConfig(smallImageDiskCacheConfig)
-            .build();
+            .build()
         Fresco.initialize(this, config)
+        l.end("fresco")
+        l.start("HmsMessaging")
         HmsMessaging.getInstance(this).isAutoInitEnabled = true
+        l.end("HmsMessaging")
     }
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
-        val agConnectServicesConfig: AGConnectServicesConfig = AGConnectServicesConfig.fromContext(base)
+        l.start("agconnect")
+        val agConnectServicesConfig: AGConnectServicesConfig =
+            AGConnectServicesConfig.fromContext(base)
         agConnectServicesConfig.overlayWith(object : LazyInputStream(base) {
             override operator fun get(context: Context): InputStream? {
                 return try {
@@ -173,6 +188,7 @@ class App : DaggerApplication(), Configuration.Provider {
                 }
             }
         })
+        l.end("agconnect")
     }
 
     override fun getWorkManagerConfiguration(): Configuration =

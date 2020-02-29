@@ -4,18 +4,25 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.*
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.provider.Settings
+import android.text.StaticLayout
+import android.text.TextPaint
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.BounceInterpolator
+import android.widget.ImageView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.lifecycle.lifecycleOwner
+import com.huawei.hms.hmsscankit.ScanUtil
 import com.shuyu.gsyvideoplayer.GSYVideoManager
 import com.shuyu.gsyvideoplayer.utils.GSYVideoType
 import com.shuyu.gsyvideoplayer.video.base.GSYVideoView
@@ -25,6 +32,7 @@ import kotlinx.android.synthetic.main.activity_video.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import viz.commonlib.util.BitmapUtil
 import viz.commonlib.util.MyObserver
 import viz.vplayer.R
 import viz.vplayer.adapter.SelectEpisodesAdapter
@@ -178,6 +186,10 @@ class VideoPlayerActivity : BaseActivity() {
                             getOriginalUrl()
                         )
                     )
+                    val urlImageView = ImageView(this@VideoPlayerActivity)
+                    val urlBitmap = ScanUtil.buildBitmap(getOriginalUrl(), 200, 200)
+                    urlImageView.setImageBitmap(urlBitmap)
+                    customView(view = urlImageView)
                     negativeButton(R.string.copy, click = {
                         //获取剪贴板管理器：
                         val cm =
@@ -191,10 +203,99 @@ class VideoPlayerActivity : BaseActivity() {
                             )
                         )
                         // 将ClipData内容放到系统剪贴板里。
-                        cm?.setPrimaryClip(mClipData?:return@negativeButton)
+                        cm?.setPrimaryClip(mClipData ?: return@negativeButton)
                         Toast.show("已复制到剪贴板")
                     })
                     positiveButton(R.string.close)
+                    neutralButton(R.string.share, click = {
+                        this@VideoPlayerActivity.gsyVideoPLayer?.onVideoPause()
+                        val paint = TextPaint()
+                        paint.isAntiAlias = true
+                        val textWidth = paint.measureText(getOriginalUrl())
+                        val textLines = kotlin.math.ceil(textWidth / (400 - 16)).toInt()
+                        val bounds = Rect()
+                        paint.getTextBounds(getOriginalUrl(), 0, getOriginalUrl().length, bounds)
+                        val paintName = TextPaint()
+                        paintName.isAntiAlias = true
+                        val fWidth = 600
+                        val boundsName = Rect()
+                        paintName.getTextBounds(title, 0, title.length, boundsName)
+                        val textWidthName = paintName.measureText(title)
+                        val textLinesName = kotlin.math.ceil(textWidthName / (fWidth - 16)).toInt()
+                        val logoBM = BitmapFactory.decodeResource(
+                            this@VideoPlayerActivity.resources,
+                            R.drawable.logo_main
+                        )
+                        val logoPaint = Paint()
+                        logoPaint.isFilterBitmap = true
+                        val logoBMS = BitmapUtil.zoomBitmapByHeight(logoBM, 50)
+                        val finalBM = Bitmap.createBitmap(
+                            fWidth,
+                            200 + 200 + 16 + 16 + boundsName.height() * textLinesName + 16 + bounds.height() * textLines + 16 + 16 + logoBMS.height,
+                            Bitmap.Config.ARGB_8888
+                        )
+                        val canvas = Canvas(finalBM)
+                        val pfd = PaintFlagsDrawFilter(
+                            0,
+                            Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG
+                        )
+                        canvas.drawFilter = pfd
+                        canvas.drawColor(Color.WHITE)
+                        canvas.drawBitmap(
+                            logoBMS,
+                            (fWidth / 2 - logoBMS.width / 2).toFloat(),
+                            50 + 16f,
+                            logoPaint
+                        )
+                        canvas.drawBitmap(
+                            urlBitmap,
+                            (fWidth - urlBitmap.width) / 2f,
+                            (100f + 16 + 16 + logoBMS.height).toFloat(),
+                            paint
+                        )
+                        val slName =
+                            StaticLayout.Builder.obtain(
+                                title,
+                                0,
+                                title.length,
+                                paintName,
+                                fWidth - 16
+                            )
+                        canvas.translate(8f, (100 + 200 + 16 + 16 + 16 + logoBMS.height).toFloat())
+                        slName.build().draw(canvas)
+                        val sl =
+                            StaticLayout.Builder.obtain(
+                                getOriginalUrl(),
+                                0,
+                                getOriginalUrl().length,
+                                paint,
+                                fWidth - 16
+                            )
+                        canvas.translate(
+                            0f,
+                            (boundsName.height() * textLinesName + 16).toFloat()
+                        )
+                        sl.build().draw(canvas)
+                        //将mipmap中图片转换成Uri
+                        val imgUri =
+                            Uri.parse(
+                                MediaStore.Images.Media.insertImage(
+                                    this@VideoPlayerActivity.contentResolver,
+                                    finalBM,
+                                    null,
+                                    null
+                                )
+                            )
+                        val intent = Intent()
+                        intent.action = Intent.ACTION_SEND
+//其中imgUri为图片的标识符
+                        intent.putExtra(Intent.EXTRA_STREAM, imgUri)
+                        intent.type = "image/*"
+//切记需要使用Intent.createChooser，否则会出现别样的应用选择框，您可以试试
+                        val shareIntent =
+                            Intent.createChooser(intent, "分享到")
+                        startActivity(shareIntent)
+                    })
                     lifecycleOwner(this@VideoPlayerActivity)
                 }
             }

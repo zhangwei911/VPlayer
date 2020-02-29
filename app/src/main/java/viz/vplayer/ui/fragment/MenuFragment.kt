@@ -19,15 +19,19 @@ import com.huawei.hms.support.hwid.request.HuaweiIdAuthParams
 import com.huawei.hms.support.hwid.request.HuaweiIdAuthParamsHelper
 import com.huawei.hms.support.hwid.result.AuthHuaweiId
 import com.huawei.hms.support.hwid.service.HuaweiIdAuthService
+import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.fragment_menu.*
 import org.greenrobot.eventbus.EventBus
 import viz.commonlib.event.SignEvent
+import viz.commonlib.event.ScanEvent
 import viz.commonlib.huawei.account.ICallBack
 import viz.commonlib.huawei.account.IDTokenParser
 import viz.commonlib.huawei.account.REQUEST_SIGN_IN_LOGIN
 import viz.commonlib.huawei.account.REQUEST_SIGN_IN_LOGIN_CODE
+import viz.commonlib.util.ClassUtil
 import viz.commonlib.util.MyObserver
+import viz.commonlib.util.REQUEST_CODE_SCAN_ONE
 import viz.vplayer.R
 import viz.vplayer.adapter.MenuAdapter
 import viz.vplayer.bean.JsonBean
@@ -61,6 +65,7 @@ class MenuFragment : BottomSheetDialogFragment() {
         list.add(MenuBean("华为账号静默登录1"))
         list.add(MenuBean("华为账号静默登录2"))
         list.add(MenuBean("华为账号登出"))
+        list.add(MenuBean("华为扫码"))
         adapter = MenuAdapter(context!!, list)
         recyclerView_menu.adapter = adapter
         recyclerView_menu.addOnItemTouchListener(
@@ -95,6 +100,10 @@ class MenuFragment : BottomSheetDialogFragment() {
                             }
                             5 -> {
                                 EventBus.getDefault().postSticky(SignEvent(4))
+                                dismiss()
+                            }
+                            6 -> {
+                                EventBus.getDefault().postSticky(ScanEvent(REQUEST_CODE_SCAN_ONE))
                                 dismiss()
                             }
                         }

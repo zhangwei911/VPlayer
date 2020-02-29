@@ -237,9 +237,10 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        val pn = permissions.joinToString { it }
         // Forward results to EasyPermissions
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
-        l.ifo(requestCode, permissions.toString())
+        l.ifo(requestCode, pn)
     }
 
     var OVERLAY_PERMISSION_REQ_CODE = 1234

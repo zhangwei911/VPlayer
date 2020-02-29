@@ -1,22 +1,21 @@
 package viz.vplayer.ui.activity
 
 import android.Manifest.permission.*
+import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.View
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.get
 import androidx.navigation.ui.NavigationUI
 import bolts.Task
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.MobileAds
-import com.huawei.hms.aaid.HmsInstanceId
 import com.huawei.hms.analytics.HiAnalytics
-import com.huawei.hms.analytics.HiAnalyticsTools
-import com.huawei.hms.common.ApiException
-import com.huawei.hms.support.hwid.HuaweiIdAuthManager
+import com.huawei.hms.hmsscankit.ScanUtil
+import com.huawei.hms.ml.scan.HmsScan
 import com.viz.tools.Toast
 import com.viz.tools.apk.NetWorkUtils.*
 import com.viz.tools.l
@@ -26,18 +25,18 @@ import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import viz.commonlib.event.ScanEvent
 import viz.commonlib.event.SignEvent
-import viz.commonlib.huawei.account.ICallBack
-import viz.commonlib.huawei.account.IDTokenParser
 import viz.commonlib.huawei.account.LoginUtil
 import viz.commonlib.util.MyObserver
+import viz.commonlib.util.REQUEST_CODE_SCAN_ONE
 import viz.vplayer.BuildConfig
 import viz.vplayer.R
 import viz.vplayer.dagger2.MyObserverModule
 import viz.vplayer.eventbus.CommonInfoEvent
 import viz.vplayer.eventbus.InfoType
+import viz.vplayer.eventbus.KWEvent
 import viz.vplayer.eventbus.NetEvent
-import viz.vplayer.ui.fragment.BaseFragment
 import viz.vplayer.util.NetUtil
 import viz.vplayer.util.continueWithEnd
 import javax.inject.Inject
@@ -64,7 +63,9 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 ACCESS_COARSE_LOCATION,
                 ACCESS_FINE_LOCATION,
                 ACCESS_LOCATION_EXTRA_COMMANDS,
-                ACCESS_MEDIA_LOCATION
+                ACCESS_MEDIA_LOCATION,
+                READ_EXTERNAL_STORAGE,
+                CAMERA
             )
         } else {
             arrayOf(
@@ -75,7 +76,9 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 GET_TASKS,
                 ACCESS_COARSE_LOCATION,
                 ACCESS_FINE_LOCATION,
-                ACCESS_LOCATION_EXTRA_COMMANDS
+                ACCESS_LOCATION_EXTRA_COMMANDS,
+                READ_EXTERNAL_STORAGE,
+                CAMERA
             )
         }
 
@@ -142,6 +145,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
             }
         }.continueWithEnd("初始化google ads")
     }
+
 
     fun checkNet() {
         GlobalScope.launch() {
@@ -283,8 +287,42 @@ class MainActivity : BaseActivity(), View.OnClickListener {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun scanEvent(scanEvent: ScanEvent) {
+        scanEvent?.apply {
+            when (requestCode) {
+                REQUEST_CODE_SCAN_ONE -> {
+                    ScanUtil.startScan(this@MainActivity, requestCode, null)
+                }
+            }
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode != Activity.RESULT_OK || data == null) {
+            return
+        }
+        if (requestCode == REQUEST_CODE_SCAN_ONE) {
+            val obj: HmsScan = data.getParcelableExtra(ScanUtil.RESULT)
+            obj?.apply {
+                l.d(originalValue)
+                when (scanTypeForm) {
+                    HmsScan.URL_FORM -> {
+                        l.d(linkUrl)
+                        val bundle = Bundle()
+                        bundle.putString(
+                            "url",
+                            originalValue
+                        )
+                        navController.navigate(R.id.webActivity, bundle)
+                    }
+                    HmsScan.PURE_TEXT_FORM->{
+                        EventBus.getDefault().postSticky(KWEvent(originalValue))
+                    }
+                }
+            }
+        }
         supportFragmentManager.fragments.forEachIndexed { index, fragment ->
             fragment.onActivityResult(requestCode, resultCode, data)
         }

@@ -40,6 +40,7 @@ import viz.vplayer.adapter.SearchAdapter
 import viz.vplayer.adapter.SelectEpisodesAdapter
 import viz.vplayer.adapter.WebAdapter
 import viz.vplayer.bean.*
+import viz.vplayer.eventbus.KWEvent
 import viz.vplayer.eventbus.NetEvent
 import viz.vplayer.eventbus.RuleEvent
 import viz.vplayer.room.Rule
@@ -818,6 +819,14 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         isWifi = netEvent.isWifi
         if (isWifi) {
             getRules()
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun kwEvent(kwEvent: KWEvent) {
+        kwEvent.kw?.let {
+            editText_search.setText(it)
+            materialButton_search.performClick()
         }
     }
 
