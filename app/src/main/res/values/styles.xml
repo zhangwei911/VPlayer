@@ -6,6 +6,7 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="md_color_button_text">@color/colorPrimary</item>
+        <item name="android:windowBackground">@drawable/bg</item>
     </style>
 
     <style name="Widget.V.Button" parent="Widget.MaterialComponents.Button">

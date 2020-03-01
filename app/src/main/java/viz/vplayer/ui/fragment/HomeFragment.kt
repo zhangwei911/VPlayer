@@ -31,6 +31,7 @@ import com.michaelflisar.dragselectrecyclerview.DragSelectTouchListener
 import com.viz.tools.Toast
 import com.viz.tools.apk.ScreenUtils
 import com.viz.tools.l
+import kotlinx.android.synthetic.main.activity_web.*
 import kotlinx.android.synthetic.main.fragment_home.*
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -40,9 +41,8 @@ import viz.vplayer.adapter.SearchAdapter
 import viz.vplayer.adapter.SelectEpisodesAdapter
 import viz.vplayer.adapter.WebAdapter
 import viz.vplayer.bean.*
-import viz.vplayer.eventbus.KWEvent
-import viz.vplayer.eventbus.NetEvent
-import viz.vplayer.eventbus.RuleEvent
+import viz.vplayer.eventbus.*
+import viz.vplayer.eventbus.enum.INIT_TYPE
 import viz.vplayer.room.Rule
 import viz.vplayer.ui.activity.RuleListActivity
 import viz.vplayer.ui.activity.VideoPlayerActivity
@@ -78,6 +78,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        l.start("home onCreate")
         mainVM = activity?.run {
             ViewModelProvider(this).get(MainVM::class.java)
         } ?: throw Exception("Invalid Activity")
@@ -288,6 +289,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
                 requireActivity().finish()
             }
         }
+        l.end("home onCreate")
     }
 
     private fun cacheDirect(data: MutableList<EpisodeListBean>) {
@@ -582,7 +584,6 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
             }
             false
         }
-        initWebView()
     }
 
     private fun initWebView() {
@@ -827,6 +828,31 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         kwEvent.kw?.let {
             editText_search.setText(it)
             materialButton_search.performClick()
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun initEvent(initEvent: InitEvent) {
+        initEvent?.apply {
+            when (type) {
+                INIT_TYPE.TBS -> {
+                    initWebView()
+                }
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun tbsEvent(tbsEvent: TBSEvent) {
+        tbsEvent?.apply {
+            when (type) {
+                0 -> {
+                    Toast.show("TBS内核未加载,请点击安装线上内核")
+                    val bundle = Bundle()
+                    bundle.putString("url", "http://debugtbs.qq.com")
+                    findNavController().navigate(R.id.webActivity, bundle)
+                }
+            }
         }
     }
 

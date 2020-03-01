@@ -86,8 +86,8 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
             getCommonBack()
         }
         setCommonTitle(getCommonTtile())
-        hasNotchInScreen(this)
-        l.d(getNotchSize(this).toString())
+//        hasNotchInScreen(this)
+//        l.d(getNotchSize(this).toString())
     }
 
     private fun hasNotchInScreen(context: Context): Boolean {

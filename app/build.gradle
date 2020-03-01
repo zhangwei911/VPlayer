@@ -255,6 +255,7 @@ dependencies {
         exclude group: 'com.google.guava', module: 'guava'
     }
     implementation  'com.huawei.hms:scanplus:1.1.1.301'
+//    implementation "com.huawei.hms:ml-computer-vision-face-recognition-model:1.0.2.300"
 
     implementation 'com.google.android.gms:play-services-ads:18.3.0'
 }

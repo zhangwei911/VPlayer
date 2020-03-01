@@ -322,7 +322,10 @@ class WebActivity : BaseActivity(), View.OnClickListener {
                 if (Uri.parse(webView.url).host == Uri.parse(finalUrl).host) {
                     webView.loadUrl(webView.url)
                 } else {
-                    webView.loadUrl(finalUrl)
+                    if(originalUrl.isEmpty()){
+                        originalUrl = webView.url
+                    }
+                    webView.loadUrl(String.format(parseUrl, originalUrl))
                 }
             }
         }

@@ -9,7 +9,6 @@ import android.util.DisplayMetrics
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.get
 import androidx.navigation.ui.NavigationUI
 import bolts.Task

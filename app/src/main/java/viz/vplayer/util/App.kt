@@ -2,6 +2,7 @@ package viz.vplayer.util
 
 import android.content.Context
 import android.util.Log
+import androidx.core.content.edit
 import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -16,15 +17,20 @@ import com.huawei.agconnect.config.AGConnectServicesConfig
 import com.huawei.agconnect.config.LazyInputStream
 import com.huawei.hms.push.HmsMessaging
 import com.shuyu.gsyvideoplayer.player.IjkPlayerManager
+import com.shuyu.gsyvideoplayer.utils.CommonUtil
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.QbSdk.PreInitCallback
 import com.viz.tools.Toast
 import com.viz.tools.l
 import dagger.android.AndroidInjector
 import dagger.android.DaggerApplication
+import org.greenrobot.eventbus.EventBus
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
 import viz.vplayer.dagger2.AppComponent
 import viz.vplayer.dagger2.DaggerAppComponent
+import viz.vplayer.eventbus.InitEvent
+import viz.vplayer.eventbus.TBSEvent
+import viz.vplayer.eventbus.enum.INIT_TYPE
 import viz.vplayer.room.AppDatabase
 import java.io.IOException
 import java.io.InputStream
@@ -125,20 +131,26 @@ class App : DaggerApplication(), Configuration.Provider {
             .build()
         l.end("room")
 
-        l.start("tbs")
-        //搜集本地tbs内核信息并上报服务器，服务器返回结果决定使用哪个内核。
-        val cb: PreInitCallback = object : PreInitCallback {
-            override fun onViewInitFinished(arg0: Boolean) { // TODO Auto-generated method stub
+        Task.callInBackground {
+            l.start("tbs")
+            //搜集本地tbs内核信息并上报服务器，服务器返回结果决定使用哪个内核。
+            val cb: PreInitCallback = object : PreInitCallback {
+                override fun onViewInitFinished(arg0: Boolean) { // TODO Auto-generated method stub
 //x5內核初始化完成的回调，为true表示x5内核加载成功，否则表示x5内核加载失败，会自动切换到系统内核。
-                l.d("app", " onViewInitFinished is $arg0")
-            }
+                    l.d("app", " onViewInitFinished is $arg0")
+                    if(!arg0) {
+                        EventBus.getDefault().postSticky(TBSEvent(0))
+                    }
+                }
 
-            override fun onCoreInitFinished() { // TODO Auto-generated method stub
+                override fun onCoreInitFinished() { // TODO Auto-generated method stub
+                }
             }
-        }
-        //x5内核初始化接口
-        QbSdk.initX5Environment(applicationContext, cb)
-        l.end("tbs")
+            //x5内核初始化接口
+            QbSdk.initX5Environment(applicationContext, cb)
+            l.end("tbs")
+            EventBus.getDefault().postSticky(InitEvent(INIT_TYPE.TBS))
+        }.continueWithEnd("初始化tbs")
 
         l.start("baidu mtj")
         com.baidu.mobstat.StatService.autoTrace(this)
@@ -149,12 +161,13 @@ class App : DaggerApplication(), Configuration.Provider {
 //            l.end("copyAssetX5")
 //        }.continueWithEnd("复制内核")
 
-        l.start("fresco")
-        val progressiveJpegConfig = SimpleProgressiveJpegConfig()
-        val config = ImagePipelineConfig.newBuilder(this)
+        Task.callInBackground {
+            l.start("fresco")
+            val progressiveJpegConfig = SimpleProgressiveJpegConfig()
+            val config = ImagePipelineConfig.newBuilder(this)
 //            .setBitmapMemoryCacheParamsSupplier(bitmapCacheParamsSupplier)
 //            .setCacheKeyFactory(cacheKeyFactory)
-            .setDownsampleEnabled(true)
+                .setDownsampleEnabled(true)
 //            .setWebpSupportEnabled(true)
 //            .setEncodedMemoryCacheParamsSupplier(encodedCacheParamsSupplier)
 //            .setExecutorSupplier(executorSupplier)
@@ -163,12 +176,14 @@ class App : DaggerApplication(), Configuration.Provider {
 //            .setMemoryTrimmableRegistry(memoryTrimmableRegistry)
 //            .setNetworkFetchProducer(networkFetchProducer)
 //            .setPoolFactory(poolFactory)
-            .setProgressiveJpegConfig(progressiveJpegConfig)
+                .setProgressiveJpegConfig(progressiveJpegConfig)
 //            .setRequestListeners(requestListeners)
 //            .setSmallImageDiskCacheConfig(smallImageDiskCacheConfig)
-            .build()
-        Fresco.initialize(this, config)
-        l.end("fresco")
+                .build()
+            Fresco.initialize(this, config)
+            l.end("fresco")
+        }.continueWithEnd("初始化Fresco")
+
         l.start("HmsMessaging")
         HmsMessaging.getInstance(this).isAutoInitEnabled = true
         l.end("HmsMessaging")
