@@ -18,10 +18,7 @@ import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_web.*
 import okhttp3.ResponseBody
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
 import org.json.JSONArray
-import viz.commonlib.event.X5Event
 import viz.commonlib.http.VCallback
 import viz.commonlib.util.MyObserver
 import viz.vplayer.R
@@ -44,6 +41,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
 
     private val parseUrlList = mutableListOf<String>()
     private var parseUrl = ""
+    private var originalUrl = ""
 
     override fun getPermissions(): Array<String> = arrayOf(
         Manifest.permission.GET_TASKS,
@@ -406,13 +404,6 @@ class WebActivity : BaseActivity(), View.OnClickListener {
                 "setVideoParams",
                 data
             )
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun x5Event(x5Event: X5Event) {
-        if (x5Event.intent != null) {
-            l.i(intent.toString())
         }
     }
 }
