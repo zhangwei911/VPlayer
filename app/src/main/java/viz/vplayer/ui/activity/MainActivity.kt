@@ -183,7 +183,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                     )
                     cs.applyTo(constraintLayout_main)
                     adView!!.adSize = adSize
-                    adView!!.adUnitId = "ca-app-pub-3940256099942544/6300978111"
+                    adView!!.adUnitId = "ca-app-pub-2409784170808286/3785657334"
                     adView!!.adListener = object : AdListener() {
                         override fun onAdLoaded() {
                             super.onAdLoaded()
