@@ -448,7 +448,20 @@ class VideoPlayerActivity : BaseActivity() {
             return
         }
         val floatPlayerView = FloatPlayerView(applicationContext)
-        floatPlayerView.url = url
+        var urlUse = url
+        val urlUTF8 = UrlUtil.format(url)
+        val ft = UrlUtil.generatLocalFileNameAndPath(this, url, true)
+        val fileName = ft.first
+        val target = ft.second
+        val videoFile = File(target).apply {
+            urlUse = if (exists()) {
+                Toast.show("已缓存,播放离线视频")
+                "file://$target"
+            } else {
+                urlUTF8
+            }
+        }
+        floatPlayerView.url = urlUse
         floatPlayerView.title = title
         floatPlayerView.videoPlayer!!.backToFull = {
             val intent = Intent(this, VideoPlayerActivity::class.java)
