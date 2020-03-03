@@ -29,7 +29,6 @@ import viz.commonlib.huawei.account.ICallBack
 import viz.commonlib.huawei.account.IDTokenParser
 import viz.commonlib.huawei.account.REQUEST_SIGN_IN_LOGIN
 import viz.commonlib.huawei.account.REQUEST_SIGN_IN_LOGIN_CODE
-import viz.commonlib.util.ClassUtil
 import viz.commonlib.util.MyObserver
 import viz.commonlib.util.REQUEST_CODE_SCAN_ONE
 import viz.vplayer.R

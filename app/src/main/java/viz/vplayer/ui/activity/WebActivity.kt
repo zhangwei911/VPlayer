@@ -36,7 +36,6 @@ class WebActivity : BaseActivity(), View.OnClickListener {
 
     override fun getContentViewId(): Int = R.layout.activity_web
     override fun getCommonTtile(): String = "网页"
-    override fun useEventBus(): Boolean = true
     override fun isSetPaddingTop(): Boolean = true
 
     private val parseUrlList = mutableListOf<String>()
