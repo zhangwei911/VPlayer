@@ -44,6 +44,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
 
     private val parseUrlList = mutableListOf<String>()
     private var parseUrl = ""
+    private var originalUrl = ""
 
     override fun getPermissions(): Array<String> = arrayOf(
         Manifest.permission.GET_TASKS,
@@ -406,13 +407,6 @@ class WebActivity : BaseActivity(), View.OnClickListener {
                 "setVideoParams",
                 data
             )
-        }
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    fun x5Event(x5Event: X5Event) {
-        if (x5Event.intent != null) {
-            l.i(intent.toString())
         }
     }
 }
