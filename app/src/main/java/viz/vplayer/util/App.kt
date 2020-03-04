@@ -126,6 +126,10 @@ class App : DaggerApplication(), Configuration.Provider {
                 RoomUtil.migrationOneVersion(
                     12,
                     "ALTER TABLE download ADD COLUMN work_id TEXT NOT NULL DEFAULT ''"
+                ),
+                RoomUtil.migrationOneVersion(
+                    13,
+                    "ALTER TABLE ts ADD COLUMN duration FLOAT NOT NULL DEFAULT 0.0"
                 )
             )
             .build()

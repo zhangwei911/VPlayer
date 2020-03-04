@@ -26,6 +26,7 @@ import java.io.File
 import java.math.BigDecimal
 import java.nio.charset.Charset
 import java.nio.charset.UnsupportedCharsetException
+import kotlin.math.abs
 
 
 class VDownloader {
@@ -58,10 +59,13 @@ class VDownloader {
 
         override fun queueEnd(context: DownloadContext) {
             l.d("下载完成[$downloadUrl]")
-            merge()
+            if(allDownload()) {
+                merge()
+            }
         }
 
     }
+
     private var listener: DownloadListener3 = object : DownloadListener3() {
         override fun warn(task: DownloadTask) {
         }
@@ -131,6 +135,30 @@ class VDownloader {
         }
     }
 
+    private fun allDownload():Boolean{
+        val tss = App.instance.db.tsDao().getAllByM3U8Id(m3u8.id)
+        var downloadCount = 0
+        val reDownloadList = mutableListOf<String>()
+        if(tss.isNotEmpty()){
+            tss.forEachIndexed { index, ts ->
+                if(abs(MediaUtil.getDuration(ts.path) - ts.duration) < 200){
+                    downloadCount++
+                }else{
+                    ts.path.deleteFile()
+                    reDownloadList.add(ts.url)
+                }
+            }
+        }
+        val result = downloadCount >0 && downloadCount == tss.size
+        if(!result){
+            l.d("${m3u8.url}还有${reDownloadList.size}个ts没有下载完成,重新开始下载")
+            download(reDownloadList)
+        }else{
+            l.d("${m3u8.url}所有ts文件下载完成")
+        }
+        return result
+    }
+
     fun merge() {
         GlobalScope.launch {
             try {
@@ -163,6 +191,7 @@ class VDownloader {
     }
 
     private val taskList = mutableMapOf<String, BigDecimal>()
+    private val tsDurationList = mutableListOf<Float>()
 
 //    companion object {
 //        @Volatile
@@ -327,6 +356,8 @@ class VDownloader {
                 list.add(tsUrl)
                 taskList[tsUrl] = BigDecimal(0)
                 index++
+            } else if(it.startsWith("#EXTINF")){
+                tsDurationList.add(it.split(":")[1].replace(",","").toFloat())
             }
         }
         return Pair(isTS, list)
@@ -378,6 +409,7 @@ class VDownloader {
                         val ts = TS()
                         ts.m3u8_id = m3u8.id
                         ts.url = url
+                        ts.duration = tsDurationList[index]
                         ts.index = index
                         ts.path = parentFile.absolutePath + "/" + url.substringAfterLast("/")
                         App.instance.db.tsDao().insertAll(ts)

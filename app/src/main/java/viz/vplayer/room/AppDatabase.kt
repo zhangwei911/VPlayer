@@ -9,7 +9,7 @@ import viz.commonlib.download.room.TSDao
 
 @Database(
     entities = [VideoInfo::class, Episode::class, Rule::class, Download::class, M3U8::class, TS::class],
-    version = 13
+    version = 14
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun videoInfoDao(): VideoInfoDao
