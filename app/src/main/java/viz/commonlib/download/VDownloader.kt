@@ -16,6 +16,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
+import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import viz.commonlib.download.room.M3U8
 import viz.commonlib.download.room.TS
 import viz.commonlib.http.VCallback
@@ -24,8 +25,14 @@ import viz.vplayer.http.HttpApi
 import viz.vplayer.util.*
 import java.io.File
 import java.math.BigDecimal
+import java.net.URLDecoder
+import java.net.URLEncoder
 import java.nio.charset.Charset
 import java.nio.charset.UnsupportedCharsetException
+import java.util.concurrent.Callable
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledThreadPoolExecutor
 import kotlin.math.abs
 
 
@@ -46,6 +53,11 @@ class VDownloader {
     private val isTaskLog = false
     var onProgress: ((progress: Float) -> Unit)? = null
     var onSuccess: ((filePath: String) -> Unit)? = null
+    private val downloadList = mutableListOf<String>()
+    private var es: ScheduledExecutorService = ScheduledThreadPoolExecutor(
+        10,
+        BasicThreadFactory.Builder().namingPattern("pool-check-%d").daemon(true).build()
+    )
     private var listenerMulti: DownloadContextListener = object : DownloadContextListener {
         override fun taskEnd(
             context: DownloadContext,
@@ -59,9 +71,9 @@ class VDownloader {
 
         override fun queueEnd(context: DownloadContext) {
             l.d("下载完成[$downloadUrl]")
-            if(allDownload()) {
+//            allDownload {
                 merge()
-            }
+//            }
         }
 
     }
@@ -100,9 +112,9 @@ class VDownloader {
                 ts.path = task.file!!.absolutePath
                 ts.progress = 100
                 ts.status = 2
-                if(isInsert){
+                if (isInsert) {
                     App.instance.db.tsDao().insertAll(ts)
-                }else {
+                } else {
                     App.instance.db.tsDao().updateAll(ts)
                 }
             }.continueWithEnd("任务[${task.url}]完成", isTaskLog)
@@ -135,28 +147,47 @@ class VDownloader {
         }
     }
 
-    private fun allDownload():Boolean{
-        val tss = App.instance.db.tsDao().getAllByM3U8Id(m3u8.id)
+    private fun allDownload(success: () -> Unit) {
         var downloadCount = 0
-        val reDownloadList = mutableListOf<String>()
-        if(tss.isNotEmpty()){
-            tss.forEachIndexed { index, ts ->
-                if(abs(MediaUtil.getDuration(ts.path) - ts.duration) < 200){
-                    downloadCount++
-                }else{
-                    ts.path.deleteFile()
-                    reDownloadList.add(ts.url)
+        var result = true
+        val countDownLatch = CountDownLatch(taskList.size)
+        Task.callInBackground {
+            val tss = App.instance.db.tsDao().getAllByM3U8Id(m3u8.id)
+            val reDownloadList = mutableListOf<String>()
+            if (tss.isNotEmpty()) {
+                tss.forEachIndexed { index, ts ->
+                    Task.call(Callable<Unit> {
+                        l.d(ts.path)
+                        try {
+                            val duration = MediaUtil.getDuration(ts.path)
+                            val isFinish = abs(duration - ts.duration) < 200
+                            if (ts.path.isFileExist() && isFinish) {
+                                downloadCount++
+                            } else {
+                                ts.path.deleteFile()
+                                reDownloadList.add(ts.url)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            ts.path.deleteFile()
+                            reDownloadList.add(ts.url)
+                        }
+                        countDownLatch.countDown()
+                        l.d("剩余${countDownLatch.count}个")
+                    }, es).continueWithEnd("${ts.path}检测 index=$index")
                 }
             }
-        }
-        val result = downloadCount >0 && downloadCount == tss.size
-        if(!result){
-            l.d("${m3u8.url}还有${reDownloadList.size}个ts没有下载完成,重新开始下载")
-            download(reDownloadList)
-        }else{
-            l.d("${m3u8.url}所有ts文件下载完成")
-        }
-        return result
+            l.d("等待检测完成")
+            countDownLatch.await()
+            result = downloadCount > 0 && downloadCount == tss.size
+            if (!result) {
+                l.d("${m3u8.url}还有${reDownloadList.size}个ts没有下载完成,重新开始下载")
+                download(reDownloadList)
+            } else {
+                l.d("${m3u8.url}所有ts文件下载完成")
+                success.invoke()
+            }
+        }.continueWithEnd("检测ts是否准确下载")
     }
 
     fun merge() {
@@ -269,6 +300,7 @@ class VDownloader {
 //            parseAndDownload(url, FileUtil.readStr(m3u8.path))
 //            return
 //        }
+        l.d(url)
         HttpApi.createHttp().anyUrl(url)
             .enqueue(VCallback<ResponseBody>(onResult = { call, response, result ->
                 var rBody: String? = null
@@ -331,14 +363,15 @@ class VDownloader {
         urlList.forEach {
             if (it.endsWith(".m3u8")) {
                 isTS = false
+                val m3u8Url = if (it.startsWith("/")) {
+                    "${uri.scheme}://${uri.authority}"
+                } else if (it.startsWith("http://") || it.startsWith("https://")) {
+                    ""
+                } else {
+                    "${uri.scheme}://${uri.authority}${uri.path!!.substringBeforeLast("/")}/"
+                }
                 list.add(
-                    if (it.startsWith("/")) {
-                        "${uri.scheme}://${uri.authority}"
-                    } else if (it.startsWith("http://") || it.startsWith("https://")) {
-                        ""
-                    } else {
-                        "${uri.scheme}://${uri.authority}${uri.path!!.substringBeforeLast("/")}/"
-                    } + it
+                    m3u8Url + it
                 )
             } else if (it.endsWith(".ts") || it.endsWith(".jpg")) {
                 val urlPrefix = if (it.startsWith("/")) {
@@ -356,8 +389,8 @@ class VDownloader {
                 list.add(tsUrl)
                 taskList[tsUrl] = BigDecimal(0)
                 index++
-            } else if(it.startsWith("#EXTINF")){
-                tsDurationList.add(it.split(":")[1].replace(",","").toFloat())
+            } else if (it.startsWith("#EXTINF")) {
+                tsDurationList.add(it.split(":")[1].replace(",", "").toFloat())
             }
         }
         return Pair(isTS, list)
@@ -402,9 +435,11 @@ class VDownloader {
             val tsAddList = arrayOf<TS>()
             urls.forEachIndexed { index, url ->
                 val tsExist = tsMapList[url]
+                val urlUse = URLDecoder.decode(url, "utf-8")
                 if (tsList.isEmpty() || tsExist == null) {
                     downloadCount++
-                    builder.bind(url).addTag(INDEX_TAG, index)
+                    downloadList.add(urlUse)
+                    builder.bind(urlUse).addTag(INDEX_TAG, index)
                     Task.callInBackground {
                         val ts = TS()
                         ts.m3u8_id = m3u8.id
@@ -417,7 +452,8 @@ class VDownloader {
                 } else {
                     if (!(tsExist.path.isFileExist() && tsExist.status == 2)) {
                         downloadCount++
-                        builder.bind(url).addTag(INDEX_TAG, index)
+                        downloadList.add(urlUse)
+                        builder.bind(urlUse).addTag(INDEX_TAG, index)
                     }
                 }
             }
@@ -455,7 +491,7 @@ class VDownloader {
                     m3u8 = m
                 }
             }.continueWithEnd("处理m3u8数据", isTaskLog)
-            readM3U8(this)
+            readM3U8(URLDecoder.decode(this, "utf-8"))
         }
     }
 
