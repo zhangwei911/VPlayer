@@ -20,7 +20,12 @@ class ResultInterceptor(private var excludeUrls: MutableList<String> = mutableLi
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val rUrl = request.url.toString()
-        val isLog = !excludeUrls.contains(request.url.toUrl().path)
+        val isLog =
+            !excludeUrls.contains(request.url.toUrl().path) && !excludeUrls.contains(request.url.toUrl().toString()) && excludeUrls.none {
+                request.url.toUrl().toString().endsWith(it)
+            } && excludeUrls.none {
+                request.url.toUrl().toString().startsWith(it)
+            }
         val response = chain.proceed(request)
 
         if (isLog) {

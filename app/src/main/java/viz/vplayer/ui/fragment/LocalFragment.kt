@@ -239,7 +239,7 @@ class LocalFragment : BaseFragment() {
                 if (download.progress == 100) {
                     download.status = 1
                 }
-                localAdapter?.notifyItemChanged(index)
+                localAdapter?.notifyItemChanged(index, index)
                 Task.callInBackground {
                     app.db.downloadDao().updateALl(download)
                 }.continueWithEnd("保存下载进度")

@@ -33,22 +33,31 @@ class LocalAdapter : RecyclerView.Adapter<LocalAdapter.ViewHolder> {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-    }
-
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        pos: Int, @NonNull payloads: MutableList<Any>
-    ) {
-        list[pos].apply {
+        list[position].apply {
             holder.itemView.apply {
+                numberProgressBar.progress = progress
                 textView_local_name.text = videoTitle
                 numberProgressBar.max = 100
-                numberProgressBar.progress = progress
                 if (videoImgUrl.trim().isNotEmpty()) {
 //                    glide.load(videoImgUrl)
 //                        .override(60, 80)
 //                        .into(imageView_local)
                     imageView_local.setImageURI(videoImgUrl)
+                }
+            }
+        }
+    }
+
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int, @NonNull payloads: MutableList<Any>
+    ) {
+        if(payloads.isEmpty()){
+            onBindViewHolder(holder, position)
+        }else{
+            list[position].apply {
+                holder.itemView.apply {
+                    numberProgressBar.progress = progress
                 }
             }
         }

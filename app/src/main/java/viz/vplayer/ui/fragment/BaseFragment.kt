@@ -213,7 +213,9 @@ abstract class BaseFragment : Fragment(), EasyPermissions.PermissionCallbacks {
     override fun onDestroy() {
         super.onDestroy()
         if(useEventBus()) {
-            EventBus.getDefault().unregister(this)
+            if(EventBus.getDefault().isRegistered(this)) {
+                EventBus.getDefault().unregister(this)
+            }
         }
     }
 }

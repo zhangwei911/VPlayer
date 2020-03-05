@@ -27,7 +27,7 @@ interface HttpApi {
             connectTimeout: Long = 60,
             readTimeout: Long = 60,
             writeTimeout: Long = 60,
-            excludeUrls: MutableList<String> = mutableListOf(DEFAULT_RULE_URL,"http://www.baidu.com/"),
+            excludeUrls: MutableList<String> = mutableListOf(DEFAULT_RULE_URL,"http://www.baidu.com/",".m3u8"),
             addGsonConverterFactory: Boolean = true
         ): HttpApi {
             return BaseHttp.createHttp(
