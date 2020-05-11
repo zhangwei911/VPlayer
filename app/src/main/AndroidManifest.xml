@@ -21,6 +21,7 @@
     <!--使用特性-->
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <application
         android:name=".util.App"
@@ -102,7 +103,9 @@
         <activity
             android:name=".ui.activity.VideoPlayerActivity"
             android:maxAspectRatio="2.4"
+            android:supportsPictureInPicture="true"
             android:resizeableActivity="true"
+            android:launchMode="singleTask"
             android:screenOrientation="sensorLandscape"
             tools:ignore="LockedOrientationActivity" />
         <activity

@@ -11,18 +11,25 @@ import android.view.View
 import android.webkit.JavascriptInterface
 import androidx.activity.addCallback
 import androidx.core.content.edit
+import androidx.navigation.fragment.findNavController
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItems
+import com.tencent.smtt.sdk.QbSdk
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_web.*
 import okhttp3.ResponseBody
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import org.json.JSONArray
 import viz.commonlib.http.VCallback
 import viz.commonlib.util.MyObserver
 import viz.vplayer.R
 import viz.vplayer.dagger2.MyObserverModule
+import viz.vplayer.eventbus.InitEvent
+import viz.vplayer.eventbus.TBSEvent
+import viz.vplayer.eventbus.enum.INIT_TYPE
 import viz.vplayer.http.HttpApi
 import viz.vplayer.util.*
 import java.nio.charset.Charset
@@ -40,6 +47,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
 
     private val parseUrlList = mutableListOf<String>()
     private var parseUrl = ""
+    private var isParse = false
     private var originalUrl = ""
 
     override fun getPermissions(): Array<String> = arrayOf(
@@ -60,9 +68,11 @@ class WebActivity : BaseActivity(), View.OnClickListener {
             .inject(this)
         initViews()
         getParseUrl()
-        val url = intent.getStringExtra("url", "")
-        if (url.isNotEmpty()) {
-            webView.loadUrl(url)
+        if(QbSdk.isTbsCoreInited()) {
+            val url = intent.getStringExtra("url", "")
+            if (url.isNotEmpty()) {
+                webView.loadUrl(url)
+            }
         }
 
         val callback = onBackPressedDispatcher.addCallback(this) {
@@ -90,7 +100,6 @@ class WebActivity : BaseActivity(), View.OnClickListener {
             }
             return@setOnLongClickListener true
         }
-        initWebView()
     }
 
     private fun getParseUrl() {
@@ -403,6 +412,21 @@ class WebActivity : BaseActivity(), View.OnClickListener {
                 "setVideoParams",
                 data
             )
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun initEvent(initEvent: InitEvent) {
+        initEvent?.apply {
+            when (type) {
+                INIT_TYPE.TBS -> {
+                    initWebView()
+                    val url = intent.getStringExtra("url", "")
+                    if (url.isNotEmpty()) {
+                        webView.loadUrl(url)
+                    }
+                }
+            }
         }
     }
 }

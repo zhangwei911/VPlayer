@@ -847,10 +847,10 @@ class HomeFragment : BaseFragment(), View.OnClickListener {
         tbsEvent?.apply {
             when (type) {
                 0 -> {
-                    Toast.show("TBS内核未加载,请点击安装线上内核")
-                    val bundle = Bundle()
-                    bundle.putString("url", "http://debugtbs.qq.com")
-                    findNavController().navigate(R.id.webActivity, bundle)
+//                    Toast.showLong("TBS内核未加载,请点击安装线上内核")
+//                    val bundle = Bundle()
+//                    bundle.putString("url", "http://debugtbs.qq.com")
+//                    findNavController().navigate(R.id.webActivity, bundle)
                 }
             }
         }

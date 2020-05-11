@@ -6,12 +6,15 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import com.shuyu.gsyvideoplayer.utils.CommonUtil
@@ -86,6 +89,9 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
             getCommonBack()
         }
         setCommonTitle(getCommonTtile())
+        if(isIgnoreBatteryOptimization()){
+            ignoreBatteryOptimization()
+        }
 //        hasNotchInScreen(this)
 //        l.d(getNotchSize(this).toString())
     }
@@ -274,6 +280,27 @@ abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCal
             }
         }
     }
+
+    /**
+     * 忽略电池优化
+     */
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private fun ignoreBatteryOptimization() {
+        try {
+            val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+            val hasIgnored = powerManager.isIgnoringBatteryOptimizations(this.packageName)
+            if (!hasIgnored) {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
+        } catch (e: Exception) {
+            //TODO :handle exception
+            l.e("ex", e.message)
+        }
+    }
+
+    protected open fun isIgnoreBatteryOptimization(): Boolean = false
 
     protected open fun useEventBus(): Boolean = false
 

@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.*
 import android.net.Uri
 import android.os.Build
@@ -164,6 +165,27 @@ class VideoPlayerActivity : BaseActivity() {
                 }, duration
             )
         )
+        imageButton_float_pip.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                enterPictureInPictureMode()
+            }
+        }
+    }
+
+    override fun onPictureInPictureModeChanged(
+        isInPictureInPictureMode: Boolean,
+        newConfig: Configuration?
+    ) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        if (isInPictureInPictureMode) {
+            imageButton_float_pip.visibility = View.GONE
+            imageButton_float.visibility = View.GONE
+            gsyVideoPLayer.showUI = false
+        } else {
+            imageButton_float_pip.visibility = View.VISIBLE
+            imageButton_float.visibility = View.VISIBLE
+            gsyVideoPLayer.showUI = true
+        }
     }
 
     private fun initVideo() {
@@ -485,8 +507,6 @@ class VideoPlayerActivity : BaseActivity() {
             .setView(floatPlayerView)
             .setWidth(Screen.height, 0.75f)
             .setHeight(Screen.height, 0.5f)
-            .setX(Screen.width, 0.8f)
-            .setY(Screen.height, 0.3f)
             .setMoveType(MoveType.slide)
             .setFilter(false)
             .setMoveStyle(500, BounceInterpolator())
@@ -496,6 +516,14 @@ class VideoPlayerActivity : BaseActivity() {
 
     override fun onPause() {
         super.onPause()
+        if (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                isInPictureInPictureMode
+            } else {
+                false
+            }
+        ) {
+            return
+        }
         Task.callInBackground {
             l.start("VideoPlayerActivity-OnPause")
             val vi = app.db.videoInfoDao().getByUrl(videoVM.play.value!!.url)

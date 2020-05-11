@@ -45,6 +45,7 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
     private var selectEpisodesAdapter: SelectEpisodesAdapter? = null
     private var speedIndex = 2
     private var isInitEpisode = false
+    var showUI = true
 
     override fun getLayoutId(): Int {
         return R.layout.video_custom
@@ -211,6 +212,10 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
     protected var byStartedClick = false
 
     override fun onClickUiToggle() {
+        if(!showUI){
+            hideAllWidget()
+            return
+        }
         if (mIfCurrentIsFullscreen && mLockCurScreen && mNeedLockFull) {
             setViewShowState(mLockScreen, View.VISIBLE)
             return
@@ -245,6 +250,9 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
         setViewShowState(textView_speed, View.GONE)
         setViewShowState(textView_info, View.GONE)
         customVisibility?.invoke(View.GONE)
+        if(!showUI){
+            return
+        }
         if (currentState == GSYVideoView.CURRENT_STATE_PREPAREING || currentState == GSYVideoView.CURRENT_STATE_ERROR) {
             setViewShowState(mTopContainer, View.VISIBLE)
             setViewShowState(textView_select_episodes, View.VISIBLE)
@@ -257,6 +265,10 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
     }
 
     override fun changeUiToNormal() {
+        if(!showUI){
+            hideAllWidget()
+            return
+        }
         super.changeUiToNormal()
         setViewShowState(textView_select_episodes, View.VISIBLE)
         setViewShowState(textView_speed, View.VISIBLE)
@@ -266,6 +278,10 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
     }
 
     override fun changeUiToPreparingShow() {
+        if(!showUI){
+            hideAllWidget()
+            return
+        }
         super.changeUiToPreparingShow()
         Debuger.printfLog("Sample changeUiToPreparingShow")
         setViewShowState(mBottomContainer, View.INVISIBLE)
@@ -286,6 +302,10 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
     }
 
     override fun changeUiToPlayingShow() {
+        if(!showUI){
+            hideAllWidget()
+            return
+        }
         super.changeUiToPlayingShow()
         Debuger.printfLog("Sample changeUiToPlayingShow")
         if (!byStartedClick) {
@@ -295,6 +315,11 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
     }
 
     override fun onPrepared() {
+        if(!showUI){
+            setTextAndProgress(0, true)
+            hideAllWidget()
+            return
+        }
         setViewShowState(mTopContainer, View.VISIBLE)
         setViewShowState(textView_select_episodes, View.VISIBLE)
         setViewShowState(textView_speed, View.VISIBLE)
@@ -341,6 +366,10 @@ class CustomVideoPlayer : StandardGSYVideoPlayer {
                 }
             })
         Debuger.printfLog("Sample startAfterPrepared")
+        if(!showUI){
+            hideAllWidget()
+            return
+        }
         setViewShowState(mBottomContainer, View.INVISIBLE)
         setViewShowState(mStartButton, View.INVISIBLE)
         setViewShowState(mBottomProgressBar, View.VISIBLE)

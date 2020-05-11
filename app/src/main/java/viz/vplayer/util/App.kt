@@ -1,6 +1,9 @@
 package viz.vplayer.util
 
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.core.content.edit
 import androidx.room.Room
@@ -12,12 +15,15 @@ import bolts.Task
 import com.facebook.drawee.backends.pipeline.Fresco
 import com.facebook.imagepipeline.core.ImagePipelineConfig
 import com.facebook.imagepipeline.decoder.SimpleProgressiveJpegConfig
+import com.github.moduth.blockcanary.BlockCanary
 import com.huawei.agconnect.AGConnectInstance
 import com.huawei.agconnect.config.AGConnectServicesConfig
 import com.huawei.agconnect.config.LazyInputStream
 import com.huawei.hms.push.HmsMessaging
 import com.shuyu.gsyvideoplayer.player.IjkPlayerManager
 import com.shuyu.gsyvideoplayer.utils.CommonUtil
+import com.silencedut.fpsviewer.FpsViewer
+import com.tencent.bugly.crashreport.CrashReport
 import com.tencent.smtt.sdk.QbSdk
 import com.tencent.smtt.sdk.QbSdk.PreInitCallback
 import com.viz.tools.Toast
@@ -32,6 +38,7 @@ import viz.vplayer.eventbus.InitEvent
 import viz.vplayer.eventbus.TBSEvent
 import viz.vplayer.eventbus.enum.INIT_TYPE
 import viz.vplayer.room.AppDatabase
+import viz.vplayer.ui.activity.MainActivity
 import java.io.IOException
 import java.io.InputStream
 
@@ -191,6 +198,31 @@ class App : DaggerApplication(), Configuration.Provider {
         l.start("HmsMessaging")
         HmsMessaging.getInstance(this).isAutoInitEnabled = true
         l.end("HmsMessaging")
+
+        CrashReport.initCrashReport(applicationContext, "27b662f818", false)
+        Thread.setDefaultUncaughtExceptionHandler(handler)
+    }
+
+    private val handler = Thread.UncaughtExceptionHandler { t, e ->
+        e.printStackTrace()
+        l.e("发生异常,重启应用")
+        restartApp() //发生崩溃异常时,重启应用
+    }
+
+    private fun restartApp() {
+        val intent = Intent(this, MainActivity::class.java)
+        val restartIntent = PendingIntent.getActivity(
+            applicationContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT
+        )
+        //退出程序
+        val mgr = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        mgr.set(
+            AlarmManager.RTC, System.currentTimeMillis() + 1000,
+            restartIntent
+        ) // 1秒钟后重启应用
+
+        //结束进程之前可以把你程序的注销或者退出代码放在这段代码之前
+        android.os.Process.killProcess(android.os.Process.myPid())
     }
 
     override fun attachBaseContext(base: Context?) {

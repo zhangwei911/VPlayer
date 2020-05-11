@@ -3,23 +3,30 @@ package viz.vplayer.ui.activity
 import android.Manifest.permission.*
 import android.app.Activity
 import android.content.Intent
+import android.media.MediaMetadataRetriever
 import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.View
+import android.view.animation.BounceInterpolator
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.get
 import androidx.navigation.ui.NavigationUI
+import bolts.Continuation
 import bolts.Task
+import bolts.Task.UI_THREAD_EXECUTOR
 import com.google.android.gms.ads.*
 import com.huawei.hms.analytics.HiAnalytics
 import com.huawei.hms.hmsscankit.ScanUtil
 import com.huawei.hms.ml.scan.HmsScan
+import com.silencedut.fpsviewer.FpsViewer
 import com.viz.tools.Toast
 import com.viz.tools.apk.NetWorkUtils.*
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
@@ -85,8 +92,15 @@ class MainActivity : BaseActivity(), View.OnClickListener {
 
     override fun getPermissionsTips(): String = "需要存储,网络,手机信息,悬浮窗,位置等权限"
 
+    private lateinit var htmlVM: HtmlVM
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        htmlVM = ViewModelProvider(this).get(HtmlVM::class.java)
+//        htmlVM.autoGet("https://www.weixintv8.com/index.php?m=vod-search&wd=%E9%80%9F%E5%BA%A6%E4%B8%8E%E6%BF%80%E6%83%85")
+//        htmlVM.autoGet("http://www.lexianglive.com/index.php?s=vod-search-name&wd=%E9%80%9F%E5%BA%A6%E4%B8%8E%E6%BF%80%E6%83%85")
+//        htmlVM.autoGet("http://5nj.com/index.php?m=vod-search&wd=%E9%80%9F%E5%BA%A6%E4%B8%8E%E6%BF%80%E6%83%85")
+        htmlVM.autoGet("https://so.iqiyi.com/so/q_%E9%80%9F%E5%BA%A6%E4%B8%8E%E6%BF%80%E6%83%85")
+        FpsViewer.getViewer().appendSection("MainActivity")
         Task.callInBackground {
             l.start("华为分析")
             //        HiAnalyticsTools.enableLog()
@@ -183,11 +197,20 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                     )
                     cs.applyTo(constraintLayout_main)
                     adView!!.adSize = adSize
-                    adView!!.adUnitId = "ca-app-pub-2409784170808286/3785657334"
+                    adView!!.adUnitId = if (BuildConfig.DEBUG) {
+                        "ca-app-pub-3940256099942544/6300978111"
+                    } else {
+                        "ca-app-pub-2409784170808286/3785657334"
+                    }
                     adView!!.adListener = object : AdListener() {
                         override fun onAdLoaded() {
                             super.onAdLoaded()
                             imageButton_close_ads.visibility = View.VISIBLE
+                            Toast.show("广告将在${adColseTime}s后关闭")
+                            Task.delay(adColseTime * 1000L).continueWith(Continuation<Void, Void> {
+                                imageButton_close_ads.performClick()
+                                return@Continuation null
+                            }, UI_THREAD_EXECUTOR)
                         }
                     }
                     adView!!.loadAd(adRequest)
@@ -400,5 +423,10 @@ class MainActivity : BaseActivity(), View.OnClickListener {
             fragment.onActivityResult(requestCode, resultCode, data)
         }
         loginUtil?.handleOnActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        FpsViewer.getViewer().removeSection("MainActivity")
     }
 }
