@@ -7,4 +7,7 @@
     <color name="ColorMain">#E64A19</color>
     <color name="selectWebBGL">#FFCCBC</color>
     <color name="selectWebText">#FF7C48</color>
+    <color name="icActive">#FFFFFFFF</color>
+    <color name="icFocused">#DDFFFFFF</color>
+    <color name="icPressed">#AAFFFFFF</color>
 </resources>

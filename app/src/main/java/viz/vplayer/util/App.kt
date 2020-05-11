@@ -31,7 +31,9 @@ import com.viz.tools.l
 import dagger.android.AndroidInjector
 import dagger.android.DaggerApplication
 import org.greenrobot.eventbus.EventBus
+import org.xutils.x
 import tv.danmaku.ijk.media.player.IjkMediaPlayer
+import viz.commonlib.util.AppBlockCanaryContext
 import viz.vplayer.dagger2.AppComponent
 import viz.vplayer.dagger2.DaggerAppComponent
 import viz.vplayer.eventbus.InitEvent
@@ -55,6 +57,9 @@ class App : DaggerApplication(), Configuration.Provider {
 
     override fun onCreate() {
         super.onCreate()
+        FpsViewer.getViewer().initViewer(this, null)
+        BlockCanary.install(this, AppBlockCanaryContext()).start()
+        x.Ext.init(this)
         l.init(this)
         l.SUFFIX = ".kt"
         Toast.init(applicationContext)
@@ -149,7 +154,7 @@ class App : DaggerApplication(), Configuration.Provider {
                 override fun onViewInitFinished(arg0: Boolean) { // TODO Auto-generated method stub
 //x5內核初始化完成的回调，为true表示x5内核加载成功，否则表示x5内核加载失败，会自动切换到系统内核。
                     l.d("app", " onViewInitFinished is $arg0")
-                    if(!arg0) {
+                    if (!arg0) {
                         EventBus.getDefault().postSticky(TBSEvent(0))
                     }
                 }

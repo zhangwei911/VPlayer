@@ -35,6 +35,8 @@ import viz.vplayer.R
 import viz.vplayer.adapter.MenuAdapter
 import viz.vplayer.bean.JsonBean
 import viz.vplayer.bean.MenuBean
+import viz.vplayer.eventbus.MLEvent
+import viz.vplayer.eventbus.TestEvent
 import viz.vplayer.ui.activity.HistoryActivity
 import viz.vplayer.util.RecyclerItemClickListener
 
@@ -65,6 +67,10 @@ class MenuFragment : BottomSheetDialogFragment() {
         list.add(MenuBean("华为账号静默登录2"))
         list.add(MenuBean("华为账号登出"))
         list.add(MenuBean("华为扫码"))
+        list.add(MenuBean("华为人脸检测"))
+        list.add(MenuBean("华为图像分割"))
+        list.add(MenuBean("华为图像分割HiAI"))
+        list.add(MenuBean("网页爬取工具测试"))
         adapter = MenuAdapter(context!!, list)
         recyclerView_menu.adapter = adapter
         recyclerView_menu.addOnItemTouchListener(
@@ -103,6 +109,22 @@ class MenuFragment : BottomSheetDialogFragment() {
                             }
                             6 -> {
                                 EventBus.getDefault().postSticky(ScanEvent(REQUEST_CODE_SCAN_ONE))
+                                dismiss()
+                            }
+                            7->{
+                                EventBus.getDefault().postSticky(MLEvent(0))
+                                dismiss()
+                            }
+                            8->{
+                                EventBus.getDefault().postSticky(MLEvent(1))
+                                dismiss()
+                            }
+                            9->{
+                                EventBus.getDefault().postSticky(MLEvent(2))
+                                dismiss()
+                            }
+                            10->{
+                                EventBus.getDefault().postSticky(TestEvent(0))
                                 dismiss()
                             }
                         }

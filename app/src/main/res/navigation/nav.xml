@@ -17,11 +17,19 @@
         android:name="viz.vplayer.ui.activity.WebActivity"
         android:label="WebActivity" />
     <fragment
-        android:id="@+id/motionEventFragment"
-        android:name="viz.vplayer.ui.fragment.MotionEventFragment"
-        android:label="MotionEventFragment" />
+        android:id="@+id/cameraFragment"
+        android:name="viz.vplayer.ui.fragment.CameraFragment"
+        android:label="CameraFragment" />
     <fragment
-        android:id="@+id/coordinateFragment"
-        android:name="viz.vplayer.ui.fragment.CoordinateFragment"
-        android:label="CoordinateFragment" />
+        android:id="@+id/splitFragment"
+        android:name="viz.vplayer.ui.fragment.SplitFragment"
+        android:label="SplitFragment" />
+    <fragment
+        android:id="@+id/splitHiAIFragment"
+        android:name="viz.vplayer.ui.fragment.SplitHiAIFragment"
+        android:label="SplitHiAIFragment" />
+    <fragment
+        android:id="@+id/webParseFragment"
+        android:name="viz.vplayer.ui.fragment.WebParseFragment"
+        android:label="WebParseFragment" />
 </navigation>

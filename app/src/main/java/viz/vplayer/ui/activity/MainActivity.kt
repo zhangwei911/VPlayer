@@ -29,9 +29,15 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_video.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.apache.commons.lang3.concurrent.BasicThreadFactory
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.xutils.common.Callback
+import org.xutils.http.HttpMethod
+import org.xutils.http.HttpTask
+import org.xutils.http.RequestParams
+import org.xutils.x
 import viz.commonlib.event.ScanEvent
 import viz.commonlib.event.SignEvent
 import viz.commonlib.huawei.account.LoginUtil
@@ -40,12 +46,21 @@ import viz.commonlib.util.REQUEST_CODE_SCAN_ONE
 import viz.vplayer.BuildConfig
 import viz.vplayer.R
 import viz.vplayer.dagger2.MyObserverModule
-import viz.vplayer.eventbus.CommonInfoEvent
-import viz.vplayer.eventbus.InfoType
-import viz.vplayer.eventbus.KWEvent
-import viz.vplayer.eventbus.NetEvent
+import viz.vplayer.eventbus.*
+import viz.vplayer.util.FileUtil
 import viz.vplayer.util.NetUtil
+import viz.vplayer.util.UrlUtil
 import viz.vplayer.util.continueWithEnd
+import viz.vplayer.video.FloatPlayerView
+import viz.vplayer.video.FloatWindow
+import viz.vplayer.video.MoveType
+import viz.vplayer.video.Screen
+import viz.vplayer.vm.HtmlVM
+import viz.vplayer.vm.MainVM
+import java.io.File
+import java.util.*
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.ScheduledThreadPoolExecutor
 import javax.inject.Inject
 
 
@@ -54,11 +69,16 @@ class MainActivity : BaseActivity(), View.OnClickListener {
     lateinit var mo: MyObserver
     private val navController by lazy { findNavController(R.id.main_content) }
     private var loginUtil: LoginUtil? = null
-    private var adView: AdView?=null
+    private var adView: AdView? = null
+    private val adColseTime = 10
 
     override fun getContentViewId(): Int = R.layout.activity_main
     override fun useEventBus(): Boolean = true
     override fun isSetPaddingTop(): Boolean = true
+    private var es: ScheduledExecutorService = ScheduledThreadPoolExecutor(
+        1,
+        BasicThreadFactory.Builder().namingPattern("pool-fd-%d").daemon(true).build()
+    )
 
     override fun getPermissions(): Array<String> =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -156,7 +176,7 @@ class MainActivity : BaseActivity(), View.OnClickListener {
             MobileAds.initialize(this) {}
             val adRequest = AdRequest.Builder().build()
             runOnUiThread {
-                if(adView == null) {
+                if (adView == null) {
                     adView = AdView(this)
                     adView!!.id = R.id.adView
                     constraintLayout_main.addView(
@@ -217,6 +237,57 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 }
             }
         }.continueWithEnd("初始化google ads")
+//        Task.callInBackground {
+//            val params =
+//                RequestParams("https://gnzk.yiya520.com/2019/08/08/HCDLq8fKK2XhlyL2/out003.ts")
+//            params.isAutoResume = true
+//            params.isAutoRename = true
+//            params.saveFilePath = FileUtil.getPath(this) + "/$packageName/${UUID.randomUUID()}.ts"
+//            params.executor = es
+//            params.isCancelFast = true
+//            params.method = HttpMethod.GET
+//            val callback = object : Callback.CommonCallback<File> {
+//                override fun onFinished() {
+//                    l.d()
+//                }
+//
+//                override fun onSuccess(result: File?) {
+//                    if (result != null) {
+//                        l.d(result.absolutePath)
+//                    }
+//                }
+//
+//                override fun onCancelled(cex: Callback.CancelledException?) {
+//                    l.e()
+//                }
+//
+//                override fun onError(ex: Throwable?, isOnCallback: Boolean) {
+//                    ex?.printStackTrace()
+//                }
+//            }
+//            val httpTask = HttpTask<File>(params, null, callback)
+//            x.task().startTasks(object : Callback.GroupCallback<HttpTask<File>> {
+//                override fun onFinished(item: HttpTask<File>?) {
+//                    l.d()
+//                }
+//
+//                override fun onSuccess(item: HttpTask<File>?) {
+//                    l.d()
+//                }
+//
+//                override fun onCancelled(item: HttpTask<File>?, cex: Callback.CancelledException?) {
+//                    l.e()
+//                }
+//
+//                override fun onAllFinished() {
+//                    l.d()
+//                }
+//
+//                override fun onError(item: HttpTask<File>?, ex: Throwable?, isOnCallback: Boolean) {
+//                    ex?.printStackTrace()
+//                }
+//            }, httpTask)
+//        }.continueWithEnd("xutil3下载测试")
     }
 
     // Determine the screen width (less decorations) to use for the ad width.
@@ -356,6 +427,34 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 }
             } else {
                 textView_common_info.setOnClickListener(null)
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun mlEvent(mlEvent: MLEvent) {
+        mlEvent?.apply {
+            when (type) {
+                0 -> {
+                    navController.navigate(R.id.cameraFragment)
+                }
+                1 -> {
+                    navController.navigate(R.id.splitFragment)
+                }
+                2 -> {
+                    navController.navigate(R.id.splitHiAIFragment)
+                }
+            }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun testEvent(testEvent: TestEvent) {
+        testEvent?.apply {
+            when (type) {
+                0 -> {
+                    navController.navigate(R.id.webParseFragment)
+                }
             }
         }
     }

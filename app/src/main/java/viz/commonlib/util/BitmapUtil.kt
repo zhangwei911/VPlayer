@@ -2,14 +2,16 @@ package viz.commonlib.util
 
 import android.content.Context
 import android.graphics.*
+import android.graphics.ImageFormat.NV21
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.Environment
+import android.renderscript.*
 import com.viz.tools.l
+import viz.vplayer.util.FileUtil
 import java.io.*
 import java.util.*
-import android.graphics.Bitmap
-import viz.vplayer.util.FileUtil
 
 
 object BitmapUtil {
@@ -314,5 +316,63 @@ object BitmapUtil {
         }
         origin.recycle()
         return newBM
+    }
+    fun getBitmapFromFrameData(
+        rs: RenderScript?,
+        yuvToRgbIntrinsic: ScriptIntrinsicYuvToRGB,
+        data: ByteArray,
+        width: Int,
+        height: Int
+    ): Bitmap? {
+        var yuvType: Type.Builder? = null
+        val rgbaType: Type.Builder
+        var `in`: Allocation? = null
+        var out: Allocation? = null
+        return try {
+            val bitmap: Bitmap
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                if (yuvType == null) {
+                    yuvType = Type.Builder(rs, Element.U8(rs)).setX(data.size)
+                    `in` = Allocation.createTyped(rs, yuvType.create(), Allocation.USAGE_SCRIPT)
+                    rgbaType = Type.Builder(rs, Element.RGBA_8888(rs)).setX(width).setY(height)
+                    out = Allocation.createTyped(rs, rgbaType.create(), Allocation.USAGE_SCRIPT)
+                }
+                `in`?.copyFrom(data)
+                yuvToRgbIntrinsic.setInput(`in`)
+                yuvToRgbIntrinsic.forEach(out)
+                bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                out?.copyTo(bitmap)
+            } else {
+                val rawImage: ByteArray
+                //处理data
+                val newOpts = BitmapFactory.Options()
+                newOpts.inJustDecodeBounds = true
+                val yuvimage = YuvImage(
+                    data,
+                    NV21,
+                    width,
+                    height,
+                    null
+                )
+                val baos: ByteArrayOutputStream = ByteArrayOutputStream()
+                yuvimage.compressToJpeg(
+                    Rect(0, 0, width, height),
+                    100,
+                    baos
+                ) // 80--JPG图片的质量[0-100],100最高
+                rawImage = baos.toByteArray()
+                //将rawImage转换成bitmap
+                val options = BitmapFactory.Options()
+                options.inPreferredConfig = Bitmap.Config.RGB_565
+                bitmap = BitmapFactory.decodeByteArray(rawImage, 0, rawImage.size, options)
+            }
+            `in` = null
+            out = null
+            bitmap
+        } catch (e: Throwable) {
+            `in` = null
+            out = null
+            null
+        }
     }
 }

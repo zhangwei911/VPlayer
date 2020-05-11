@@ -160,18 +160,34 @@ class WebActivity : BaseActivity(), View.OnClickListener {
         }
         webView.onPageFinished = { url ->
             setWebInfo(url)
-            try {
-                val videoManagerClass =
-                    Class.forName("com.tencent.mtt.video.internal.engine.VideoManager")
-                val videoManagerNewInstance = videoManagerClass.newInstance()
-                val ins = videoManagerClass.getMethod("getInstance")
-                val videoManagerInstance = ins.invoke(videoManagerNewInstance)
-                val urlMethod = videoManagerClass.getMethod("getCurrentVideoUrl")
-                val currentUrl = urlMethod.invoke(videoManagerInstance) ?: "null"
-                l.d(currentUrl.toString())
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+//            try {
+//                val videoManagerClass =
+//                    Class.forName("com.tencent.mtt.video.internal.engine.VideoManager")
+//                val videoManagerNewInstance = videoManagerClass.newInstance()
+//                val ins = videoManagerClass.getMethod("getInstance")
+//                val videoManagerInstance = ins.invoke(videoManagerNewInstance)
+//                val urlMethod = videoManagerClass.getMethod("getCurrentVideoUrl")
+//                val currentUrl = urlMethod.invoke(videoManagerInstance) ?: "null"
+//                l.d(currentUrl.toString())
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+            if(isParse) {
+//                webView.loadUrl(
+//                    "javascript:var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';" +
+//                            "var api = html.match('\\.post\\\\(\"(.*)\", \\{')[1];" +
+//                            "var wap = html.match('\"wap\": \"(.*)\",')[1];" +
+//                            "var ip = html.match('\"ip\": \"([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\"')[1];" +
+//                            " \$.post(api, {\n" +
+//                            "                    \"wap\": wap,\n" +
+//                            "                    \"time\": m3,\n" +
+//                            "                    \"ip\": ip,\n" +
+//                            "                    \"key\": m1,\n" +
+//                            "                    \"key2\": m2,\n" +
+//                            "                    \"key3\": ഈഇആഅ,\n" +
+//                            "                    \"url\": h2_url\n" +
+//                            "                }, function(data) {window.htmlGet.getUrl(data['url']);},'json')"
+//                )
 //            webView.loadUrl(
 //                "javascript:var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';" +
 //                        "var api = html.match('\\.post\\\\(\"(.*)\", \\{')[1];" +
@@ -187,21 +203,11 @@ class WebActivity : BaseActivity(), View.OnClickListener {
 //                        "                    \"url\": h2_url\n" +
 //                        "                }, function(data) {window.htmlGet.showSource(ഈഇആഅ,data['url'],window.location.href,m1,m2,m3,h2_url,html);},'json')"
 //            )
-//            webView.loadUrl(
-//                "javascript:var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';" +
-//                        "var api = html.match('\\.post\\\\(\"(.*)\", \\{')[1];" +
-//                        "var wap = html.match('\"wap\": \"(.*)\",')[1];" +
-//                        "var ip = html.match('\"ip\": \"([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\"')[1];" +
-//                        " \$.post(api, {\n" +
-//                        "                    \"wap\": wap,\n" +
-//                        "                    \"time\": m3,\n" +
-//                        "                    \"ip\": ip,\n" +
-//                        "                    \"key\": m1,\n" +
-//                        "                    \"key2\": m2,\n" +
-//                        "                    \"key3\": ഈഇആഅ,\n" +
-//                        "                    \"url\": h2_url\n" +
-//                        "                }, function(data) {window.htmlGet.getUrl(data['url']);},'json')"
-//            )
+//                webView.loadUrl("javascript:" +
+//                        "var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';" +
+//                        "window.htmlGet.showSource('','','','','','','',html);")
+                isParse = false
+            }
 //            webView.loadUrl("javascript:window.htmlGet.showSource(window.sessionStorage);")
         }
         webView.view.overScrollMode = View.OVER_SCROLL_ALWAYS
@@ -249,6 +255,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
                 h2_url: String,
                 html: String
             ) {
+                l.d(html)
 //                l.d(test)
 //                l.df(videoUrl, m1, m2, m3, h2_url)
 //                val ipReg = Regex("\"ip\": \"([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\"")
@@ -324,6 +331,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
                 if (parseUrl.isEmpty()) {
                     Toast.show("解析地址为空,无法解析")
                 }
+                isParse = true
                 val finalUrl = String.format(parseUrl, webView.url)
                 if (Uri.parse(webView.url).host == Uri.parse(finalUrl).host) {
                     webView.loadUrl(webView.url)

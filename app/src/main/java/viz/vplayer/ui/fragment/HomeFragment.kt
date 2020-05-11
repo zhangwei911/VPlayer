@@ -12,6 +12,7 @@ import androidx.activity.addCallback
 import androidx.annotation.NonNull
 import androidx.annotation.VisibleForTesting
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController

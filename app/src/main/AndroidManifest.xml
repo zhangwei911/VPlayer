@@ -33,6 +33,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <meta-data
+            android:name="com.huawei.hms.ml.DEPENDENCY"
+            android:value= "face"/>
+        <!--If multiple models are required,set the parameter as follows:
+        android:value="object,ocr,face,label,icr,imgseg"-->
+        <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-2409784170808286~8299617415" />
         <meta-data
