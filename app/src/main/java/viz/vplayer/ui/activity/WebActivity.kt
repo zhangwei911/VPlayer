@@ -7,15 +7,23 @@ import android.content.res.Configuration
 import android.graphics.PixelFormat
 import android.net.Uri
 import android.os.Bundle
+import android.os.Message
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import android.webkit.ValueCallback
 import androidx.activity.addCallback
 import androidx.core.content.edit
-import androidx.navigation.fragment.findNavController
 import bolts.Task
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItems
+import com.tencent.smtt.export.external.extension.interfaces.IX5WebChromeClientExtension
+import com.tencent.smtt.export.external.extension.interfaces.IX5WebViewExtension
+import com.tencent.smtt.export.external.interfaces.*
 import com.tencent.smtt.sdk.QbSdk
+import com.tencent.smtt.sdk.WebSettings
+import com.tencent.smtt.sdk.WebView
+import com.tencent.smtt.sdk.WebViewClient
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_web.*
@@ -28,12 +36,12 @@ import viz.commonlib.util.MyObserver
 import viz.vplayer.R
 import viz.vplayer.dagger2.MyObserverModule
 import viz.vplayer.eventbus.InitEvent
-import viz.vplayer.eventbus.TBSEvent
 import viz.vplayer.eventbus.enum.INIT_TYPE
 import viz.vplayer.http.HttpApi
 import viz.vplayer.util.*
 import java.nio.charset.Charset
 import java.nio.charset.UnsupportedCharsetException
+import java.util.*
 import javax.inject.Inject
 
 
@@ -68,7 +76,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
             .inject(this)
         initViews()
         getParseUrl()
-        if(QbSdk.isTbsCoreInited()) {
+        if (QbSdk.isTbsCoreInited()) {
             val url = intent.getStringExtra("url", "")
             if (url.isNotEmpty()) {
                 webView.loadUrl(url)
@@ -154,9 +162,31 @@ class WebActivity : BaseActivity(), View.OnClickListener {
     }
 
     private fun initWebView() {
+        val settings = webView.settings           //和系统webview一样
+        settings.javaScriptEnabled = true                    //支持Javascript 与js交互
+        settings.javaScriptCanOpenWindowsAutomatically = true//支持通过JS打开新窗口
+        settings.allowFileAccess = true                      //设置可以访问文件
+        settings.setSupportZoom(true)                          //支持缩放
+        settings.builtInZoomControls = true                  //设置内置的缩放控件
+        settings.useWideViewPort = true                      //自适应屏幕
+        settings.setSupportMultipleWindows(true)               //多窗口
+        settings.defaultTextEncodingName = "utf-8"            //设置编码格式
+        settings.setAppCacheEnabled(true)
+        settings.domStorageEnabled = true
+        settings.setAppCacheMaxSize(Long.MAX_VALUE)
+        settings.cacheMode = WebSettings.LOAD_NO_CACHE       //缓存模式
         window.setFormat(PixelFormat.TRANSLUCENT)
         webView.shouldOverrideUrlLoading = { url ->
             setWebInfo(url)
+        }
+        webView.webViewClient = object : WebViewClient() {
+            override fun onReceivedError(
+                p0: WebView?,
+                p1: WebResourceRequest?,
+                p2: WebResourceError?
+            ) {
+                super.onReceivedError(p0, p1, p2)
+            }
         }
         webView.onPageFinished = { url ->
             setWebInfo(url)
@@ -297,6 +327,163 @@ class WebActivity : BaseActivity(), View.OnClickListener {
             l.d(hitTestResult.type)
             return@setOnLongClickListener true
         }
+        webView.webChromeClientExtension = object : IX5WebChromeClientExtension {
+            override fun onAllMetaDataFinished(
+                p0: IX5WebViewExtension?,
+                p1: HashMap<String, String>?
+            ) {
+            }
+
+            override fun onPermissionRequest(
+                origin: String?,
+                resources: Long,
+                mediaAccessPermissionsCallback: MediaAccessPermissionsCallback?
+            ): Boolean {
+                var allowed = 0L
+                allowed =
+                    allowed or MediaAccessPermissionsCallback.ALLOW_AUDIO_CAPTURE or MediaAccessPermissionsCallback.ALLOW_VIDEO_CAPTURE
+                val retain = true
+                mediaAccessPermissionsCallback?.invoke(origin, allowed, retain)
+                return true
+            }
+
+            override fun h5videoExitFullScreen(p0: String?) {
+
+            }
+
+            override fun jsExitFullScreen() {
+
+            }
+
+            override fun jsRequestFullScreen() {
+
+            }
+
+            override fun h5videoRequestFullScreen(p0: String?) {
+
+            }
+
+            override fun onPrepareX5ReadPageDataFinished(
+                p0: IX5WebViewExtension?,
+                p1: HashMap<String, String>?
+            ) {
+
+            }
+
+            override fun exitFullScreenFlash() {
+
+            }
+
+            override fun onSavePassword(
+                p0: String?,
+                p1: String?,
+                p2: String?,
+                p3: Boolean,
+                p4: Message?
+            ): Boolean {
+                return false
+            }
+
+            override fun onSavePassword(
+                p0: ValueCallback<String>?,
+                p1: String?,
+                p2: String?,
+                p3: String?,
+                p4: String?,
+                p5: String?,
+                p6: Boolean
+            ): Boolean {
+                return false
+            }
+
+            override fun addFlashView(p0: View?, p1: ViewGroup.LayoutParams?) {
+
+            }
+
+            override fun acquireWakeLock() {
+
+            }
+
+            override fun onPromptScaleSaved(p0: IX5WebViewExtension?) {
+
+            }
+
+            override fun requestFullScreenFlash() {
+
+            }
+
+            override fun onMiscCallBack(p0: String?, p1: Bundle?): Any? {
+                return null
+            }
+
+            override fun onAddFavorite(
+                p0: IX5WebViewExtension?,
+                p1: String?,
+                p2: String?,
+                p3: JsResult?
+            ): Boolean {
+                return false
+            }
+
+            override fun getVideoLoadingProgressView(): View? {
+                return null
+            }
+
+            override fun getApplicationContex(): Context? {
+                return null
+            }
+
+            override fun onX5ReadModeAvailableChecked(p0: HashMap<String, String>?) {
+
+            }
+
+            override fun onColorModeChanged(p0: Long) {
+
+            }
+
+            override fun onPromptNotScalable(p0: IX5WebViewExtension?) {
+
+            }
+
+            override fun onPrintPage() {
+
+            }
+
+            override fun getX5WebChromeClientInstance(): Any? {
+                return null
+            }
+
+            override fun onBackforwardFinished(p0: Int) {
+
+            }
+
+            override fun releaseWakeLock() {
+
+            }
+
+            override fun openFileChooser(p0: ValueCallback<Array<Uri>>?, p1: String?, p2: String?) {
+
+            }
+
+            override fun onHitTestResultFinished(
+                p0: IX5WebViewExtension?,
+                p1: IX5WebViewBase.HitTestResult?
+            ) {
+
+            }
+
+            override fun onHitTestResultForPluginFinished(
+                p0: IX5WebViewExtension?,
+                p1: IX5WebViewBase.HitTestResult?,
+                p2: Bundle?
+            ) {
+
+            }
+
+            override fun onPageNotResponding(p0: Runnable?): Boolean {
+                return false
+            }
+        }
     }
 
     override fun getCommonBack() {
@@ -336,7 +523,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
                 if (Uri.parse(webView.url).host == Uri.parse(finalUrl).host) {
                     webView.loadUrl(webView.url)
                 } else {
-                    if(originalUrl.isEmpty()){
+                    if (originalUrl.isEmpty()) {
                         originalUrl = webView.url
                     }
                     webView.loadUrl(String.format(parseUrl, originalUrl))

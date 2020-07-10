@@ -93,7 +93,9 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 ACCESS_LOCATION_EXTRA_COMMANDS,
                 ACCESS_MEDIA_LOCATION,
                 READ_EXTERNAL_STORAGE,
-                CAMERA
+                CAMERA,
+                RECORD_AUDIO,
+                MODIFY_AUDIO_SETTINGS
             )
         } else {
             arrayOf(
@@ -106,7 +108,9 @@ class MainActivity : BaseActivity(), View.OnClickListener {
                 ACCESS_FINE_LOCATION,
                 ACCESS_LOCATION_EXTRA_COMMANDS,
                 READ_EXTERNAL_STORAGE,
-                CAMERA
+                CAMERA,
+                RECORD_AUDIO,
+                MODIFY_AUDIO_SETTINGS
             )
         }
 
