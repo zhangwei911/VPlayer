@@ -21,6 +21,7 @@
         android:drawablePadding="8dp"
         android:fontFamily="monospace"
         android:hint="@string/url_hint"
+        android:imeOptions="actionDone"
         android:inputType="text"
         android:lines="1"
         android:maxLines="1"
@@ -63,5 +64,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textInputEditText_url" />
+
+    <ProgressBar
+        android:id="@+id/progressBar_webView"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/webView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Message
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import androidx.activity.addCallback
@@ -20,10 +21,7 @@ import com.afollestad.materialdialogs.list.listItems
 import com.tencent.smtt.export.external.extension.interfaces.IX5WebChromeClientExtension
 import com.tencent.smtt.export.external.extension.interfaces.IX5WebViewExtension
 import com.tencent.smtt.export.external.interfaces.*
-import com.tencent.smtt.sdk.QbSdk
-import com.tencent.smtt.sdk.WebSettings
-import com.tencent.smtt.sdk.WebView
-import com.tencent.smtt.sdk.WebViewClient
+import com.tencent.smtt.sdk.*
 import com.viz.tools.Toast
 import com.viz.tools.l
 import kotlinx.android.synthetic.main.activity_web.*
@@ -76,6 +74,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
             .inject(this)
         initViews()
         getParseUrl()
+        initWebView()
         if (QbSdk.isTbsCoreInited()) {
             val url = intent.getStringExtra("url", "")
             if (url.isNotEmpty()) {
@@ -94,6 +93,15 @@ class WebActivity : BaseActivity(), View.OnClickListener {
     }
 
     private fun initViews() {
+        textInputEditText_url.setOnEditorActionListener { v, actionId, event ->
+            when (actionId) {
+                EditorInfo.IME_ACTION_DONE -> {
+                    materialButton_url.performClick()
+                    true
+                }
+            }
+            false
+        }
         materialButton_url.setOnClickListener(this)
         materialButton_url_parse.setOnClickListener(this)
         materialButton_url_parse.setOnLongClickListener {
@@ -166,8 +174,8 @@ class WebActivity : BaseActivity(), View.OnClickListener {
         settings.javaScriptEnabled = true                    //支持Javascript 与js交互
         settings.javaScriptCanOpenWindowsAutomatically = true//支持通过JS打开新窗口
         settings.allowFileAccess = true                      //设置可以访问文件
-        settings.setSupportZoom(true)                          //支持缩放
-        settings.builtInZoomControls = true                  //设置内置的缩放控件
+        settings.setSupportZoom(false)                          //支持缩放
+        settings.builtInZoomControls = false                  //设置内置的缩放控件
         settings.useWideViewPort = true                      //自适应屏幕
         settings.setSupportMultipleWindows(true)               //多窗口
         settings.defaultTextEncodingName = "utf-8"            //设置编码格式
@@ -190,6 +198,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
         }
         webView.onPageFinished = { url ->
             setWebInfo(url)
+            progressBar_webView.visibility = View.GONE
 //            try {
 //                val videoManagerClass =
 //                    Class.forName("com.tencent.mtt.video.internal.engine.VideoManager")
@@ -202,7 +211,7 @@ class WebActivity : BaseActivity(), View.OnClickListener {
 //            } catch (e: Exception) {
 //                e.printStackTrace()
 //            }
-            if(isParse) {
+            if (isParse) {
 //                webView.loadUrl(
 //                    "javascript:var html = '<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>';" +
 //                            "var api = html.match('\\.post\\\\(\"(.*)\", \\{')[1];" +
@@ -326,6 +335,20 @@ class WebActivity : BaseActivity(), View.OnClickListener {
             l.d(hitTestResult.extra)
             l.d(hitTestResult.type)
             return@setOnLongClickListener true
+        }
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onProgressChanged(p0: WebView?, progress: Int) {
+                super.onProgressChanged(p0, progress)
+                l.i(progress)
+                if (progress > 0) {
+                    if (progressBar_webView.visibility == View.GONE) {
+                        progressBar_webView.visibility = View.VISIBLE
+                    }
+                    progressBar_webView.progress = progress
+                } else if (progress == 100) {
+                    progressBar_webView.visibility = View.GONE
+                }
+            }
         }
         webView.webChromeClientExtension = object : IX5WebChromeClientExtension {
             override fun onAllMetaDataFinished(

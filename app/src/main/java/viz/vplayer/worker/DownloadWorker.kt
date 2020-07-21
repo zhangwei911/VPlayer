@@ -11,14 +11,6 @@ import androidx.work.WorkerParameters
 import androidx.work.impl.utils.futures.SettableFuture
 import androidx.work.workDataOf
 import bolts.Task
-import com.arialyy.annotations.TaskEnum
-import com.arialyy.aria.core.Aria
-import com.arialyy.aria.core.common.AbsNormalEntity
-import com.arialyy.aria.core.download.m3u8.M3U8VodOption
-import com.arialyy.aria.core.scheduler.M3U8PeerTaskListener
-import com.arialyy.aria.core.scheduler.NormalTaskListener
-import com.arialyy.aria.core.scheduler.SubTaskListener
-import com.arialyy.aria.core.task.DownloadTask
 import com.google.common.util.concurrent.ListenableFuture
 import com.lidroid.xutils.HttpUtils
 import com.viz.tools.MD5Util

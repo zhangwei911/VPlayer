@@ -102,10 +102,12 @@ class X5WebView : WebView {
             }
         }, "longClick")
         webSetting.javaScriptCanOpenWindowsAutomatically = true
+        settings.defaultTextEncodingName = "utf-8"            //设置编码格式
         webSetting.allowFileAccess = true
+        settings.javaScriptEnabled = true                    //支持Javascript 与js交互
         webSetting.layoutAlgorithm = WebSettings.LayoutAlgorithm.NARROW_COLUMNS
-        webSetting.setSupportZoom(true)
-        webSetting.builtInZoomControls = true
+        webSetting.setSupportZoom(false)
+        webSetting.builtInZoomControls = false
         webSetting.useWideViewPort = true
         webSetting.setSupportMultipleWindows(true)
         // webSetting.setLoadWithOverviewMode(true);
